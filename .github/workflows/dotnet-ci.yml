@@ -1,0 +1,68 @@
+name: dotnet CI
+
+# The .NET port's Phase 1 lane. Pull-request triggered like ci.yml, plus
+# direct pushes to the conversion branches so a pushed port branch is
+# validated before a PR opens.
+on:
+  pull_request:
+  push:
+    branches:
+      - port/dotnet10
+      - port/dotnet10-p1-pipeline
+
+permissions:
+  contents: read
+
+# Cancel a superseded run on a new push (same convention as ci.yml).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The .NET SDK must not phone home or print first-run banners in CI.
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+
+jobs:
+  dotnet:
+    name: dotnet 10 / build and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      # setup-dotnet caches the NuGet global-packages folder; the csproj graph
+      # is the dependency fingerprint (no packages.lock.json yet).
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          cache: nuget
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Restore
+        run: dotnet restore deepseek-harness.slnx
+
+      - name: Build (Release)
+        run: dotnet build deepseek-harness.slnx -c Release --no-restore
+
+      - name: Test (xUnit)
+        run: dotnet test tests/Cordis.Core.Tests/Cordis.Core.Tests.csproj -c Release --no-build --no-restore
+
+      # Console-runner projects are the current test path because some suites
+      # are console-based: Cordis.Tests and Dsh.Spike.Tests are zero-dependency
+      # console assertion suites, and Dsh.Spike is the byte-pinned headless
+      # smoke. The xUnit lane above is the framework test path.
+      # (tests/Cordis.Core.Tests.Runner is the sandbox-only console twin of the
+      # xUnit suite: it has no csproj and is compiled by
+      # build-and-test-cordis-core.ps1; its assertions are covered here by the
+      # xUnit lane.)
+      - name: Run console suite (Cordis.Tests)
+        run: dotnet run --project tests/Cordis.Tests/Cordis.Tests.csproj -c Release --no-build --no-restore
+
+      - name: Run console suite (Dsh.Spike.Tests)
+        run: dotnet run --project tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj -c Release --no-build --no-restore
+
+      - name: Run headless smoke (Dsh.Spike)
+        run: dotnet run --project src/Dsh/Dsh.Spike/Dsh.Spike.csproj -c Release --no-build --no-restore

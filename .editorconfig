@@ -6,3 +6,86 @@ root = true
 [*]
 end_of_line = lf
 insert_final_newline = true
+
+# C# conventions for the .NET port. The .NET SDK reads this section for
+# analyzers and `dotnet format`; settings are suggestion-level so they never
+# fail a build.
+[*.cs]
+
+# Indentation: 4 spaces, no tabs (matches the ported sources).
+indent_style = space
+indent_size = 4
+tab_width = 4
+charset = utf-8
+
+# Using directives stay outside the namespace; System.* first.
+csharp_using_directive_placement = outside_namespace
+dotnet_sort_system_directives_first = true
+
+# Naming styles
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_style.camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_prefix.required_prefix = _
+dotnet_naming_style.underscore_prefix.capitalization = camel_case
+dotnet_naming_style.interface_prefix.required_prefix = I
+dotnet_naming_style.interface_prefix.capitalization = pascal_case
+dotnet_naming_style.type_parameter_prefix.required_prefix = T
+dotnet_naming_style.type_parameter_prefix.capitalization = pascal_case
+
+# Naming rules
+dotnet_naming_rule.types_and_namespaces_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.types_and_namespaces_should_be_pascal_case.symbols = types_and_namespaces
+dotnet_naming_rule.types_and_namespaces_should_be_pascal_case.style = pascal_case
+
+dotnet_naming_rule.non_field_members_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols = non_field_members
+dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
+
+dotnet_naming_rule.private_fields_should_begin_with_underscore.severity = suggestion
+dotnet_naming_rule.private_fields_should_begin_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_should_begin_with_underscore.style = underscore_prefix
+
+dotnet_naming_rule.constants_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.constants_should_be_pascal_case.symbols = constants
+dotnet_naming_rule.constants_should_be_pascal_case.style = pascal_case
+
+dotnet_naming_rule.interfaces_should_begin_with_i.severity = suggestion
+dotnet_naming_rule.interfaces_should_begin_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_should_begin_with_i.style = interface_prefix
+
+dotnet_naming_rule.type_parameters_should_begin_with_t.severity = suggestion
+dotnet_naming_rule.type_parameters_should_begin_with_t.symbols = type_parameters
+dotnet_naming_rule.type_parameters_should_begin_with_t.style = type_parameter_prefix
+
+dotnet_naming_rule.locals_should_be_camel_case.severity = suggestion
+dotnet_naming_rule.locals_should_be_camel_case.symbols = locals
+dotnet_naming_rule.locals_should_be_camel_case.style = camel_case
+
+dotnet_naming_rule.parameters_should_be_camel_case.severity = suggestion
+dotnet_naming_rule.parameters_should_be_camel_case.symbols = parameters
+dotnet_naming_rule.parameters_should_be_camel_case.style = camel_case
+
+# Symbol specifications
+dotnet_naming_symbols.types_and_namespaces.applicable_kinds = class, struct, interface, enum, delegate, namespace
+dotnet_naming_symbols.types_and_namespaces.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+
+dotnet_naming_symbols.non_field_members.applicable_kinds = property, method, event
+dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, protected, protected_internal, private_protected
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, internal, protected, protected_internal, private_protected
+
+dotnet_naming_symbols.constants.applicable_kinds = constant
+dotnet_naming_symbols.constants.applicable_accessibilities = *
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+
+dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
+dotnet_naming_symbols.type_parameters.applicable_accessibilities = *
+
+dotnet_naming_symbols.locals.applicable_kinds = local
+dotnet_naming_symbols.locals.applicable_accessibilities = *
+
+dotnet_naming_symbols.parameters.applicable_kinds = parameter
+dotnet_naming_symbols.parameters.applicable_accessibilities = *
