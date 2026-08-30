@@ -40,3 +40,13 @@ apps/web/dist/
 worktrees/
 .agents/worktrees/
 .typert-*/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.binlog
+.vs/
+TestResults/
+artifacts/
