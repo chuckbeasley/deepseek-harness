@@ -79,3 +79,17 @@ Go/no-go verdict for Phase 4 (capability seams): **GO**.
 - Solution `deepseek-harness.slnx`: 39 projects; full build 0 errors; **all twenty-four suites green (486 tests, 0 failures)**; the headless one-shot and the TUI smoke both still exit 0 with the full spine mounted.
 
 Go/no-go verdict for Phase 4 wave 2 (terminal, lsp, context, compaction, subagent, jobs, workflow, webhook, preset, guard, hooks, session-query, storage, workspace, attachment, spill, goal, schedule, feedback, sandbox+native bridge): **GO**.
+
+**Phase 4 wave 2 (capability seams): COMPLETE — 2026-08-30** — integrated on branch `port/dotnet10` (head `98eccb5087` + integration):
+
+- `src/Dsh/Dsh.Goal` (goal/write logged state + goal_write tool, 12), `src/Dsh/Dsh.Schedule` (timer-backed once/recurring tasks, 8), `src/Dsh/Dsh.Feedback` (message feedback logged state + tool, 8) — 28 tests.
+- `src/Dsh/Dsh.Storage` (JSON file store, revisions, 12), `src/Dsh/Dsh.Workspace` (workspace identity/lifecycle, 9), `src/Dsh/Dsh.Spill` (spill file registry + age sweep, 12), `src/Dsh/Dsh.Attachment` (file ingest/list/read/remove, 10) — 43 tests.
+- `src/Dsh/Dsh.Compaction` (budgeted head/tail trim, turn-aligned cuts, 8), `src/Dsh/Dsh.Context` (contributor assembly: agent instructions, file/session references, time, 7), `src/Dsh/Dsh.SessionQuery` (log filters, turns, folds, 8) — 23 tests.
+- `src/Dsh/Dsh.Preset` (cordis.yml preset discovery/composition + persona, 14), `src/Dsh/Dsh.Guard` (repeat-tool reminder at the TS thresholds + tool-timeout policy, 20) — 34 tests.
+- `src/Dsh/Dsh.Jobs` (in-process job registry: ids, consuming reads, kill, bounded teardown + job_output/job_list/job_kill tools, 20), `src/Dsh/Dsh.Workflow` (host-registered step definitions on worker tasks, lifecycle events, workflow tool with durable run records, 18) — 38 tests.
+- `src/Dsh/Dsh.Terminal` (persistent sessions, bounded scrollback, consuming sends — redirected stdio, ConPTY deferred, 5), `src/Dsh/Dsh.Hooks` (hook-protocol: matcher, outcome codec, log-only hook/invoked + hook/result events, 10), `src/Dsh/Dsh.Lsp` (Content-Length JSON-RPC framing + client, 4), `src/Dsh/Dsh.Subagent` (in-process delegation: delegate/cancel/teardown, 5) — 24 tests.
+- All sixteen new seams are mounted in the CLI spine (dsh-base bundle rows + `SpineRegistry`), so a headless boot composes the complete wave-1 + wave-2 spine.
+- Solution `deepseek-harness.slnx`: 61 projects; full build 0 errors; **all forty-two suites green (676 tests, 0 failures)**; the headless one-shot and the TUI smoke both still exit 0 with the full spine mounted.
+- Deferred to wave 3 (documented in the seam sources): sandbox + native landlock bridge, webhook ingress, out-of-process subagent drivers, LSP process host + tool, PTY/ConPTY terminal backends, and the per-seam deferred surfaces each port names.
+
+Go/no-go verdict for Phase 5 (Web — Blazor): **GO**.
