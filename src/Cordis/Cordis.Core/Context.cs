@@ -111,6 +111,18 @@ public sealed class Context : IDisposable, IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Remove a service entry by key. The plugin disposer contract removes what a plugin body
+    /// registered: Cordis removes fiber-scoped services on fiber disposal, and the loader's
+    /// entry disposer does it explicitly in the port.
+    /// </summary>
+    /// <returns>true when an entry was removed.</returns>
+    public bool Remove(string key)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        return _services.Remove(key);
+    }
+
     // --- Effects ---
 
     /// <summary>
