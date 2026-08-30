@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Dsh.Identity</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
+    <ProjectReference Include="..\..\Cordis\Cordis.Cosmokit\Cordis.Cosmokit.csproj" />
+  </ItemGroup>
+
+  <!-- Branded-id infrastructure (IStringId / StringIdJsonConverter) lives with the other ids. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Dsh.Llm\Dsh.Llm.csproj" />
+  </ItemGroup>
+
+</Project>
