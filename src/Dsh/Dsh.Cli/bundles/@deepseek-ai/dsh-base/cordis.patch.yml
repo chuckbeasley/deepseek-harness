@@ -31,3 +31,18 @@
       name: todo
       config:
         allowParallelInProgress: false
+
+    - id: subprocess
+      name: subprocess
+
+    - id: fs
+      name: fs
+
+    - id: shell
+      name: shell
+
+    - id: identity
+      name: identity
+
+    - id: plan
+      name: plan

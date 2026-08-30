@@ -13,6 +13,13 @@
   <Folder Name="/src/Dsh/">
     <Project Path="src/Dsh/Dsh.Agent/Dsh.Agent.csproj" />
     <Project Path="src/Dsh/Dsh.AgentLoop/Dsh.AgentLoop.csproj" />
+    <Project Path="src/Dsh/Dsh.Fs/Dsh.Fs.csproj" />
+    <Project Path="src/Dsh/Dsh.Identity/Dsh.Identity.csproj" />
+    <Project Path="src/Dsh/Dsh.Plan/Dsh.Plan.csproj" />
+    <Project Path="src/Dsh/Dsh.Settings/Dsh.Settings.csproj" />
+    <Project Path="src/Dsh/Dsh.Shell/Dsh.Shell.csproj" />
+    <Project Path="src/Dsh/Dsh.Skill/Dsh.Skill.csproj" />
+    <Project Path="src/Dsh/Dsh.Subprocess/Dsh.Subprocess.csproj" />
     <Project Path="src/Dsh/Dsh.Cli/Dsh.Cli.csproj" />
     <Project Path="src/Dsh/Dsh.Llm/Dsh.Llm.csproj" />
     <Project Path="src/Dsh/Dsh.Llm.DeepSeek/Dsh.Llm.DeepSeek.csproj" />
@@ -36,6 +43,13 @@
     <Project Path="tests/Cordis.Tests/Cordis.Tests.csproj" />
     <Project Path="tests/Dsh.Agent.Tests/Dsh.Agent.Tests.csproj" />
     <Project Path="tests/Dsh.AgentLoop.Tests/Dsh.AgentLoop.Tests.csproj" />
+    <Project Path="tests/Dsh.Fs.Tests/Dsh.Fs.Tests.csproj" />
+    <Project Path="tests/Dsh.Identity.Tests/Dsh.Identity.Tests.csproj" />
+    <Project Path="tests/Dsh.Plan.Tests/Dsh.Plan.Tests.csproj" />
+    <Project Path="tests/Dsh.Settings.Tests/Dsh.Settings.Tests.csproj" />
+    <Project Path="tests/Dsh.Shell.Tests/Dsh.Shell.Tests.csproj" />
+    <Project Path="tests/Dsh.Skill.Tests/Dsh.Skill.Tests.csproj" />
+    <Project Path="tests/Dsh.Subprocess.Tests/Dsh.Subprocess.Tests.csproj" />
     <Project Path="tests/Dsh.Cli.Tests/Dsh.Cli.Tests.csproj" />
     <Project Path="tests/Dsh.Llm.DeepSeek.Tests/Dsh.Llm.DeepSeek.Tests.csproj" />
     <Project Path="tests/Dsh.Session.Persistence.Tests/Dsh.Session.Persistence.Tests.csproj" />

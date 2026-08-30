@@ -51,6 +51,33 @@ public static class SpineRegistry
             });
             return ctx.Llm().RegisterAdapter(new[] { "deepseek" }, adapter);
         }));
+        catalog.Register("subprocess", new SpinePlugin("subprocess", (ctx, _) => new Dsh.Subprocess.LocalSubprocessProvider(ctx)));
+        catalog.Register("fs", new SpinePlugin("fs", (ctx, config) =>
+        {
+            var root = ConfigString(config, "root") ?? Environment.CurrentDirectory;
+            var service = new Dsh.Fs.LocalFileSystemProvider(ctx, new Dsh.Fs.FsProviderConfig(root));
+            var read = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Read(service));
+            var write = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Write(service));
+            return new SpineDisposables(write, read, service);
+        }));
+        catalog.Register("shell", new SpinePlugin("shell", (ctx, config) =>
+        {
+            var service = new Dsh.Shell.LocalShellProvider(ctx, new Dsh.Shell.ShellConfig
+            {
+                ShellPath = ConfigString(config, "shellPath") ?? (OperatingSystem.IsWindows() ? "cmd.exe" : "sh"),
+                TimeoutMs = ConfigInt(config, "timeoutMs") ?? 120000,
+                StdoutMaxBytes = ConfigInt(config, "stdoutMaxBytes") ?? 256 * 1024,
+            });
+            var registration = ctx.Tools().Register(Dsh.Shell.ShellTools.Definition(ctx));
+            return new SpineDisposables(registration, service);
+        }));
+        catalog.Register("identity", new SpinePlugin("identity", (ctx, _) => Dsh.Identity.AnonymousIdentityProvider.Create(ctx)));
+        catalog.Register("plan", new SpinePlugin("plan", (ctx, _) =>
+        {
+            var service = new Dsh.Plan.SessionPlanService(ctx);
+            var registration = ctx.Tools().Register(Dsh.Plan.PlanTools.Definition());
+            return new SpineDisposables(registration, service);
+        }));
         catalog.Register("tui", new SpinePlugin("tui", (ctx, _) =>
         {
             var args = ctx.Get<CmdlineArgs>("cmdlineArgs") ?? new CmdlineArgs(Array.Empty<string>());
@@ -77,6 +104,11 @@ public static class SpineRegistry
         => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is bool boolean
             ? boolean
             : null;
+
+    private static int? ConfigInt(object? config, string key)
+        => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is long integer
+            ? (int)integer
+            : null;
 }
 
 /// <summary>Disposes several disposers in order (service last, so its teardown runs first).</summary>
@@ -93,19 +125,6 @@ internal sealed class SpineDisposables : IDisposable
     {
         foreach (var disposer in _disposers) disposer.Dispose();
     }
-}
-
-/// <summary>Adapter holding the tool-registry disposer behind an <see cref="IDisposable"/>.</summary>
-internal sealed class ToolPluginRegistration : IDisposable
-{
-    private readonly IDisposable _disposer;
-
-    public ToolPluginRegistration(IDisposable disposer)
-    {
-        _disposer = disposer;
-    }
-
-    public void Dispose() => _disposer.Dispose();
 }
 
 /// <summary>One spine row: a factory that builds the service and returns its removal disposer.</summary>
