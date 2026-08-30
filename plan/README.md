@@ -31,3 +31,14 @@ Read `01` for scope, `02` for the target shape, `03` for the decisions that carr
 - Solution `deepseek-harness.slnx`: 10 projects, builds with 0 warnings / 0 errors on .NET 10; the smoke exe prints the pinned 22-event log and exits `== PASS ==`.
 
 Go/no-go verdict: **GO** — the Cordis semantics (waterfall short-circuit, next()-return propagation, reverse-order effect unwind, dispatch modes) port faithfully to C#. Phase 1 (Loader / Include / config expressions) can proceed.
+
+**Phase 1 (Foundations): COMPLETE — 2026-08-30** — integrated on branch `port/dotnet10` (head `ea2b8ce485`):
+
+- `src/Cordis/Cordis.Plugin.Loader` — row/tree model, dependency-gated activation, transactional reconciliation — 10 tests.
+- `src/Cordis/Cordis.Plugin.Include` — file-backed entry lists, patch layers with insert-then-patch semantics, the restricted `!!js` expression language (literals, `$env` lookups, if/else, and/or/not, concat, lists, indexing; loud failure otherwise; Roslyn scripting deferred), and a minimal YAML-subset parser — 23 tests.
+- `src/Cordis/Cordis.Plugin.Timer` + `src/Cordis/Cordis.Logger.Console` — 28 tests.
+- `src/Cordis/Cordis.Plugin.Hmr` — exact-config FileSystemWatcher with coalescing, serialized refreshes, contained failures — 5 tests.
+- Pipeline: `Directory.Build.props` (analyzers), C# `.editorconfig`, `.github/workflows/dotnet-ci.yml`, `PIPELINE-README.md`.
+- Solution `deepseek-harness.slnx`: 19 projects; full build 0 errors; all seven suites green (168 tests, 0 failures); the Phase 0 headless smoke still exits `== PASS ==`. The cordis.yml-composed boot, patch layers, and reload are covered by the Include and Hmr suites against the real Loader.
+
+Go/no-go verdict for Phase 2 (core spine: session, system-prompt, tools, agent, agent-loop): **GO**.
