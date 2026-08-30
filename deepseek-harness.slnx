@@ -22,6 +22,7 @@
     <Project Path="src/Dsh/Dsh.Session.Titles/Dsh.Session.Titles.csproj" />
     <Project Path="src/Dsh/Dsh.Spike/Dsh.Spike.csproj" />
     <Project Path="src/Dsh/Dsh.SystemPrompt/Dsh.SystemPrompt.csproj" />
+    <Project Path="src/Dsh/Dsh.Tui/Dsh.Tui.csproj" />
     <Project Path="src/Dsh/Dsh.Tools/Dsh.Tools.csproj" />
   </Folder>
   <Folder Name="/tests/">
@@ -37,5 +38,6 @@
     <Project Path="tests/Dsh.Session.Persistence.Tests/Dsh.Session.Persistence.Tests.csproj" />
     <Project Path="tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj" />
     <Project Path="tests/Dsh.SystemPrompt.Tests/Dsh.SystemPrompt.Tests.csproj" />
+    <Project Path="tests/Dsh.Tui.Tests/Dsh.Tui.Tests.csproj" />
   </Folder>
 </Solution>
