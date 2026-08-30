@@ -146,6 +146,20 @@ public static class SpineRegistry
             return new SpineDisposables(disposers.Append(service).ToArray());
         }));
         catalog.Register("subagent", new SpinePlugin("subagent", (ctx, _) => new Dsh.Subagent.InProcessSubagentProvider(ctx)));
+        catalog.Register("jobs", new SpinePlugin("jobs", (ctx, _) =>
+        {
+            var service = new Dsh.Jobs.LocalJobsProvider(ctx);
+            var output = ctx.Tools().Register(Dsh.Jobs.JobTools.JobOutputDefinition(ctx));
+            var list = ctx.Tools().Register(Dsh.Jobs.JobTools.JobListDefinition(ctx));
+            var kill = ctx.Tools().Register(Dsh.Jobs.JobTools.JobKillDefinition(ctx));
+            return new SpineDisposables(kill, list, output, service);
+        }));
+        catalog.Register("workflow", new SpinePlugin("workflow", (ctx, _) =>
+        {
+            var service = new Dsh.Workflow.WorkerThreadWorkflowProvider(ctx);
+            var registration = ctx.Tools().Register(Dsh.Workflow.WorkflowTools.Definition(ctx));
+            return new SpineDisposables(registration, service);
+        }));
         catalog.Register("tui", new SpinePlugin("tui", (ctx, _) =>
         {
             var args = ctx.Get<CmdlineArgs>("cmdlineArgs") ?? new CmdlineArgs(Array.Empty<string>());

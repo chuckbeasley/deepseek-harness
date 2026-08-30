@@ -15,6 +15,7 @@
     <Project Path="src/Dsh/Dsh.AgentLoop/Dsh.AgentLoop.csproj" />
     <Project Path="src/Dsh/Dsh.Fs/Dsh.Fs.csproj" />
     <Project Path="src/Dsh/Dsh.Identity/Dsh.Identity.csproj" />
+    <Project Path="src/Dsh/Dsh.Jobs/Dsh.Jobs.csproj" />
     <Project Path="src/Dsh/Dsh.Plan/Dsh.Plan.csproj" />
     <Project Path="src/Dsh/Dsh.Settings/Dsh.Settings.csproj" />
     <Project Path="src/Dsh/Dsh.Shell/Dsh.Shell.csproj" />
@@ -38,6 +39,7 @@
     <Project Path="src/Dsh/Dsh.Feedback/Dsh.Feedback.csproj" />
     <Project Path="src/Dsh/Dsh.Storage/Dsh.Storage.csproj" />
     <Project Path="src/Dsh/Dsh.Workspace/Dsh.Workspace.csproj" />
+    <Project Path="src/Dsh/Dsh.Workflow/Dsh.Workflow.csproj" />
     <Project Path="src/Dsh/Dsh.Spill/Dsh.Spill.csproj" />
     <Project Path="src/Dsh/Dsh.Attachment/Dsh.Attachment.csproj" />
     <Project Path="src/Dsh/Dsh.Compaction/Dsh.Compaction.csproj" />
@@ -63,6 +65,7 @@
     <Project Path="tests/Dsh.AgentLoop.Tests/Dsh.AgentLoop.Tests.csproj" />
     <Project Path="tests/Dsh.Fs.Tests/Dsh.Fs.Tests.csproj" />
     <Project Path="tests/Dsh.Identity.Tests/Dsh.Identity.Tests.csproj" />
+    <Project Path="tests/Dsh.Jobs.Tests/Dsh.Jobs.Tests.csproj" />
     <Project Path="tests/Dsh.Plan.Tests/Dsh.Plan.Tests.csproj" />
     <Project Path="tests/Dsh.Settings.Tests/Dsh.Settings.Tests.csproj" />
     <Project Path="tests/Dsh.Shell.Tests/Dsh.Shell.Tests.csproj" />
@@ -81,6 +84,7 @@
     <Project Path="tests/Dsh.Feedback.Tests/Dsh.Feedback.Tests.csproj" />
     <Project Path="tests/Dsh.Storage.Tests/Dsh.Storage.Tests.csproj" />
     <Project Path="tests/Dsh.Workspace.Tests/Dsh.Workspace.Tests.csproj" />
+    <Project Path="tests/Dsh.Workflow.Tests/Dsh.Workflow.Tests.csproj" />
     <Project Path="tests/Dsh.Spill.Tests/Dsh.Spill.Tests.csproj" />
     <Project Path="tests/Dsh.Attachment.Tests/Dsh.Attachment.Tests.csproj" />
     <Project Path="tests/Dsh.Compaction.Tests/Dsh.Compaction.Tests.csproj" />

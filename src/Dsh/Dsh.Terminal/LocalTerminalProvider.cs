@@ -194,6 +194,17 @@ public sealed class LocalTerminalProvider : Service, ITerminalService
 
         internal bool Closed => Volatile.Read(ref _closed) != 0;
 
+        /// <summary>Bytes of scrollback appended since the session opened (settlement polling).</summary>
+        internal long OutputBytes
+        {
+            get
+            {
+                lock (_gate) return _outputBytes;
+            }
+        }
+
+        private long _outputBytes;
+
         private int? _exitCode;
 
         private async Task RunAsync()
@@ -229,17 +240,15 @@ public sealed class LocalTerminalProvider : Service, ITerminalService
                         var trimmed = line.TrimEnd('\r');
                         if (trimmed.Length == 0) continue;
                         _lines.Add(trimmed);
+                        _outputBytes += trimmed.Length + 1;
                     }
                     if (_lines.Count > MaxLines)
                     {
                         _lines.RemoveRange(0, _lines.Count - MaxLines);
-                        _readLine = Math.Max(0, _readLine - (_lines.Count - MaxLines + 0));
                         _readLine = 0;
                     }
                     if (_motd.Length == 0 && _lines.Count > 0) _motd = _lines[0];
                 }
-                var active = _activeSend;
-                if (active is not null) active.SignalOutput();
             }
         }
 
@@ -247,7 +256,6 @@ public sealed class LocalTerminalProvider : Service, ITerminalService
         {
             private readonly LocalSession _session;
             private readonly TaskCompletionSource<TerminalSendResult> _done = new(TaskCreationOptions.RunContinuationsAsynchronously);
-            private readonly TaskCompletionSource _outputSignal = new(TaskCreationOptions.RunContinuationsAsynchronously);
             private int _settled;
 
             public LocalSend(LocalSession session, TerminalSendRequest request)
@@ -276,20 +284,26 @@ public sealed class LocalTerminalProvider : Service, ITerminalService
                 return true;
             }
 
-            public void SignalOutput() => _outputSignal.TrySetResult();
-
             private async Task RunAsync()
             {
                 try
                 {
+                    var before = _session.OutputBytes;
                     await _session.WriteAsync(Request.Text, Request.Submit);
-                    // Wait for output or session exit; an idle window ends the send.
-                    var outputTask = _outputSignal.Task;
+                    // First wait for the command's output (or session exit), bounded by a long
+                    // window so a slow spawn under load cannot settle the send before the echo.
                     var exitTask = _session.Done;
-                    var idle = Task.Delay(TimeSpan.FromSeconds(2));
-                    var winner = await Task.WhenAny(outputTask, exitTask, idle);
+                    var deadline = Environment.TickCount64 + 15_000;
+                    while (Volatile.Read(ref _settled) == 0 && !exitTask.IsCompleted && _session.OutputBytes == before)
+                    {
+                        if (Environment.TickCount64 > deadline) break;
+                        await Task.Delay(50);
+                    }
                     if (Volatile.Read(ref _settled) != 0) return;
-                    var reason = winner == exitTask ? TerminalWaitReason.SessionExit : TerminalWaitReason.Timeout;
+                    var reason = exitTask.IsCompleted ? TerminalWaitReason.SessionExit : TerminalWaitReason.Timeout;
+                    // Then let trailing output drain through a short idle window.
+                    var idle = Task.Delay(TimeSpan.FromMilliseconds(300));
+                    await Task.WhenAny(exitTask, idle);
                     _settled = 1;
                     _done.TrySetResult(new TerminalSendResult(_session.Viewport(), reason, _session.Status(), false));
                 }

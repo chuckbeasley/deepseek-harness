@@ -94,3 +94,9 @@
 
     - id: subagent
       name: subagent
+
+    - id: jobs
+      name: jobs
+
+    - id: workflow
+      name: workflow

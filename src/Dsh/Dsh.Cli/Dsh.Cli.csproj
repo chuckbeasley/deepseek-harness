@@ -25,6 +25,8 @@
     <ProjectReference Include="..\Dsh.Todo\Dsh.Todo.csproj" />
     <ProjectReference Include="..\Dsh.Fs\Dsh.Fs.csproj" />
     <ProjectReference Include="..\Dsh.Identity\Dsh.Identity.csproj" />
+    <ProjectReference Include="..\Dsh.Jobs\Dsh.Jobs.csproj" />
+    <ProjectReference Include="..\Dsh.Workflow\Dsh.Workflow.csproj" />
     <ProjectReference Include="..\Dsh.Plan\Dsh.Plan.csproj" />
     <ProjectReference Include="..\Dsh.Shell\Dsh.Shell.csproj" />
     <ProjectReference Include="..\Dsh.Subprocess\Dsh.Subprocess.csproj" />
