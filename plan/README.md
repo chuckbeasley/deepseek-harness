@@ -53,3 +53,12 @@ Go/no-go verdict for Phase 2 (core spine: session, system-prompt, tools, agent, 
 - Solution `deepseek-harness.slnx`: 23 projects; full build 0 errors; all twelve suites green (283 tests, 0 failures). The `Dsh.Spike` exe now runs both smokes: the pinned Phase 0 scenario (`== PASS ==`) and the Phase 2 gate (`== PHASE2 PASS ==`) — one headless task through the real agent loop against the mock provider (tool call, then text) with the 22-event JSONL log replaying identically.
 
 Go/no-go verdict for Phase 3 (CLI/TUI, boot, and launcher): **GO**.
+
+**Phase 3 (CLI + TUI): COMPLETE — 2026-08-30** — integrated on branch `port/dotnet10` (head `75c1e07a3b` + integration):
+
+- `src/Dsh/Dsh.Cli` — the `dsh` launcher: hand-rolled commander port (launcher-flags-first parsing, verbatim inner-argument pass-through, `web` alias, `plugin` subcommand, `-V`, exact TS error strings/exit codes); profile boot composing `cordis.yml` patch layers through the Cordis Loader/Include ports (in-box `@deepseek-ai/dsh-base`/`dsh-headless`/`dsh-tui` bundles, `profile.json` manifest — documented deviation from package.json, `$DSH_HOME/cordis.patch.yml` home layer, `--patch` overlays); boot-free `--dump-config` with per-layer comments; `dsh plugin add/remove/list` manifest editing (documented deviation from pnpm forwarding until NuGet packaging); the spine row registry (sessions/llm/tools/systemPrompt/agents/agentLoop/sessionPersistence/deepseek/mock/todo/headless/tui; unknown rows fail loud with the row id) — 17 tests.
+- `src/Dsh/Dsh.Tui` — Terminal.Gui 1.17.1 interactive UI: live transcript pane, input line driving the real agent loop, todo panel from `todo/write`, tool-call disclosure, and approval dialogs on the `tools/pre-execute` waterfall; fake-driver headless smoke — 4 tests.
+- Additive upstream fixes: `YamlSubset` now honors the documented top-level empty flow collections and the `insert:`/nested-block key form.
+- Solution `deepseek-harness.slnx`: 27 projects; full build 0 errors; all fourteen suites green (304 tests, 0 failures). Verified smokes on the merged tree: `dsh --profile headless "task"` runs a real loop turn and prints the assistant text; `dsh --profile headless --dump-config` prints the composed layers; `dsh plugin --profile headless list` prints the template bundles; `dsh --profile tui --smoke` boots the interactive UI and exits 0.
+
+Go/no-go verdict for Phase 4 (capability seams): **GO**.
