@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace Dsh.Llm;
 
 /// <summary>Where a message came from. Merge-extensible sum type; plugins add their own kinds.</summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
 [JsonDerivedType(typeof(UserSource), "user")]
 [JsonDerivedType(typeof(PluginSource), "plugin")]
 [JsonDerivedType(typeof(ModelSource), "model")]
@@ -11,12 +11,14 @@ namespace Dsh.Llm;
 public abstract record MessageSource
 {
     /// <summary>Who produced this message (read-only discriminant).</summary>
+    [JsonIgnore]
     public abstract string Kind { get; }
 }
 
 /// <summary>A direct human prompt.</summary>
 public sealed record UserSource : MessageSource
 {
+    [JsonIgnore]
     public override string Kind => "user";
 }
 
@@ -26,6 +28,7 @@ public sealed record PluginSource : MessageSource
     /// <summary>The contributing plugin's name.</summary>
     public required string Plugin { get; init; }
 
+    [JsonIgnore]
     public override string Kind => "plugin";
 }
 
@@ -38,6 +41,7 @@ public sealed record ModelSource : MessageSource
     /// <summary>Provider model id that produced the message.</summary>
     public required string Model { get; init; }
 
+    [JsonIgnore]
     public override string Kind => "model";
 }
 
@@ -47,6 +51,7 @@ public sealed record ToolSource : MessageSource
     /// <summary>The call id the result answers.</summary>
     public required ToolCallId CallId { get; init; }
 
+    [JsonIgnore]
     public override string Kind => "tool";
 }
 
@@ -61,27 +66,33 @@ public sealed record ToolSource : MessageSource
 public abstract record Message
 {
     /// <summary>Stable identity preserved across every representation boundary.</summary>
+    [JsonPropertyOrder(0)]
     public required MessageId Id { get; init; }
 
     /// <summary>Provider-neutral conversation role.</summary>
+    [JsonPropertyOrder(1)]
     public abstract string Role { get; }
 
     /// <summary>Exact model-facing blocks.</summary>
+    [JsonPropertyOrder(2)]
     public required IReadOnlyList<ContentBlock> Content { get; init; }
 
     /// <summary>Required source fields supplied by the producer.</summary>
+    [JsonPropertyOrder(3)]
     public required MessageSource Source { get; init; }
 }
 
 /// <summary>A user-role specialization of the one shared message representation.</summary>
 public sealed record UserMessage : Message
 {
+    [JsonPropertyOrder(1)]
     public override string Role => "user";
 }
 
 /// <summary>A model-produced assistant specialization of the shared message representation.</summary>
 public sealed record AssistantMessage : Message
 {
+    [JsonPropertyOrder(1)]
     public override string Role => "assistant";
 }
 
@@ -91,6 +102,7 @@ public sealed record AssistantMessage : Message
 /// </summary>
 public sealed record ToolResultMessage : Message
 {
+    [JsonPropertyOrder(1)]
     public override string Role => "user";
 
     /// <summary>The single tool-result block (convenience view of <see cref="Message.Content"/>).</summary>
@@ -128,3 +140,10 @@ public static class Messages
             Source = new ModelSource { Provider = provider, Model = model },
         };
 }
+
+
+
+
+
+
+

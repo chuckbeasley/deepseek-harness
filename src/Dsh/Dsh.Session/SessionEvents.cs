@@ -9,11 +9,12 @@ namespace Dsh.Session;
 public enum SurfaceOp
 {
     /// <summary>Added to the tail — the normal path for user/assistant/tool messages.</summary>
+    [JsonStringEnumMemberName("append")]
     Append,
 }
 
 /// <summary>Why a turn ended (merge-extensible in TS; the spike declares the known variants).</summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
 [JsonDerivedType(typeof(CompletedReason), "completed")]
 [JsonDerivedType(typeof(AbortedReason), "aborted")]
 [JsonDerivedType(typeof(BlockedReason), "blocked")]
@@ -88,12 +89,16 @@ public sealed record EpochHeader
 public enum RequestHeaderReason
 {
     /// <summary>The log's first header (a new conversation).</summary>
+    [JsonStringEnumMemberName("initial")]
     Initial,
     /// <summary>A loop instance's first request over a log that already has header events.</summary>
+    [JsonStringEnumMemberName("resume")]
     Resume,
     /// <summary>A later request used a different header.</summary>
+    [JsonStringEnumMemberName("change")]
     Change,
     /// <summary>An unchanged header began an explicitly distinct message series.</summary>
+    [JsonStringEnumMemberName("series")]
     Series,
 }
 
@@ -121,13 +126,13 @@ public sealed record ToolErrorInfo(string Name, string Code);
 public abstract record SessionEvent
 {
     /// <summary>Event identity (NEW versus the TS envelope, which has type/seq/time/data only — see Q1 in spike-design.md).</summary>
-    public required string Id { get; init; }
+    public string Id { get; init; } = string.Empty;
 
     /// <summary>Monotonic sequence number within the session; always the log length at append.</summary>
-    public required long Seq { get; init; }
+    public long Seq { get; init; }
 
     /// <summary>Unix epoch milliseconds.</summary>
-    public required long TimeMs { get; init; }
+    public long TimeMs { get; init; }
 
     /// <summary>The event type discriminant (e.g. "user/message").</summary>
     public abstract string Type { get; }
@@ -274,3 +279,6 @@ public sealed record RequestContextEvent : SessionEvent
 
     public override string Type => "request/context";
 }
+
+
+

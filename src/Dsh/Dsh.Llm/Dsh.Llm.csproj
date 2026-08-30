@@ -7,4 +7,9 @@
     <RootNamespace>Dsh.Llm</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
+  </ItemGroup>
+
 </Project>
+

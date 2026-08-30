@@ -7,6 +7,10 @@
     <RootNamespace>Dsh.Session</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
+  </ItemGroup>
+
   <!-- Pure-to-pure edge only: the session event vocabulary carries Dsh.Llm message/chunk types.
        No Cordis.Core reference yet (it has not landed; that is part 2). -->
   <ItemGroup>
@@ -14,3 +18,4 @@
   </ItemGroup>
 
 </Project>
+

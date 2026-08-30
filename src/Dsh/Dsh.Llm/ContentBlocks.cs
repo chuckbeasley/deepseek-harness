@@ -17,23 +17,28 @@ public abstract record ContentBlock
 /// <summary>Plain text visible to the end user.</summary>
 public sealed record TextBlock(string Text) : ContentBlock
 {
+    [JsonIgnore]
     public override string BlockType => "text";
 }
 
 /// <summary>Reasoning / thinking content, distinct from visible text.</summary>
 public sealed record ReasoningBlock(string Text) : ContentBlock
 {
+    [JsonIgnore]
     public override string BlockType => "reasoning";
 }
 
 /// <summary>A tool invocation requested by the model.</summary>
 public sealed record ToolCallBlock(ToolCallId Id, string Name, string Arguments) : ContentBlock
 {
+    [JsonIgnore]
     public override string BlockType => "tool-call";
 }
 
 /// <summary>The result of a tool invocation, sent back to the model.</summary>
 public sealed record ToolResultBlock(ToolCallId ToolCallId, IReadOnlyList<ContentBlock> Content, bool IsError = false) : ContentBlock
 {
+    [JsonIgnore]
     public override string BlockType => "tool-result";
 }
+

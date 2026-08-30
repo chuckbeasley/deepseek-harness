@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace Dsh.Llm;
 
 /// <summary>Why a model response stopped. Merge-extensible so adapters can surface provider-specific reasons.</summary>
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
 [JsonDerivedType(typeof(Stop), "stop")]
 [JsonDerivedType(typeof(ToolCalls), "tool-calls")]
 [JsonDerivedType(typeof(MaxTokens), "max-tokens")]
@@ -25,3 +25,4 @@ public sealed record Aborted(LlmFailure Failure) : FinishReason;
 
 /// <summary>The call failed.</summary>
 public sealed record Error(LlmFailure Failure) : FinishReason;
+

@@ -46,6 +46,11 @@ public static class Program
         Run("Todo: definition execute returns canonical result and render projects text", TodoToolTests.Definition_Execute_ReturnsCanonicalResult_AndRender_ProjectsText);
         Run("Todo: todo/write event round-trips as declared type", TodoToolTests.TodoWriteEvent_RoundTripsAsDeclaredType);
 
+        Run("Smoke: turn appends 22 events with the expected sequence", SmokeTests.TurnAppendsTwentyTwoEvents_WithTheExpectedSequence);
+        Run("Smoke: waterfall probe short-circuits and effect unwind restores the adapter", SmokeTests.WaterfallProbe_ShortCircuits_AndEffectUnwind_RestoresAdapter);
+        Run("Smoke: dispose unwinds every effect", SmokeTests.Dispose_UnwindsEveryEffect);
+        Run("Smoke: produces the exact expected stdout", SmokeTests.Smoke_ProducesTheExactExpectedStdout);
+
         Console.WriteLine();
         Console.WriteLine($"{_passed} passed, {_failed} failed");
         if (_failed > 0)
@@ -88,3 +93,4 @@ public static class Program
         }
     }
 }
+

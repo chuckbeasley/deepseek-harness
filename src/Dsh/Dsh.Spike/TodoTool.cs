@@ -67,7 +67,12 @@ public sealed class TodoTool
             Description: Describe(allowParallelInProgress),
             Parameters: JsonSerializer.SerializeToElement(JsonNode.Parse(ParametersSchemaJson)!),
             OutputSchema: JsonSerializer.SerializeToElement(JsonNode.Parse(OutputSchemaJson)!),
-            Execute: (args, _) => Task.FromResult(JsonSerializer.SerializeToElement(tool.Write(ParseTodos(args)))),
+            Execute: (args, context) =>
+{
+    var result = tool.Write(ParseTodos(args));
+    context.Session?.Append(new TodoWriteEvent { Todos = result.Todos });
+    return Task.FromResult(JsonSerializer.SerializeToElement(result));
+},
             Render: (_, value) => new ContentBlock[] { new TextBlock(RenderText(value)) });
     }
 
@@ -145,4 +150,5 @@ public sealed class TodoTool
         return $"Updated todo list: {pending} pending, {inProgress} in progress, {completed} completed.";
     }
 }
+
 
