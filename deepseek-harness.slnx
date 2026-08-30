@@ -13,6 +13,7 @@
   <Folder Name="/src/Dsh/">
     <Project Path="src/Dsh/Dsh.Agent/Dsh.Agent.csproj" />
     <Project Path="src/Dsh/Dsh.AgentLoop/Dsh.AgentLoop.csproj" />
+    <Project Path="src/Dsh/Dsh.Cli/Dsh.Cli.csproj" />
     <Project Path="src/Dsh/Dsh.Llm/Dsh.Llm.csproj" />
     <Project Path="src/Dsh/Dsh.Llm.DeepSeek/Dsh.Llm.DeepSeek.csproj" />
     <Project Path="src/Dsh/Dsh.Scope/Dsh.Scope.csproj" />
@@ -34,6 +35,7 @@
     <Project Path="tests/Cordis.Tests/Cordis.Tests.csproj" />
     <Project Path="tests/Dsh.Agent.Tests/Dsh.Agent.Tests.csproj" />
     <Project Path="tests/Dsh.AgentLoop.Tests/Dsh.AgentLoop.Tests.csproj" />
+    <Project Path="tests/Dsh.Cli.Tests/Dsh.Cli.Tests.csproj" />
     <Project Path="tests/Dsh.Llm.DeepSeek.Tests/Dsh.Llm.DeepSeek.Tests.csproj" />
     <Project Path="tests/Dsh.Session.Persistence.Tests/Dsh.Session.Persistence.Tests.csproj" />
     <Project Path="tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj" />

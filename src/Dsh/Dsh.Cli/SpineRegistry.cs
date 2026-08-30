@@ -49,6 +49,15 @@ public static class SpineRegistry
             });
             return ctx.Llm().RegisterAdapter(new[] { "deepseek" }, adapter);
         }));
+        catalog.Register("tui", new SpinePlugin("tui", (ctx, _) =>
+        {
+            var args = ctx.Get<CmdlineArgs>("cmdlineArgs") ?? new CmdlineArgs(Array.Empty<string>());
+            var code = Dsh.Tui.TuiApp.Run(args.Args.ToArray());
+            var exit = ctx.Get<AppExit>("appExit")
+                ?? throw new InvalidOperationException("dsh: tui requires the appExit launcher fact");
+            exit.Exit(code);
+            return null;
+        }));
         catalog.Register("headless", new SpinePlugin("headless", (ctx, config) =>
         {
             var run = new HeadlessRun();

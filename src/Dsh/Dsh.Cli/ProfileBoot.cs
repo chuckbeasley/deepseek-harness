@@ -203,6 +203,7 @@ public static class ProfileBoot
         new Dictionary<string, ProfileTemplate>(StringComparer.Ordinal)
         {
             ["headless"] = new(new[] { "@deepseek-ai/dsh-base", "@deepseek-ai/dsh-headless" }, "startup"),
+            ["tui"] = new(new[] { "@deepseek-ai/dsh-base", "@deepseek-ai/dsh-tui" }, "live"),
             ["web"] = new(new[] { "@deepseek-ai/dsh-base" }, "live"),
         };
 
