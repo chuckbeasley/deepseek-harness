@@ -27,6 +27,8 @@
     <ProjectReference Include="..\Dsh.Plan\Dsh.Plan.csproj" />
     <ProjectReference Include="..\Dsh.Shell\Dsh.Shell.csproj" />
     <ProjectReference Include="..\Dsh.Subprocess\Dsh.Subprocess.csproj" />
+    <ProjectReference Include="..\Dsh.Credentials\Dsh.Credentials.csproj" />
+    <ProjectReference Include="..\Dsh.Web\Dsh.Web.csproj" />
     <ProjectReference Include="..\Dsh.Spike\Dsh.Spike.csproj" />
     <ProjectReference Include="..\Dsh.Tui\Dsh.Tui.csproj" />
   </ItemGroup>

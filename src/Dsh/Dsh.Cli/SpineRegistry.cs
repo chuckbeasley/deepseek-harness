@@ -78,6 +78,15 @@ public static class SpineRegistry
             var registration = ctx.Tools().Register(Dsh.Plan.PlanTools.Definition());
             return new SpineDisposables(registration, service);
         }));
+        catalog.Register("web", new SpinePlugin("web", (ctx, _) =>
+        {
+            var web = new Dsh.Web.WebRuntime(ctx);
+            var fetchRegistration = web.RegisterFetchProvider(new Dsh.Web.HttpWebProvider());
+            var fetchTool = ctx.Tools().Register(Dsh.Web.WebTools.WebFetchDefinition(web));
+            var searchTool = ctx.Tools().Register(Dsh.Web.WebTools.WebSearchDefinition(web));
+            return new SpineDisposables(searchTool, fetchTool, fetchRegistration, web);
+        }));
+        catalog.Register("credentials", new SpinePlugin("credentials", (ctx, _) => new Dsh.Credentials.LocalCredentialsProvider(ctx)));
         catalog.Register("tui", new SpinePlugin("tui", (ctx, _) =>
         {
             var args = ctx.Get<CmdlineArgs>("cmdlineArgs") ?? new CmdlineArgs(Array.Empty<string>());

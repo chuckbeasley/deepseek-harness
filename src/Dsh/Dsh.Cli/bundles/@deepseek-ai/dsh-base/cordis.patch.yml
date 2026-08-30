@@ -46,3 +46,9 @@
 
     - id: plan
       name: plan
+
+    - id: web
+      name: web
+
+    - id: credentials
+      name: credentials

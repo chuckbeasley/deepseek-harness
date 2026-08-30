@@ -21,6 +21,7 @@
     <Project Path="src/Dsh/Dsh.Skill/Dsh.Skill.csproj" />
     <Project Path="src/Dsh/Dsh.Subprocess/Dsh.Subprocess.csproj" />
     <Project Path="src/Dsh/Dsh.Cli/Dsh.Cli.csproj" />
+    <Project Path="src/Dsh/Dsh.Credentials/Dsh.Credentials.csproj" />
     <Project Path="src/Dsh/Dsh.Llm/Dsh.Llm.csproj" />
     <Project Path="src/Dsh/Dsh.Llm.DeepSeek/Dsh.Llm.DeepSeek.csproj" />
     <Project Path="src/Dsh/Dsh.Scope/Dsh.Scope.csproj" />
@@ -31,6 +32,7 @@
     <Project Path="src/Dsh/Dsh.Spike/Dsh.Spike.csproj" />
     <Project Path="src/Dsh/Dsh.SystemPrompt/Dsh.SystemPrompt.csproj" />
     <Project Path="src/Dsh/Dsh.Tui/Dsh.Tui.csproj" />
+    <Project Path="src/Dsh/Dsh.Web/Dsh.Web.csproj" />
     <Project Path="src/Dsh/Dsh.Tools/Dsh.Tools.csproj" />
     <Project Path="src/Dsh/Dsh.Todo/Dsh.Todo.csproj" />
   </Folder>
@@ -51,11 +53,13 @@
     <Project Path="tests/Dsh.Skill.Tests/Dsh.Skill.Tests.csproj" />
     <Project Path="tests/Dsh.Subprocess.Tests/Dsh.Subprocess.Tests.csproj" />
     <Project Path="tests/Dsh.Cli.Tests/Dsh.Cli.Tests.csproj" />
+    <Project Path="tests/Dsh.Credentials.Tests/Dsh.Credentials.Tests.csproj" />
     <Project Path="tests/Dsh.Llm.DeepSeek.Tests/Dsh.Llm.DeepSeek.Tests.csproj" />
     <Project Path="tests/Dsh.Session.Persistence.Tests/Dsh.Session.Persistence.Tests.csproj" />
     <Project Path="tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj" />
     <Project Path="tests/Dsh.SystemPrompt.Tests/Dsh.SystemPrompt.Tests.csproj" />
     <Project Path="tests/Dsh.Tui.Tests/Dsh.Tui.Tests.csproj" />
+    <Project Path="tests/Dsh.Web.Tests/Dsh.Web.Tests.csproj" />
     <Project Path="tests/Dsh.Todo.Tests/Dsh.Todo.Tests.csproj" />
   </Folder>
 </Solution>
