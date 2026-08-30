@@ -42,3 +42,14 @@ Go/no-go verdict: **GO** — the Cordis semantics (waterfall short-circuit, next
 - Solution `deepseek-harness.slnx`: 19 projects; full build 0 errors; all seven suites green (168 tests, 0 failures); the Phase 0 headless smoke still exits `== PASS ==`. The cordis.yml-composed boot, patch layers, and reload are covered by the Include and Hmr suites against the real Loader.
 
 Go/no-go verdict for Phase 2 (core spine: session, system-prompt, tools, agent, agent-loop): **GO**.
+
+**Phase 2 (Core spine): COMPLETE — 2026-08-30** — integrated on branch `port/dotnet10` (head `1abcae841b`):
+
+- `src/Dsh/Dsh.Agent` + `src/Dsh/Dsh.Scope` — live agent registry/inbox/status, agent-scoped registrations — 23 tests.
+- `src/Dsh/Dsh.Session.Persistence` (JSONL, sync/batched flush), `src/Dsh/Dsh.Session.Projection`, `src/Dsh/Dsh.Session.Titles` — 16 tests, pinned-log replay included.
+- `src/Dsh/Dsh.SystemPrompt` — ordered sections, tool-schema providers, tool ordering — 22 tests.
+- `src/Dsh/Dsh.Llm.DeepSeek` — real provider: request builder, SSE translation, error mapping; additive `LlmError(message, code, status)` — 49 tests against a fake handler (no network).
+- `src/Dsh/Dsh.AgentLoop` — the real turn driver: `turn/start` → inbox claim → `agent/pre-step` (rejectable waterfall) → `step/start` → durable history derivation → `agent/request` waterfall → stream chunks/assistant message → tool-call scheduler → `step/end` → loop → `agent/turn-stopping` → `turn/end`; create/resume factory on the agent registry, request-reconstruction invariant on `llm/stream`, runtime-context snapshot projection, and the session event-type registry so plugin-merged events round-trip the JSONL — 5 console suites (full mock turn with persistence replay, pre-step reject, cancellation, resume + invariant, runtime context).
+- Solution `deepseek-harness.slnx`: 23 projects; full build 0 errors; all twelve suites green (283 tests, 0 failures). The `Dsh.Spike` exe now runs both smokes: the pinned Phase 0 scenario (`== PASS ==`) and the Phase 2 gate (`== PHASE2 PASS ==`) — one headless task through the real agent loop against the mock provider (tool call, then text) with the 22-event JSONL log replaying identically.
+
+Go/no-go verdict for Phase 3 (CLI/TUI, boot, and launcher): **GO**.
