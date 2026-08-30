@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using Dsh.Session;
 
-namespace Dsh.Spike;
+namespace Dsh.Todo;
 
 /// <summary>Lifecycle state of one todo item. Serialized with the TS wire strings.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -26,7 +26,8 @@ public sealed record TodoWriteResult([property: JsonPropertyName("todos")] IRead
 
 /// <summary>
 /// Plugin-merged session event: whole-list todo snapshot (last write wins on replay; log-only UI
-/// state, never derived history). Registered into the session event-type registry at boot (part 2).
+/// state, never derived history). Registered into the session event-type registry when the todo
+/// tool registers, so the JSONL backend round-trips it.
 /// </summary>
 public sealed record TodoWriteEvent : SessionEvent
 {
@@ -38,4 +39,3 @@ public sealed record TodoWriteEvent : SessionEvent
 
     public override string Type => EventTypeName;
 }
-

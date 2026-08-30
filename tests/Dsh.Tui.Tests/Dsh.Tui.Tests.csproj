@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\src\Dsh\Dsh.Session\Dsh.Session.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Spike\Dsh.Spike.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Tools\Dsh.Tools.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Todo\Dsh.Todo.csproj" />
   </ItemGroup>
 
 </Project>

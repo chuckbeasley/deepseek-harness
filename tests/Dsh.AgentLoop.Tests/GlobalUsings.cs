@@ -6,4 +6,5 @@ global using Dsh.Session;
 global using Dsh.Session.Persistence;
 global using Dsh.Spike;
 global using Dsh.SystemPrompt;
+global using Dsh.Todo;
 global using Dsh.Tools;

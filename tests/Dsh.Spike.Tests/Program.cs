@@ -37,14 +37,14 @@ public static class Program
         Run("Mock: second call streams plain text and stops", MockLlmProviderTests.SecondCall_StreamsPlainTextAndStops);
         Run("Mock: cancelled token aborts before any chunk", MockLlmProviderTests.CancelledToken_AbortsBeforeAnyChunk);
 
-        Run("Todo: write replaces whole list and computes counts", TodoToolTests.Write_ReplacesWholeList_AndComputesCounts);
-        Run("Todo: write rejects empty content", TodoToolTests.Write_RejectsEmptyContent);
-        Run("Todo: write rejects duplicate content", TodoToolTests.Write_RejectsDuplicateContent);
-        Run("Todo: write rejects two in_progress when parallel disabled", TodoToolTests.Write_RejectsTwoInProgress_WhenParallelDisabled);
-        Run("Todo: write allows two in_progress when parallel enabled", TodoToolTests.Write_AllowsTwoInProgress_WhenParallelEnabled);
-        Run("Todo: description matches the pinned fixture literal", TodoToolTests.Describe_MatchesThePinnedFixtureLiteral);
-        Run("Todo: definition execute returns canonical result and render projects text", TodoToolTests.Definition_Execute_ReturnsCanonicalResult_AndRender_ProjectsText);
-        Run("Todo: todo/write event round-trips as declared type", TodoToolTests.TodoWriteEvent_RoundTripsAsDeclaredType);
+
+
+
+
+
+
+
+
 
         Run("Smoke: turn appends 22 events with the expected sequence", SmokeTests.TurnAppendsTwentyTwoEvents_WithTheExpectedSequence);
         Run("Smoke: waterfall probe short-circuits and effect unwind restores the adapter", SmokeTests.WaterfallProbe_ShortCircuits_AndEffectUnwind_RestoresAdapter);

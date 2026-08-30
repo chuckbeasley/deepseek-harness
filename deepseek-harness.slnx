@@ -25,6 +25,7 @@
     <Project Path="src/Dsh/Dsh.SystemPrompt/Dsh.SystemPrompt.csproj" />
     <Project Path="src/Dsh/Dsh.Tui/Dsh.Tui.csproj" />
     <Project Path="src/Dsh/Dsh.Tools/Dsh.Tools.csproj" />
+    <Project Path="src/Dsh/Dsh.Todo/Dsh.Todo.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Cordis.Core.Tests/Cordis.Core.Tests.csproj" />
@@ -41,5 +42,6 @@
     <Project Path="tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj" />
     <Project Path="tests/Dsh.SystemPrompt.Tests/Dsh.SystemPrompt.Tests.csproj" />
     <Project Path="tests/Dsh.Tui.Tests/Dsh.Tui.Tests.csproj" />
+    <Project Path="tests/Dsh.Todo.Tests/Dsh.Todo.Tests.csproj" />
   </Folder>
 </Solution>

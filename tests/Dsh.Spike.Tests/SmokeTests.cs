@@ -4,6 +4,7 @@ using Cordis.Core;
 using Dsh.Llm;
 using Dsh.Session;
 using Dsh.Spike;
+using Dsh.Todo;
 using Dsh.Tools;
 
 namespace Dsh.Spike.Tests;
@@ -19,7 +20,8 @@ public static class SmokeTests
         var tools = new ToolRuntime(context);
         var mock = new MockLlmProvider();
         llm.RegisterAdapter(new[] { MockLlmProvider.Provider }, mock);
-        tools.Register(TodoTool.Definition(allowParallelInProgress: false));
+        var todoService = new TodoService(context, allowParallelInProgress: false);
+        tools.Register(TodoTool.Definition(context, allowParallelInProgress: false));
         var session = sessions.Create();
         return (context, llm, tools, mock, session);
     }
@@ -94,7 +96,8 @@ public static class SmokeTests
         var llm = new LlmRuntime(context);
         var tools = new ToolRuntime(context);
         llm.RegisterAdapter(new[] { MockLlmProvider.Provider }, new MockLlmProvider());
-        tools.Register(TodoTool.Definition(false));
+        var todoService = new TodoService(context, false);
+        tools.Register(TodoTool.Definition(context, false));
         var session = sessions.Create();
         context.Dispose();
 
@@ -139,7 +142,7 @@ public static class SmokeTests
     private const string ExpectedStdout =
 """
 == Dsh.Spike headless smoke ==
-context booted; services: sessions, llm, tools
+context booted; services: sessions, llm, tools, todo
 session created: session-1
 [00] turn/start {"turn":1}
 [01] step/start {"turn":1,"step":1}

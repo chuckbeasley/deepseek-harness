@@ -91,7 +91,8 @@ public static class TuiApp
         var agents = new AgentRegistry(ctx);
         var tempRoot = Path.Combine(Path.GetTempPath(), "dsh-tui-" + Guid.NewGuid().ToString("N"));
         var persistence = new SessionPersistenceService(ctx, new PersistenceConfig { Root = tempRoot });
-        tools.Register(TodoTool.Definition(allowParallelInProgress: false));
+        var todoService = new TodoService(ctx, allowParallelInProgress: false);
+        tools.Register(TodoTool.Definition(ctx, allowParallelInProgress: false));
         persistence.Attach(sessions);
         var loop = new Dsh.AgentLoop.AgentLoop(ctx);
 

@@ -6,6 +6,7 @@ using System.Text.Json.Nodes;
 using Cordis.Core;
 using Dsh.Llm;
 using Dsh.Session;
+using Dsh.Todo;
 using Dsh.Tools;
 
 namespace Dsh.Spike;
@@ -44,7 +45,8 @@ public static class SmokeScenario
 
         var mock = new MockLlmProvider();
         llm.RegisterAdapter(new[] { MockLlmProvider.Provider }, mock);
-        tools.Register(TodoTool.Definition(allowParallelInProgress: false));
+        var todoService = new TodoService(context, allowParallelInProgress: false);
+        tools.Register(TodoTool.Definition(context, allowParallelInProgress: false));
 
         output.WriteLine("== Dsh.Spike headless smoke ==");
         output.WriteLine($"context booted; services: {string.Join(", ", context.Registry.ServiceKeys)}");

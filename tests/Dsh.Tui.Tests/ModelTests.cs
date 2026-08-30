@@ -2,7 +2,7 @@ using System.Text.Json;
 using Cordis.Core;
 using Dsh.Llm;
 using Dsh.Session;
-using Dsh.Spike;
+using Dsh.Todo;
 using Dsh.Tui;
 
 namespace Dsh.Tui.Tests;

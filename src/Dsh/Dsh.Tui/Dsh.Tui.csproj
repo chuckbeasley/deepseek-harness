@@ -22,6 +22,7 @@
     <ProjectReference Include="..\Dsh.Spike\Dsh.Spike.csproj" />
     <ProjectReference Include="..\Dsh.SystemPrompt\Dsh.SystemPrompt.csproj" />
     <ProjectReference Include="..\Dsh.Tools\Dsh.Tools.csproj" />
+    <ProjectReference Include="..\Dsh.Todo\Dsh.Todo.csproj" />
   </ItemGroup>
 
 </Project>

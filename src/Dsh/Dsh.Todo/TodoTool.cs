@@ -1,31 +1,20 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Cordis.Core;
 using Dsh.Llm;
 using Dsh.Session;
 using Dsh.Tools;
 
-namespace Dsh.Spike;
+namespace Dsh.Todo;
 
 /// <summary>
-/// Model-facing whole-list replacement: the todo_write semantics against an in-memory list.
-/// Each call replaces the previous list (last-write-wins); validation mirrors the TS tool
-/// (trimmed non-empty unique content, at most one in_progress unless parallel work is allowed).
-/// Part 1 has no session — the durable todo/write append arrives with the driver in part 2.
+/// Model-facing Consumer of the todo capability: the <c>todo_write</c> tool over
+/// <see cref="ITodoService"/>. Each call replaces the previous list (last-write-wins) and appends
+/// the durable <see cref="TodoWriteEvent"/> through the owning session.
 /// </summary>
-public sealed class TodoTool
+public static class TodoTool
 {
-    private readonly bool _allowParallelInProgress;
-    private readonly List<TodoItem> _todos = new();
-
-    public TodoTool(bool allowParallelInProgress)
-    {
-        _allowParallelInProgress = allowParallelInProgress;
-    }
-
-    /// <summary>Current whole list, as a snapshot.</summary>
-    public IReadOnlyList<TodoItem> Todos => _todos.ToArray();
-
-    /// <summary>Model-facing description for one activation (pinned literal, see spike-design.md 6.1).</summary>
+    /// <summary>Model-facing description for one activation (pinned literal).</summary>
     public static string Describe(bool allowParallelInProgress)
     {
         const string head = "Record and update a structured task list for the current work. Send the ENTIRE "
@@ -56,70 +45,29 @@ public sealed class TodoTool
         "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"todos\":{\"type\":\"array\",\"required\":true,\"items\":{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"content\":{\"type\":\"string\",\"required\":true},\"status\":{\"type\":\"string\",\"required\":true,\"enum\":[\"pending\",\"in_progress\",\"completed\"]}}}},\"counts\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":true,\"properties\":{\"pending\":{\"type\":\"integer\",\"required\":true},\"inProgress\":{\"type\":\"integer\",\"required\":true},\"completed\":{\"type\":\"integer\",\"required\":true}}}}}";
 
     /// <summary>
-    /// Build the todo_write ToolDefinition. Execute parses the model arguments, validates, replaces
-    /// the in-memory list, and returns the canonical {todos, counts} value; Render projects the
+    /// Build the todo_write ToolDefinition over the mounted todo service. Execute parses the model
+    /// arguments, replaces the list, and appends the durable todo/write event; Render projects the
     /// canonical value to the model-facing text block.
     /// </summary>
-    public static ToolDefinition Definition(bool allowParallelInProgress)
+    public static ToolDefinition Definition(Context ctx, bool allowParallelInProgress = false)
     {
-        // Plugin-boot equivalent of the TS event-type registration: the JSONL backend must
-        // serialize and replay this plugin-merged event.
+        ArgumentNullException.ThrowIfNull(ctx);
+        var service = ctx.Get<ITodoService>("todo")
+            ?? throw new InvalidOperationException("todo_write: the \"todo\" service is not mounted");
         SessionEventTypes.Register(TodoWriteEvent.EventTypeName, typeof(TodoWriteEvent));
-        var tool = new TodoTool(allowParallelInProgress);
         return new ToolDefinition(
             Name: "todo_write",
             Description: Describe(allowParallelInProgress),
             Parameters: JsonSerializer.SerializeToElement(JsonNode.Parse(ParametersSchemaJson)!),
             OutputSchema: JsonSerializer.SerializeToElement(JsonNode.Parse(OutputSchemaJson)!),
             Execute: (args, context) =>
-{
-    var result = tool.Write(ParseTodos(args));
-    context.Session?.Append(new TodoWriteEvent { Todos = result.Todos });
-    return Task.FromResult(JsonSerializer.SerializeToElement(result));
-},
+            {
+                var result = service.Replace(ParseTodos(args));
+                context.Session?.Append(new TodoWriteEvent { Todos = result.Todos });
+                return Task.FromResult(JsonSerializer.SerializeToElement(result));
+            },
             Render: (_, value) => new ContentBlock[] { new TextBlock(RenderText(value)) });
     }
-
-    /// <summary>Validate and replace the whole list; returns the canonical result.</summary>
-    /// <exception cref="ArgumentException">An item is empty after trimming, content duplicates, or more than one item is in_progress under the single-active policy.</exception>
-    public TodoWriteResult Write(IReadOnlyList<TodoItem> items)
-    {
-        var todos = Validate(items);
-        _todos.Clear();
-        _todos.AddRange(todos);
-        return new TodoWriteResult(todos.ToArray(), Counts(todos));
-    }
-
-    private IReadOnlyList<TodoItem> Validate(IReadOnlyList<TodoItem> raw)
-    {
-        var todos = new List<TodoItem>(raw.Count);
-        var seen = new HashSet<string>(StringComparer.Ordinal);
-        var active = 0;
-        foreach (var item in raw)
-        {
-            var content = item.Content.Trim();
-            if (content.Length == 0)
-            {
-                throw new ArgumentException("invalid todo: `content` must be a non-empty string");
-            }
-            if (!seen.Add(content))
-            {
-                throw new ArgumentException($"invalid todos: duplicate content \"{content}\"");
-            }
-            if (item.Status == TodoItemStatus.InProgress) active++;
-            todos.Add(item with { Content = content });
-        }
-        if (!_allowParallelInProgress && active > 1)
-        {
-            throw new ArgumentException($"invalid todos: at most one task may be in_progress (got {active})");
-        }
-        return todos;
-    }
-
-    private static TodoCounts Counts(IReadOnlyList<TodoItem> todos) => new(
-        todos.Count(t => t.Status == TodoItemStatus.Pending),
-        todos.Count(t => t.Status == TodoItemStatus.InProgress),
-        todos.Count(t => t.Status == TodoItemStatus.Completed));
 
     private static IReadOnlyList<TodoItem> ParseTodos(JsonElement args)
     {
@@ -154,5 +102,3 @@ public sealed class TodoTool
         return $"Updated todo list: {pending} pending, {inProgress} in progress, {completed} completed.";
     }
 }
-
-

@@ -5,6 +5,7 @@ using Dsh.Llm;
 using Dsh.Session;
 using Dsh.Session.Persistence;
 using Dsh.SystemPrompt;
+using Dsh.Todo;
 using Dsh.Tools;
 
 namespace Dsh.Spike;
@@ -28,7 +29,8 @@ public static class Phase2Scenario
         var persistence = new SessionPersistenceService(context, new PersistenceConfig { Root = tempRoot });
         var mock = new MockLlmProvider();
         llm.RegisterAdapter(new[] { MockLlmProvider.Provider }, mock);
-        tools.Register(TodoTool.Definition(allowParallelInProgress: false));
+        var todoService = new TodoService(context, allowParallelInProgress: false);
+        tools.Register(TodoTool.Definition(context, allowParallelInProgress: false));
         persistence.Attach(sessions);
         var loop = new Dsh.AgentLoop.AgentLoop(context);
 

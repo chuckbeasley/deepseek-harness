@@ -34,7 +34,9 @@ public static class SpineRegistry
         catalog.Register("todo", new SpinePlugin("todo", (ctx, config) =>
         {
             var parallel = ConfigBool(config, "allowParallelInProgress") ?? false;
-            return new ToolPluginRegistration(ctx.Tools().Register(Dsh.Spike.TodoTool.Definition(parallel)));
+            var service = new Dsh.Todo.TodoService(ctx, parallel);
+            var registration = ctx.Tools().Register(Dsh.Todo.TodoTool.Definition(ctx, parallel));
+            return new SpineDisposables(registration, service);
         }));
         catalog.Register("mock", new SpinePlugin("mock", (ctx, _) =>
             ctx.Llm().RegisterAdapter(new[] { Dsh.Spike.MockLlmProvider.Provider }, new Dsh.Spike.MockLlmProvider())));

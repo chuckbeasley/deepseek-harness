@@ -39,7 +39,8 @@ public sealed class Harness : IAsyncDisposable
         var persistence = new SessionPersistenceService(ctx, new PersistenceConfig { Root = tempRoot });
         var mock = new MockLlmProvider();
         llm.RegisterAdapter(new[] { MockLlmProvider.Provider }, mock);
-        tools.Register(TodoTool.Definition(allowParallelInProgress: false));
+        var todoService = new TodoService(ctx, allowParallelInProgress: false);
+        tools.Register(TodoTool.Definition(ctx, allowParallelInProgress: false));
         if (attachPersistence) persistence.Attach(sessions);
         var loop = new AgentLoop(ctx);
         return new Harness
