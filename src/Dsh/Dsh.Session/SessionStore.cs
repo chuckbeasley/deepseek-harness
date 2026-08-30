@@ -53,6 +53,19 @@ public sealed class SessionStore : Service
     /// <summary>Look up a live session.</summary>
     public Session? Get(SessionId id) => _store.TryGetValue(id, out var session) ? session : null;
 
+    /// <summary>
+    /// Detach a live session by id, emitting <c>session/disposed</c> (idempotent). Used by the
+    /// resume flow to release an identity before its stored log rehydrates a fresh session.
+    /// </summary>
+    /// <returns>whether the session was still attached.</returns>
+    public bool Remove(SessionId id)
+    {
+        if (!_store.TryGetValue(id, out var session)) return false;
+        _store.Remove(id);
+        EmitDisposed(session);
+        return true;
+    }
+
     /// <summary>All live sessions, in creation order.</summary>
     public IReadOnlyList<Session> List() => _store.Values.ToArray();
 

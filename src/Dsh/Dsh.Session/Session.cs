@@ -85,6 +85,28 @@ public sealed class Session
     }
 
     /// <summary>
+    /// Rehydrate a stored log into this live session (the resume path): each stored event keeps
+    /// its envelope (Id, Seq, TimeMs) and appends in order without re-publishing, so observers
+    /// see replayed events through <see cref="Events"/> rather than as fresh appends.
+    /// </summary>
+    /// <param name="stored">the stored events, in log order.</param>
+    /// <exception cref="InvalidOperationException">when a stored event's seq breaks the seq = log-length contract.</exception>
+    public void Restore(IReadOnlyList<SessionEvent> stored)
+    {
+        ArgumentNullException.ThrowIfNull(stored);
+        foreach (var evt in stored)
+        {
+            if (evt.Seq != _log.Count)
+            {
+                throw new InvalidOperationException(
+                    $"cannot restore session \"{Id}\": stored event seq {evt.Seq} breaks the seq = log-length contract (expected {_log.Count})");
+            }
+            _log.Add(evt);
+        }
+        _eventsSnapshot = null;
+    }
+
+    /// <summary>
     /// Derive the LLM message history by folding the log through the surface projection
     /// (user/message -> verbatim; assistant/message -> null when empty; tool/result -> message).
     /// </summary>

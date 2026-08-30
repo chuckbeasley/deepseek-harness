@@ -28,6 +28,12 @@ public sealed record PluginSource : MessageSource
     /// <summary>The contributing plugin's name.</summary>
     public required string Plugin { get; init; }
 
+    /// <summary>Optional form of the contribution (e.g. "snapshot" for runtime-context projections).</summary>
+    public string? Form { get; init; }
+
+    /// <summary>Optional named contributions that formed a snapshot message.</summary>
+    public IReadOnlyList<string>? Sections { get; init; }
+
     [JsonIgnore]
     public override string Kind => "plugin";
 }
