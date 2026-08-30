@@ -1,0 +1,33 @@
+# dsh-base bundle: the shared spine services every profile composes.
+- insert:
+    - id: sessions
+      name: sessions
+
+    - id: llm
+      name: llm
+
+    - id: tools
+      name: tools
+
+    - id: systemPrompt
+      name: systemPrompt
+
+    - id: agents
+      name: agents
+
+    - id: agentLoop
+      name: agentLoop
+
+    - id: sessionPersistence
+      name: sessionPersistence
+
+    - id: mock
+      name: mock
+
+    - id: deepseek
+      name: deepseek
+
+    - id: todo
+      name: todo
+      config:
+        allowParallelInProgress: false
