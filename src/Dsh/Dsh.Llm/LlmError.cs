@@ -5,10 +5,20 @@ public sealed class LlmError : Exception
 {
     /// <summary>Create the error; <paramref name="code"/> is the stable provider-neutral machine code.</summary>
     public LlmError(string message, string code)
+        : this(message, code, null)
+    {
+    }
+
+    /// <summary>
+    /// Create the error with the provider HTTP status when one exists; <paramref name="code"/> is
+    /// the stable provider-neutral machine code. The status travels on <see cref="Failure"/> so
+    /// retry policy can distinguish retryable provider responses without parsing the message.
+    /// </summary>
+    public LlmError(string message, string code, int? status)
         : base(message)
     {
         Code = code;
-        Failure = new LlmFailure(message, code);
+        Failure = new LlmFailure(message, code, status);
     }
 
     /// <summary>Stable provider-neutral machine-routing code.</summary>
