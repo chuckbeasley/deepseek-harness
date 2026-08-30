@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Dsh.AgentLoop</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
+    <ProjectReference Include="..\Dsh.Agent\Dsh.Agent.csproj" />
+    <ProjectReference Include="..\Dsh.Llm\Dsh.Llm.csproj" />
+    <ProjectReference Include="..\Dsh.Session\Dsh.Session.csproj" />
+    <ProjectReference Include="..\Dsh.Session.Persistence\Dsh.Session.Persistence.csproj" />
+    <ProjectReference Include="..\Dsh.SystemPrompt\Dsh.SystemPrompt.csproj" />
+    <ProjectReference Include="..\Dsh.Tools\Dsh.Tools.csproj" />
+  </ItemGroup>
+
+</Project>

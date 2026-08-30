@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Dsh.Llm;
+using Dsh.Session;
 using Dsh.Tools;
 
 namespace Dsh.Spike;
@@ -61,6 +62,9 @@ public sealed class TodoTool
     /// </summary>
     public static ToolDefinition Definition(bool allowParallelInProgress)
     {
+        // Plugin-boot equivalent of the TS event-type registration: the JSONL backend must
+        // serialize and replay this plugin-merged event.
+        SessionEventTypes.Register(TodoWriteEvent.EventTypeName, typeof(TodoWriteEvent));
         var tool = new TodoTool(allowParallelInProgress);
         return new ToolDefinition(
             Name: "todo_write",

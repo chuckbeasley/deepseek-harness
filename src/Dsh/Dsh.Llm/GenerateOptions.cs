@@ -1,8 +1,10 @@
 namespace Dsh.Llm;
 
 /// <summary>
-/// A single model request, fully assembled. The spike drops the TS sessionId/purpose fields
-/// (they would create a Dsh.Llm -> Dsh.Session edge); they return with the full loop in part 2.
+/// A single model request, fully assembled. <see cref="SessionId"/> is the owning session's id
+/// for loop-built requests; it travels as a plain string so Dsh.Llm keeps no reference on
+/// Dsh.Session. Dsh.AgentLoop sets it on every request it builds and its invariant verifies the
+/// request against that live session's log.
 /// </summary>
 public sealed record GenerateOptions(
     string Provider,
@@ -12,4 +14,5 @@ public sealed record GenerateOptions(
     IReadOnlyList<ToolSchema>? Tools = null,
     double? Temperature = null,
     int? MaxTokens = null,
-    CancellationToken CancellationToken = default);
+    CancellationToken CancellationToken = default,
+    string? SessionId = null);

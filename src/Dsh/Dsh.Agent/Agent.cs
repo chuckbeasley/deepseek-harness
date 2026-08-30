@@ -89,15 +89,19 @@ public sealed class Agent : IInboxNotifications
     }
 
     /// <summary>
-    /// Open step <paramref name="turn"/>: record the turn, advance the step counter, and emit
-    /// <c>agent/step/start</c>. One step is one model request plus the tools it calls.
+    /// Open step <paramref name="step"/> of turn <paramref name="turn"/>: record both numbers and
+    /// emit <c>agent/step/start</c>. One step is one model request plus the tools it calls.
+    /// The loop passes the per-turn step number; steps restart at 1 for each turn.
     /// </summary>
-    public void StartStep(long turn)
+    public void StartStep(long turn, long step)
     {
         Turn = turn;
-        Step += 1;
+        Step = step;
         EmitContained(AgentEvents.StepStart, new AgentStepStartPayload(this, Turn, Step));
     }
+
+    /// <summary>Open the next step of <paramref name="turn"/> and emit <c>agent/step/start</c>.</summary>
+    public void StartStep(long turn) => StartStep(turn, Step + 1);
 
     /// <summary>Close the open step and emit <c>agent/step/end</c>.</summary>
     public void EndStep()

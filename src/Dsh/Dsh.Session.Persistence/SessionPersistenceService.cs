@@ -74,7 +74,7 @@ public sealed class SessionPersistenceService : Service
             {
                 throw new JsonException($"corrupt session log \"{path}\": blank line at line {index + 1}");
             }
-            var evt = JsonSerializer.Deserialize<SessionEvent>(line);
+            var evt = JsonSerializer.Deserialize<SessionEvent>(line, SessionEventTypes.CreateSerializerOptions());
             if (evt is null)
             {
                 throw new JsonException($"corrupt session log \"{path}\": unparsable event at line {index + 1}");
@@ -223,7 +223,7 @@ public sealed class SessionPersistenceService : Service
             }
             foreach (var evt in events)
             {
-                writer.WriteLine(JsonSerializer.Serialize<SessionEvent>(evt));
+                writer.WriteLine(JsonSerializer.Serialize<SessionEvent>(evt, SessionEventTypes.CreateSerializerOptions()));
             }
             writer.Flush();
             stream.Flush(flushToDisk: true);

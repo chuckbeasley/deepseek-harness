@@ -30,9 +30,12 @@ public sealed record TodoWriteResult([property: JsonPropertyName("todos")] IRead
 /// </summary>
 public sealed record TodoWriteEvent : SessionEvent
 {
+    /// <summary>The wire discriminator (also the session event-type registry key).</summary>
+    public const string EventTypeName = "todo/write";
+
     /// <summary>The complete replacement list.</summary>
     public required IReadOnlyList<TodoItem> Todos { get; init; }
 
-    public override string Type => "todo/write";
+    public override string Type => EventTypeName;
 }
 
