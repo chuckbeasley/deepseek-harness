@@ -1,0 +1,7 @@
+{"type":"session","version":0,"id":"session-pinned","createdAt":1700000000000}
+{"$type":"turn/start","Id":"evt-0","Seq":0,"TimeMs":1700000000000,"Turn":1}
+{"$type":"user/message","Id":"evt-1","Seq":1,"TimeMs":1700000000000,"Message":{"Id":"msg-user-1","Role":"user","Content":[{"type":"text","Text":"Explain the JSONL session log format."}],"Source":{"kind":"user"}},"SurfaceOp":"append"}
+{"$type":"step/start","Id":"evt-2","Seq":2,"TimeMs":1700000000000,"Turn":1,"Step":1}
+{"$type":"assistant/chunk","Id":"evt-3","Seq":3,"TimeMs":1700000000000,"Turn":1,"Step":1,"Chunk":{"type":"text-delta","Index":0,"Text":"One event "}}
+{"$type":"assistant/message","Id":"evt-4","Seq":4,"TimeMs":1700000000000,"Turn":1,"Step":1,"Message":{"Id":"msg-assistant-1","Role":"assistant","Content":[{"type":"text","Text":"One event per line."}],"Source":{"kind":"model","Provider":"mock","Model":"mock-1"}},"SurfaceOp":"append","SourceEventSeqs":[3]}
+{"$type":"turn/end","Id":"evt-5","Seq":5,"TimeMs":1700000000000,"Turn":1,"Reason":{"kind":"completed"}}

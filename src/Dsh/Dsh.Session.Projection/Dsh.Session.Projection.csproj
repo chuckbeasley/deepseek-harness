@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Dsh.Session.Projection</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Dsh.Session pulls Cordis.Core (Service/Context) and Dsh.Llm transitively for dotnet build;
+         the direct-csc build script adds the explicit -r edges. -->
+    <ProjectReference Include="..\Dsh.Session\Dsh.Session.csproj" />
+  </ItemGroup>
+
+</Project>
