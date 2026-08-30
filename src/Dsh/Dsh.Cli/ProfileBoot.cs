@@ -549,10 +549,10 @@ public static class ProfileBoot
     /// <param name="invocation">the profile to boot and its overlays and inner arguments.</param>
     /// <param name="onExit">receives the app's requested exit code (the one-shot runners).</param>
     /// <returns>the settled root context; the app (or the caller) owns disposal.</returns>
-    public static async Task<Context> RunProfileAsync(DshInvocation.ProfileInvocation invocation, Action<int>? onExit = null)
+    public static async Task<Cordis.Core.Context> RunProfileAsync(DshInvocation.ProfileInvocation invocation, Action<int>? onExit = null)
     {
         var composed = ComposeProfile(invocation.Profile, invocation.Patches);
-        var ctx = new Context();
+        var ctx = new Cordis.Core.Context();
         var loader = new Cordis.Plugin.Loader.Loader(ctx, new LoaderConfig { BaseUrl = composed.Profile.Dir });
         SpineRegistry.RegisterAll(loader.Catalog);
         var ready = new AppReady();

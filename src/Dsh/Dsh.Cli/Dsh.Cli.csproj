@@ -13,6 +13,7 @@
     <ProjectReference Include="..\..\Cordis\Cordis.Cosmokit\Cordis.Cosmokit.csproj" />
     <ProjectReference Include="..\..\Cordis\Cordis.Plugin.Loader\Cordis.Plugin.Loader.csproj" />
     <ProjectReference Include="..\..\Cordis\Cordis.Plugin.Include\Cordis.Plugin.Include.csproj" />
+    <ProjectReference Include="..\..\Cordis\Cordis.Plugin.Timer\Cordis.Plugin.Timer.csproj" />
     <ProjectReference Include="..\Dsh.Llm\Dsh.Llm.csproj" />
     <ProjectReference Include="..\Dsh.Llm.DeepSeek\Dsh.Llm.DeepSeek.csproj" />
     <ProjectReference Include="..\Dsh.Session\Dsh.Session.csproj" />
@@ -29,6 +30,22 @@
     <ProjectReference Include="..\Dsh.Subprocess\Dsh.Subprocess.csproj" />
     <ProjectReference Include="..\Dsh.Credentials\Dsh.Credentials.csproj" />
     <ProjectReference Include="..\Dsh.Web\Dsh.Web.csproj" />
+    <ProjectReference Include="..\Dsh.Goal\Dsh.Goal.csproj" />
+    <ProjectReference Include="..\Dsh.Schedule\Dsh.Schedule.csproj" />
+    <ProjectReference Include="..\Dsh.Feedback\Dsh.Feedback.csproj" />
+    <ProjectReference Include="..\Dsh.Storage\Dsh.Storage.csproj" />
+    <ProjectReference Include="..\Dsh.Workspace\Dsh.Workspace.csproj" />
+    <ProjectReference Include="..\Dsh.Spill\Dsh.Spill.csproj" />
+    <ProjectReference Include="..\Dsh.Attachment\Dsh.Attachment.csproj" />
+    <ProjectReference Include="..\Dsh.Compaction\Dsh.Compaction.csproj" />
+    <ProjectReference Include="..\Dsh.Context\Dsh.Context.csproj" />
+    <ProjectReference Include="..\Dsh.SessionQuery\Dsh.SessionQuery.csproj" />
+    <ProjectReference Include="..\Dsh.Preset\Dsh.Preset.csproj" />
+    <ProjectReference Include="..\Dsh.Guard\Dsh.Guard.csproj" />
+    <ProjectReference Include="..\Dsh.Terminal\Dsh.Terminal.csproj" />
+    <ProjectReference Include="..\Dsh.Hooks\Dsh.Hooks.csproj" />
+    <ProjectReference Include="..\Dsh.Lsp\Dsh.Lsp.csproj" />
+    <ProjectReference Include="..\Dsh.Subagent\Dsh.Subagent.csproj" />
     <ProjectReference Include="..\Dsh.Spike\Dsh.Spike.csproj" />
     <ProjectReference Include="..\Dsh.Tui\Dsh.Tui.csproj" />
   </ItemGroup>

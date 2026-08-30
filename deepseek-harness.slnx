@@ -33,6 +33,22 @@
     <Project Path="src/Dsh/Dsh.SystemPrompt/Dsh.SystemPrompt.csproj" />
     <Project Path="src/Dsh/Dsh.Tui/Dsh.Tui.csproj" />
     <Project Path="src/Dsh/Dsh.Web/Dsh.Web.csproj" />
+    <Project Path="src/Dsh/Dsh.Goal/Dsh.Goal.csproj" />
+    <Project Path="src/Dsh/Dsh.Schedule/Dsh.Schedule.csproj" />
+    <Project Path="src/Dsh/Dsh.Feedback/Dsh.Feedback.csproj" />
+    <Project Path="src/Dsh/Dsh.Storage/Dsh.Storage.csproj" />
+    <Project Path="src/Dsh/Dsh.Workspace/Dsh.Workspace.csproj" />
+    <Project Path="src/Dsh/Dsh.Spill/Dsh.Spill.csproj" />
+    <Project Path="src/Dsh/Dsh.Attachment/Dsh.Attachment.csproj" />
+    <Project Path="src/Dsh/Dsh.Compaction/Dsh.Compaction.csproj" />
+    <Project Path="src/Dsh/Dsh.Context/Dsh.Context.csproj" />
+    <Project Path="src/Dsh/Dsh.SessionQuery/Dsh.SessionQuery.csproj" />
+    <Project Path="src/Dsh/Dsh.Preset/Dsh.Preset.csproj" />
+    <Project Path="src/Dsh/Dsh.Guard/Dsh.Guard.csproj" />
+    <Project Path="src/Dsh/Dsh.Terminal/Dsh.Terminal.csproj" />
+    <Project Path="src/Dsh/Dsh.Hooks/Dsh.Hooks.csproj" />
+    <Project Path="src/Dsh/Dsh.Lsp/Dsh.Lsp.csproj" />
+    <Project Path="src/Dsh/Dsh.Subagent/Dsh.Subagent.csproj" />
     <Project Path="src/Dsh/Dsh.Tools/Dsh.Tools.csproj" />
     <Project Path="src/Dsh/Dsh.Todo/Dsh.Todo.csproj" />
   </Folder>
@@ -60,6 +76,22 @@
     <Project Path="tests/Dsh.SystemPrompt.Tests/Dsh.SystemPrompt.Tests.csproj" />
     <Project Path="tests/Dsh.Tui.Tests/Dsh.Tui.Tests.csproj" />
     <Project Path="tests/Dsh.Web.Tests/Dsh.Web.Tests.csproj" />
+    <Project Path="tests/Dsh.Goal.Tests/Dsh.Goal.Tests.csproj" />
+    <Project Path="tests/Dsh.Schedule.Tests/Dsh.Schedule.Tests.csproj" />
+    <Project Path="tests/Dsh.Feedback.Tests/Dsh.Feedback.Tests.csproj" />
+    <Project Path="tests/Dsh.Storage.Tests/Dsh.Storage.Tests.csproj" />
+    <Project Path="tests/Dsh.Workspace.Tests/Dsh.Workspace.Tests.csproj" />
+    <Project Path="tests/Dsh.Spill.Tests/Dsh.Spill.Tests.csproj" />
+    <Project Path="tests/Dsh.Attachment.Tests/Dsh.Attachment.Tests.csproj" />
+    <Project Path="tests/Dsh.Compaction.Tests/Dsh.Compaction.Tests.csproj" />
+    <Project Path="tests/Dsh.Context.Tests/Dsh.Context.Tests.csproj" />
+    <Project Path="tests/Dsh.SessionQuery.Tests/Dsh.SessionQuery.Tests.csproj" />
+    <Project Path="tests/Dsh.Preset.Tests/Dsh.Preset.Tests.csproj" />
+    <Project Path="tests/Dsh.Guard.Tests/Dsh.Guard.Tests.csproj" />
+    <Project Path="tests/Dsh.Terminal.Tests/Dsh.Terminal.Tests.csproj" />
+    <Project Path="tests/Dsh.Hooks.Tests/Dsh.Hooks.Tests.csproj" />
+    <Project Path="tests/Dsh.Lsp.Tests/Dsh.Lsp.Tests.csproj" />
+    <Project Path="tests/Dsh.Subagent.Tests/Dsh.Subagent.Tests.csproj" />
     <Project Path="tests/Dsh.Todo.Tests/Dsh.Todo.Tests.csproj" />
   </Folder>
 </Solution>

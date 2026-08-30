@@ -52,3 +52,45 @@
 
     - id: credentials
       name: credentials
+
+    - id: goal
+      name: goal
+
+    - id: schedule
+      name: schedule
+
+    - id: feedback
+      name: feedback
+
+    - id: storage
+      name: storage
+
+    - id: workspace
+      name: workspace
+
+    - id: spill
+      name: spill
+
+    - id: attachment
+      name: attachment
+
+    - id: compaction
+      name: compaction
+
+    - id: context
+      name: context
+
+    - id: sessionQuery
+      name: sessionQuery
+
+    - id: preset
+      name: preset
+
+    - id: guard
+      name: guard
+
+    - id: terminal
+      name: terminal
+
+    - id: subagent
+      name: subagent

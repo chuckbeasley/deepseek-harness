@@ -87,6 +87,65 @@ public static class SpineRegistry
             return new SpineDisposables(searchTool, fetchTool, fetchRegistration, web);
         }));
         catalog.Register("credentials", new SpinePlugin("credentials", (ctx, _) => new Dsh.Credentials.LocalCredentialsProvider(ctx)));
+        catalog.Register("goal", new SpinePlugin("goal", (ctx, _) =>
+        {
+            var service = new Dsh.Goal.SessionGoalService(ctx);
+            var registration = ctx.Tools().Register(Dsh.Goal.GoalTools.Definition(service));
+            return new SpineDisposables(registration, service);
+        }));
+        catalog.Register("schedule", new SpinePlugin("schedule", (ctx, _) =>
+        {
+            // The schedule seam requires the timer service; mount it here so a profile need not
+            // name two rows for one capability.
+            var timer = ctx.Get<Cordis.Plugin.Timer.TimerService>("timer") ?? new Cordis.Plugin.Timer.TimerService(ctx);
+            return new SpineDisposables(new Dsh.Schedule.TimerScheduleProvider(ctx), timer);
+        }));
+        catalog.Register("feedback", new SpinePlugin("feedback", (ctx, _) =>
+        {
+            var service = new Dsh.Feedback.SessionFeedbackService(ctx);
+            var registration = ctx.Tools().Register(Dsh.Feedback.FeedbackTools.Definition(service));
+            return new SpineDisposables(registration, service);
+        }));
+        catalog.Register("storage", new SpinePlugin("storage", (ctx, config) =>
+        {
+            var root = ConfigString(config, "root")
+                ?? Path.Combine(ctx.Get<string>("dshProfileDir") ?? ".", "storage");
+            return new Dsh.Storage.JsonFileStorageProvider(ctx, new Dsh.Storage.JsonFileStorageConfig(root));
+        }));
+        catalog.Register("workspace", new SpinePlugin("workspace", (ctx, _) => new Dsh.Workspace.LocalWorkspaceProvider(ctx)));
+        catalog.Register("spill", new SpinePlugin("spill", (ctx, config) =>
+        {
+            var root = ConfigString(config, "root")
+                ?? Path.Combine(ctx.Get<string>("dshProfileDir") ?? ".", "spill");
+            return new Dsh.Spill.LocalSpillProvider(ctx, new Dsh.Spill.SpillProviderConfig(root));
+        }));
+        catalog.Register("attachment", new SpinePlugin("attachment", (ctx, config) =>
+        {
+            var root = ConfigString(config, "root")
+                ?? Path.Combine(ctx.Get<string>("dshProfileDir") ?? ".", "attachments");
+            var maxBytes = ConfigInt(config, "maxBytes") ?? 10 * 1024 * 1024;
+            return new Dsh.Attachment.LocalAttachmentProvider(ctx, new Dsh.Attachment.AttachmentProviderConfig(root, maxBytes));
+        }));
+        catalog.Register("compaction", new SpinePlugin("compaction", (ctx, _) => new Dsh.Compaction.BasicCompactionProvider(ctx)));
+        catalog.Register("context", new SpinePlugin("context", (ctx, _) => new Dsh.Context.LocalContextProvider(ctx)));
+        catalog.Register("sessionQuery", new SpinePlugin("sessionQuery", (ctx, _) => new Dsh.SessionQuery.LogSessionQueryProvider(ctx)));
+        catalog.Register("preset", new SpinePlugin("preset", (ctx, _) =>
+        {
+            var root = Path.Combine(ctx.Get<string>("dshProfileDir") ?? ".", "presets");
+            var provider = new Dsh.Preset.FilePresetProvider(root);
+            ctx.Set("preset", provider);
+            return null;
+        }));
+        catalog.Register("guard", new SpinePlugin("guard", (ctx, _) =>
+            new SpineDisposables(new Dsh.Guard.ToolTimeoutPolicy(ctx), new Dsh.Guard.RepeatToolReminderGuard(ctx))));
+        catalog.Register("terminal", new SpinePlugin("terminal", (ctx, _) =>
+        {
+            var service = new Dsh.Terminal.LocalTerminalProvider(ctx);
+            var tools = Dsh.Terminal.TerminalTools.Definitions(ctx);
+            var disposers = tools.Select(ctx.Tools().Register).ToArray();
+            return new SpineDisposables(disposers.Append(service).ToArray());
+        }));
+        catalog.Register("subagent", new SpinePlugin("subagent", (ctx, _) => new Dsh.Subagent.InProcessSubagentProvider(ctx)));
         catalog.Register("tui", new SpinePlugin("tui", (ctx, _) =>
         {
             var args = ctx.Get<CmdlineArgs>("cmdlineArgs") ?? new CmdlineArgs(Array.Empty<string>());
@@ -140,15 +199,15 @@ internal sealed class SpineDisposables : IDisposable
 internal sealed class SpinePlugin : ILoaderPlugin
 {
     private readonly string _name;
-    private readonly Func<Context, object?, IDisposable?> _apply;
+    private readonly Func<Cordis.Core.Context, object?, IDisposable?> _apply;
 
-    public SpinePlugin(string name, Func<Context, object?, IDisposable?> apply)
+    public SpinePlugin(string name, Func<Cordis.Core.Context, object?, IDisposable?> apply)
     {
         _name = name;
         _apply = apply;
     }
 
-    public ValueTask<IDisposable?> ApplyAsync(Context ctx, object? config)
+    public ValueTask<IDisposable?> ApplyAsync(Cordis.Core.Context ctx, object? config)
     {
         IDisposable? disposer;
         try
@@ -166,9 +225,9 @@ internal sealed class SpinePlugin : ILoaderPlugin
 /// <summary>Typed service lookups used by the spine rows.</summary>
 internal static class SpineContextExtensions
 {
-    public static Dsh.Llm.LlmRuntime Llm(this Context ctx)
+    public static Dsh.Llm.LlmRuntime Llm(this Cordis.Core.Context ctx)
         => ctx.Get<Dsh.Llm.LlmRuntime>("llm") ?? throw new InvalidOperationException("spine row requires the \"llm\" service");
 
-    public static Dsh.Tools.ToolRuntime Tools(this Context ctx)
+    public static Dsh.Tools.ToolRuntime Tools(this Cordis.Core.Context ctx)
         => ctx.Get<Dsh.Tools.ToolRuntime>("tools") ?? throw new InvalidOperationException("spine row requires the \"tools\" service");
 }

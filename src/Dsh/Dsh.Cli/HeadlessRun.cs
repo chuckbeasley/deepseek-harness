@@ -14,7 +14,7 @@ public sealed class HeadlessRun : ILoaderPlugin
     public const string SessionIdValue = "session-headless";
 
     /// <inheritdoc />
-    public ValueTask<IDisposable?> ApplyAsync(Context ctx, object? config)
+    public ValueTask<IDisposable?> ApplyAsync(Cordis.Core.Context ctx, object? config)
     {
         var args = ctx.Get<CmdlineArgs>("cmdlineArgs") ?? new CmdlineArgs(Array.Empty<string>());
         var task = string.Join(' ', args.Args);
@@ -74,7 +74,7 @@ public sealed class HeadlessRun : ILoaderPlugin
         return ValueTask.FromResult<IDisposable?>(null);
     }
 
-    private static void Exit(Context ctx, int code)
+    private static void Exit(Cordis.Core.Context ctx, int code)
     {
         var exit = ctx.Get<AppExit>("appExit")
             ?? throw new InvalidOperationException("dsh: headless requires the appExit launcher fact");
