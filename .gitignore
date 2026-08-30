@@ -50,3 +50,5 @@ obj/
 .vs/
 TestResults/
 artifacts/
+.wt/
+
