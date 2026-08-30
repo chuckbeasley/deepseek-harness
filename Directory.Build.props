@@ -1,0 +1,33 @@
+<Project>
+
+  <!-- Repo-wide .NET build defaults (Phase 1 foundations). Inherited by every
+       project under src/ and tests/; an individual csproj may override any
+       property below. -->
+
+  <PropertyGroup>
+    <!-- Language defaults shared by all projects. -->
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- Static analysis: built-in .NET analyzers at the latest recommended
+         rule set. -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+
+    <!-- The Phase 0/1 spike still carries CS1591 XML-doc gaps on public API, so
+         warnings stay visible but non-fatal. Flip to true once the port is
+         doc-complete. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+    <!-- Reproducible builds; CI determinism on build servers (GitHub Actions
+         sets CI=true). -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <!-- XML docs are a library contract; test and console-runner projects
+         under tests/ do not need them. -->
+    <GenerateDocumentationFile Condition="!$(MSBuildProjectDirectory.Contains('tests'))">true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>
