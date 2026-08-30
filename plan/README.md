@@ -62,3 +62,20 @@ Go/no-go verdict for Phase 3 (CLI/TUI, boot, and launcher): **GO**.
 - Solution `deepseek-harness.slnx`: 27 projects; full build 0 errors; all fourteen suites green (304 tests, 0 failures). Verified smokes on the merged tree: `dsh --profile headless "task"` runs a real loop turn and prints the assistant text; `dsh --profile headless --dump-config` prints the composed layers; `dsh plugin --profile headless list` prints the template bundles; `dsh --profile tui --smoke` boots the interactive UI and exits 0.
 
 Go/no-go verdict for Phase 4 (capability seams): **GO**.
+
+**Phase 4 wave 1 (capability seams): COMPLETE — 2026-08-30** — integrated on branch `port/dotnet10` (head `70e8780687` + integration commits):
+
+- `src/Dsh/Dsh.Todo` — the todo seam promoted from the Phase 0 spike: `ITodoService` (whole-list last-write-wins), `TodoService` provider, `todo_write` consumer, durable `todo/write` event — 6 tests (Spike/Tui/Cli rewired to the seam).
+- `src/Dsh/Dsh.Fs` — Service Definition + `LocalFileSystemProvider` (workspace-root containment, staged atomic writes, version tokens) + `fs_read`/`fs_write` consumers — 26 tests.
+- `src/Dsh/Dsh.Subprocess` — fully-specified spawn requests, bounded collect with tail+spill, tree-scoped termination, `DSH_*` env scrub — 7 tests.
+- `src/Dsh/Dsh.Shell` — the request/spec split, fused timeout/abort first-cause classification, `bash` consumer with the TS render markers — 9 tests.
+- `src/Dsh/Dsh.Web` — `WebRuntime` provider selection (full `WEB_PROVIDER_*` codes), `HttpWebProvider` (fake-handler tested, zero network), `web_fetch`/`web_search` consumers — 51 tests.
+- `src/Dsh/Dsh.Credentials` — credential-reference definition, `.env`-layered local provider (env > managed > project > user), redaction that never leaks values — 40 tests.
+- `src/Dsh/Dsh.Skill` — registry + filesystem provider (SKILL.md discovery) + catalog consumer — 8 tests.
+- `src/Dsh/Dsh.Settings` — typed sections, installSection read-through semantics, JSON file provider, secret redaction — 10 tests.
+- `src/Dsh/Dsh.Identity` — stable anonymous user id under `$DSH_HOME`, corruption fails loud — 6 tests.
+- `src/Dsh/Dsh.Plan` — plan/write logged state, `plan_write` consumer, JSONL round-trip — 7 tests.
+- All ten seams are mounted in the CLI spine (`dsh-base` bundle rows + `SpineRegistry`), so a headless boot composes the full wave-1 spine.
+- Solution `deepseek-harness.slnx`: 39 projects; full build 0 errors; **all twenty-four suites green (486 tests, 0 failures)**; the headless one-shot and the TUI smoke both still exit 0 with the full spine mounted.
+
+Go/no-go verdict for Phase 4 wave 2 (terminal, lsp, context, compaction, subagent, jobs, workflow, webhook, preset, guard, hooks, session-query, storage, workspace, attachment, spill, goal, schedule, feedback, sandbox+native bridge): **GO**.
