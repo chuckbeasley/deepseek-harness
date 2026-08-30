@@ -1,0 +1,11 @@
+global using Cordis.Core;
+global using Dsh.Agent;
+global using Dsh.AgentLoop;
+global using Dsh.Llm;
+global using Dsh.Llm.DeepSeek;
+global using Dsh.Session;
+global using Dsh.Session.Persistence;
+global using Dsh.Spike;
+global using Dsh.SystemPrompt;
+global using Dsh.Tools;
+global using Terminal.Gui;
