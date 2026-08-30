@@ -11,7 +11,7 @@ src/Cordis/Cordis.Schemastery/   config schema DSL + validation (net10.0)
 src/Cordis/Cordis.Cosmokit/      branded ids, path/home, timeout, retention,
                                  and general utilities (net10.0)
 tests/Cordis.Tests/              zero-dependency console assertion suite
-build-and-test.ps1               sandbox-safe manual build + test runner
+build-and-test-cordis.ps1           sandbox-safe manual build + test runner
 ```
 
 No solution file is created here; a separate integration agent owns the
@@ -56,7 +56,7 @@ be restored here: the dependency closure needs `System.Reflection.Metadata
 8.0.0`, which is absent from every local NuGet cache (the global cache has
 6.0.1/7.0.0; the VS offline feed has <= 1.6.0). Per the Phase 0 task's
 fallback rule, the test project is therefore a zero-dependency console
-assertion suite; `build-and-test.ps1` compiles each project directly with
+assertion suite; `build-and-test-cordis.ps1` compiles each project directly with
 `csc` via response files and runs it (37 assertions, exits non-zero on any
 failure). The xUnit packages (xunit 2.9.3, Microsoft.NET.Test.Sdk 17.14.1,
 xunit.runner.visualstudio 3.1.4) are cached locally; a networked host can
