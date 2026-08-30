@@ -1,13 +1,11 @@
 # Manual build-and-test for the Phase 0 spike worktree.
 #
-# `dotnet build`/`dotnet test` are blocked by the host sandbox: MSBuild's Csc
-# task spawns the C# compiler with captured stdout/stderr, and the sandbox
-# denies child processes that capture output through pipes (the same boundary
-# documented in the harness pwsh tool notes). Restore itself works, and the
-# compiler runs fine when spawned with inherited stdio, so this script compiles
-# each project directly with csc and runs the zero-dependency console assertion
-# suite. On an unrestricted host, `dotnet build` / `dotnet run --project
-# tests\Cordis.Tests` work normally.
+# `dotnet build`/`dotnet test` are blocked by the host sandbox: MSBuild's Csc task spawns the C#
+# compiler with captured stdout/stderr, and the sandbox denies child processes that capture output
+# through pipes (the same boundary documented in the harness pwsh tool notes). Restore itself
+# works, and the compiler runs fine when spawned with inherited stdio, so this script compiles
+# each project directly with csc and runs the zero-dependency console assertion suite. On an
+# unrestricted host, `dotnet build` / `dotnet run --project tests\Dsh.Spike.Tests` work normally.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sdkDir = Get-ChildItem (Join-Path $env:ProgramFiles 'dotnet\sdk') -Directory | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
@@ -34,25 +32,28 @@ function Invoke-Csc {
     if ($LASTEXITCODE -ne 0) { throw "csc failed for $Label (exit $LASTEXITCODE)" }
 }
 
-Invoke-Csc -ExtraArgs @(
-    '-target:library',
-    "-out:$(Join-Path $bin 'Cordis.Cosmokit.dll')",
-    "-doc:$(Join-Path $bin 'Cordis.Cosmokit.xml')"
-) -Sources (Get-ChildItem (Join-Path $root 'src\Cordis\Cordis.Cosmokit') -Filter '*.cs' | ForEach-Object FullName) -Label 'Cordis.Cosmokit'
+$cordis = Get-ChildItem (Join-Path $root 'src\Cordis\Cordis.Core') -Filter '*.cs' | ForEach-Object FullName
+$src = Join-Path $root 'src\Dsh'
+$llm = Get-ChildItem (Join-Path $src 'Dsh.Llm') -Filter '*.cs' | ForEach-Object FullName
+$session = Get-ChildItem (Join-Path $src 'Dsh.Session') -Filter '*.cs' | ForEach-Object FullName
+$tools = Get-ChildItem (Join-Path $src 'Dsh.Tools') -Filter '*.cs' | ForEach-Object FullName
+$spike = Get-ChildItem (Join-Path $src 'Dsh.Spike') -Filter '*.cs' | ForEach-Object FullName
+$tests = Get-ChildItem (Join-Path $root 'tests\Dsh.Spike.Tests') -Filter '*.cs' | ForEach-Object FullName
 
-Invoke-Csc -ExtraArgs @(
-    '-target:library',
-    "-out:$(Join-Path $bin 'Cordis.Schemastery.dll')",
-    "-doc:$(Join-Path $bin 'Cordis.Schemastery.xml')",
-    "-r:$(Join-Path $bin 'Cordis.Cosmokit.dll')"
-) -Sources (Get-ChildItem (Join-Path $root 'src\Cordis\Cordis.Schemastery') -Filter '*.cs' | ForEach-Object FullName) -Label 'Cordis.Schemastery'
+# Compile in dependency order: Cordis.Core first, then Llm, Session (-> Llm + Cordis),
+# Tools (-> Session + Llm + Cordis), Spike (-> all three + Cordis), then the tests app.
+$core = Join-Path $bin 'Cordis.Core.dll'
+$llmDll = Join-Path $bin 'Dsh.Llm.dll'
+$sessionDll = Join-Path $bin 'Dsh.Session.dll'
+$toolsDll = Join-Path $bin 'Dsh.Tools.dll'
+$spikeDll = Join-Path $bin 'Dsh.Spike.dll'
 
-Invoke-Csc -ExtraArgs @(
-    '-target:exe',
-    "-out:$(Join-Path $bin 'Cordis.Tests.dll')",
-    "-r:$(Join-Path $bin 'Cordis.Cosmokit.dll')",
-    "-r:$(Join-Path $bin 'Cordis.Schemastery.dll')"
-) -Sources (Get-ChildItem (Join-Path $root 'tests\Cordis.Tests') -Filter '*.cs' | ForEach-Object FullName) -Label 'Cordis.Tests'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$core") -Sources $cordis -Label 'Cordis.Core'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$llmDll", "-r:$core") -Sources $llm -Label 'Dsh.Llm'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$sessionDll", "-r:$core", "-r:$llmDll") -Sources $session -Label 'Dsh.Session'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$toolsDll", "-r:$core", "-r:$sessionDll", "-r:$llmDll") -Sources $tools -Label 'Dsh.Tools'
+Invoke-Csc -ExtraArgs @('-target:exe', "-out:$spikeDll", "-r:$core", "-r:$sessionDll", "-r:$llmDll", "-r:$toolsDll") -Sources $spike -Label 'Dsh.Spike'
+Invoke-Csc -ExtraArgs @('-target:exe', "-out:$(Join-Path $bin 'Dsh.Spike.Tests.dll')", "-r:$core", "-r:$sessionDll", "-r:$llmDll", "-r:$toolsDll", "-r:$spikeDll") -Sources $tests -Label 'Dsh.Spike.Tests'
 
 $runtime = $pack.Name
 $runtimeConfig = @{
@@ -63,12 +64,23 @@ $runtimeConfig = @{
         configProperties = @{ 'System.Reflection.Metadata.MetadataUpdater.IsSupported' = $false }
     }
 }
-$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Cordis.Tests.runtimeconfig.json') -Encoding utf8
+$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Dsh.Spike.Tests.runtimeconfig.json') -Encoding utf8
 
-Write-Host '== Running Cordis.Tests =='
-& dotnet (Join-Path $bin 'Cordis.Tests.dll')
+$spikeConfig = @{
+    runtimeOptions = @{
+        tfm = 'net10.0'
+        framework = @{ name = 'Microsoft.NETCore.App'; version = $runtime }
+        rollForward = 'LatestMinor'
+        configProperties = @{ 'System.Reflection.Metadata.MetadataUpdater.IsSupported' = $false }
+    }
+}
+$spikeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Dsh.Spike.runtimeconfig.json') -Encoding utf8
+
+Write-Host '== Running Dsh.Spike (headless smoke) =='
+& dotnet $spikeDll
+if ($LASTEXITCODE -ne 0) { throw "Dsh.Spike smoke failed (exit $LASTEXITCODE)" }
+
+Write-Host '== Running Dsh.Spike.Tests =='
+& dotnet (Join-Path $bin 'Dsh.Spike.Tests.dll')
 exit $LASTEXITCODE
-
-
-
 
