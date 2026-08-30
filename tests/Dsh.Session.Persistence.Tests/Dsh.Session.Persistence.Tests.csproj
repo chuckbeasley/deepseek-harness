@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Fixtures\pinned-session.jsonl" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fixtures\pinned-session.jsonl" CopyToOutputDirectory="PreserveNewest" Link="pinned-session.jsonl" />
   </ItemGroup>
 
 </Project>
