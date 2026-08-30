@@ -57,6 +57,12 @@ public sealed class Include
 
     /// <summary>The current mounted rows (the loader root's data).</summary>
     public IReadOnlyList<EntryOptions> Rows => _loader.Root.Data;
+    /// <summary>Render an entry list in the include's YAML dialect (used by the config dump).</summary>
+    public static string RenderEntryList(IReadOnlyList<object?> data)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        return string.Join("\n", data.Select(EmitListItem)) + "\n";
+    }
 
     /// <summary>Read the file, apply patches, and mount the rows. Seeds the file on ENOENT.</summary>
     public Task ApplyFileAsync() => EnqueueAsync(() => ApplyCoreAsync(initialFallback: true));
@@ -213,3 +219,4 @@ public sealed class Include
         text.IndexOfAny(new[] { '#', ':', '-', '\n' }) >= 0 ||
         text is "null" or "true" or "false";
 }
+

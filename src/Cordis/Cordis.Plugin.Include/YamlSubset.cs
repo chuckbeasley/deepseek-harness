@@ -93,6 +93,14 @@ public static class YamlSubset
             throw new YamlParseException($"unexpected indentation at line {lines[index].Number}");
         }
         if (IsListItem(lines[index].Content)) return ParseList(lines, ref index, indent);
+        if (lines[index].Content is "[]" or "{}")
+        {
+            // The documented subset covers empty flow collections; at document level they are the
+            // empty entry-list root (or an empty map), not a key: value mapping.
+            var scalar = ParseScalar(lines[index].Content);
+            index++;
+            return (scalar, false);
+        }
         return ParseMap(lines, ref index, indent);
     }
 
@@ -195,14 +203,15 @@ public static class YamlSubset
     private static bool TrySplitKey(string content, out string key, out string? rest)
     {
         var colon = content.IndexOf(':');
-        if (colon <= 0 || colon >= content.Length - 1 || content[colon + 1] != ' ')
+        if (colon <= 0 || (colon < content.Length - 1 && content[colon + 1] != ' '))
         {
             key = "";
             rest = null;
             return false;
         }
         key = content[..colon].Trim();
-        rest = content[(colon + 1)..].Trim();
+        // A trailing colon opens a nested block (the `insert:`/`config:` continuation form).
+        rest = colon < content.Length - 1 ? content[(colon + 1)..].Trim() : null;
         return key.Length > 0;
     }
 
