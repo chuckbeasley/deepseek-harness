@@ -3,6 +3,11 @@
   <Folder Name="/src/Cordis/">
     <Project Path="src/Cordis/Cordis.Core/Cordis.Core.csproj" />
     <Project Path="src/Cordis/Cordis.Cosmokit/Cordis.Cosmokit.csproj" />
+    <Project Path="src/Cordis/Cordis.Logger.Console/Cordis.Logger.Console.csproj" />
+    <Project Path="src/Cordis/Cordis.Plugin.Hmr/Cordis.Plugin.Hmr.csproj" />
+    <Project Path="src/Cordis/Cordis.Plugin.Include/Cordis.Plugin.Include.csproj" />
+    <Project Path="src/Cordis/Cordis.Plugin.Loader/Cordis.Plugin.Loader.csproj" />
+    <Project Path="src/Cordis/Cordis.Plugin.Timer/Cordis.Plugin.Timer.csproj" />
     <Project Path="src/Cordis/Cordis.Schemastery/Cordis.Schemastery.csproj" />
   </Folder>
   <Folder Name="/src/Dsh/">
@@ -13,6 +18,10 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Cordis.Core.Tests/Cordis.Core.Tests.csproj" />
+    <Project Path="tests/Cordis.Plugin.Hmr.Tests/Cordis.Plugin.Hmr.Tests.csproj" />
+    <Project Path="tests/Cordis.Plugin.Include.Tests/Cordis.Plugin.Include.Tests.csproj" />
+    <Project Path="tests/Cordis.Plugin.Loader.Tests/Cordis.Plugin.Loader.Tests.csproj" />
+    <Project Path="tests/Cordis.Plugin.Timer.Tests/Cordis.Plugin.Timer.Tests.csproj" />
     <Project Path="tests/Cordis.Tests/Cordis.Tests.csproj" />
     <Project Path="tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj" />
   </Folder>
