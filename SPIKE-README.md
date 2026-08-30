@@ -47,11 +47,21 @@ dotnet build src/Cordis/Cordis.Schemastery/Cordis.Schemastery.csproj
 dotnet run --project tests/Cordis.Tests
 ```
 
-The host sandbox blocks `dotnet build`/`dotnet test` (MSBuild's Csc task
-spawns the compiler with captured output, which the sandbox denies; restore
-itself works offline). `build-and-test.ps1` compiles each project directly
-with `csc` via response files and runs the console assertion suite, which
-exits non-zero on any failure.
+Both library projects compile cleanly under native `dotnet build`
+(0 warnings, 0 errors; verified against the committed tree). The sandbox,
+however, intermittently blocks MSBuild's Csc task (it spawns the compiler
+with captured output; MSB3883 "Access is denied"), and network access to
+nuget.org is blocked from this environment. `dotnet test` with xUnit cannot
+be restored here: the dependency closure needs `System.Reflection.Metadata
+8.0.0`, which is absent from every local NuGet cache (the global cache has
+6.0.1/7.0.0; the VS offline feed has <= 1.6.0). Per the Phase 0 task's
+fallback rule, the test project is therefore a zero-dependency console
+assertion suite; `build-and-test.ps1` compiles each project directly with
+`csc` via response files and runs it (37 assertions, exits non-zero on any
+failure). The xUnit packages (xunit 2.9.3, Microsoft.NET.Test.Sdk 17.14.1,
+xunit.runner.visualstudio 3.1.4) are cached locally; a networked host can
+restore them and switch the test project back to `dotnet test` with a
+one-line csproj change.
 
 ## Deviations from the TypeScript sources
 
@@ -64,3 +74,4 @@ a list element writes `null` instead of leaving a JS hole; `IsPlainObject`
 accepts any non-list object (dictionaries and POCOs via property
 reflection); `i18n`, `toJSON`, `bitset`, `date`, `regExp`, `function`, `is`,
 and `arrayBuffer` schema types are deferred to Phase 1.
+
