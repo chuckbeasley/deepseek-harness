@@ -8,6 +8,7 @@ public static class Program
         try
         {
             SmokeScenario.RunAsync(Console.Out).GetAwaiter().GetResult();
+            Phase2Scenario.RunAsync(Console.Out).GetAwaiter().GetResult();
             return 0;
         }
         catch (Exception error)

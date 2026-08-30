@@ -11,9 +11,17 @@
     <Project Path="src/Cordis/Cordis.Schemastery/Cordis.Schemastery.csproj" />
   </Folder>
   <Folder Name="/src/Dsh/">
+    <Project Path="src/Dsh/Dsh.Agent/Dsh.Agent.csproj" />
+    <Project Path="src/Dsh/Dsh.AgentLoop/Dsh.AgentLoop.csproj" />
     <Project Path="src/Dsh/Dsh.Llm/Dsh.Llm.csproj" />
+    <Project Path="src/Dsh/Dsh.Llm.DeepSeek/Dsh.Llm.DeepSeek.csproj" />
+    <Project Path="src/Dsh/Dsh.Scope/Dsh.Scope.csproj" />
     <Project Path="src/Dsh/Dsh.Session/Dsh.Session.csproj" />
+    <Project Path="src/Dsh/Dsh.Session.Persistence/Dsh.Session.Persistence.csproj" />
+    <Project Path="src/Dsh/Dsh.Session.Projection/Dsh.Session.Projection.csproj" />
+    <Project Path="src/Dsh/Dsh.Session.Titles/Dsh.Session.Titles.csproj" />
     <Project Path="src/Dsh/Dsh.Spike/Dsh.Spike.csproj" />
+    <Project Path="src/Dsh/Dsh.SystemPrompt/Dsh.SystemPrompt.csproj" />
     <Project Path="src/Dsh/Dsh.Tools/Dsh.Tools.csproj" />
   </Folder>
   <Folder Name="/tests/">
@@ -23,6 +31,11 @@
     <Project Path="tests/Cordis.Plugin.Loader.Tests/Cordis.Plugin.Loader.Tests.csproj" />
     <Project Path="tests/Cordis.Plugin.Timer.Tests/Cordis.Plugin.Timer.Tests.csproj" />
     <Project Path="tests/Cordis.Tests/Cordis.Tests.csproj" />
+    <Project Path="tests/Dsh.Agent.Tests/Dsh.Agent.Tests.csproj" />
+    <Project Path="tests/Dsh.AgentLoop.Tests/Dsh.AgentLoop.Tests.csproj" />
+    <Project Path="tests/Dsh.Llm.DeepSeek.Tests/Dsh.Llm.DeepSeek.Tests.csproj" />
+    <Project Path="tests/Dsh.Session.Persistence.Tests/Dsh.Session.Persistence.Tests.csproj" />
     <Project Path="tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj" />
+    <Project Path="tests/Dsh.SystemPrompt.Tests/Dsh.SystemPrompt.Tests.csproj" />
   </Folder>
 </Solution>

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
+    <ProjectReference Include="..\Dsh.AgentLoop\Dsh.AgentLoop.csproj" />
   </ItemGroup>
 
   <ItemGroup>
