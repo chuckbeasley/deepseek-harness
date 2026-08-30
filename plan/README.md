@@ -20,3 +20,14 @@ These were confirmed with the requester before the plan was written:
 ## How to read
 
 Read `01` for scope, `02` for the target shape, `03` for the decisions that carry the most risk, and `04` for the order of work. Phase 0 (the Cordis-core + vertical-slice spike) is the go/no-go gate for the whole effort; everything else is sequenced off its outcome.
+
+## Status
+
+**Phase 0 (spike): COMPLETE — 2026-08-30** — integrated on branch `port/dotnet10` (merges `c4b3adc41b`; solution commit included):
+
+- `src/Cordis/Cordis.Core` — Cordis port (Context/Service/Events with all five dispatch modes, Fiber effects) — 37 xUnit tests.
+- `src/Cordis/Cordis.Cosmokit` + `src/Cordis/Cordis.Schemastery` — utility + schema-validation ports — 37 console tests.
+- `src/Dsh/Dsh.Llm`, `Dsh.Session`, `Dsh.Tools`, `Dsh.Spike` — the vertical slice — 28 console tests, including the byte-pinned 22-event headless smoke.
+- Solution `deepseek-harness.slnx`: 10 projects, builds with 0 warnings / 0 errors on .NET 10; the smoke exe prints the pinned 22-event log and exits `== PASS ==`.
+
+Go/no-go verdict: **GO** — the Cordis semantics (waterfall short-circuit, next()-return propagation, reverse-order effect unwind, dispatch modes) port faithfully to C#. Phase 1 (Loader / Include / config expressions) can proceed.
