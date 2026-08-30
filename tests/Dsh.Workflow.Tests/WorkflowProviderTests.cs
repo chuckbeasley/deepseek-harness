@@ -36,7 +36,7 @@ public static class WorkflowProviderTests
 
         Assert.Equal(WorkflowStopReason.Completed, result.StopReason);
         Assert.Equal(2, result.StepsStarted);
-        Assert.Equal("one-two", result.Value, $"the final step's value is the run result (got {(result.Value is null ? "null" : result.Value.ToString())})");
+        Assert.Equal("one-two", result.Value, "the final step's value is the run result");
         Assert.Equal(new[] { "step-1", "step-2" }, order.ToArray(), "steps run in registration order");
         Assert.Equal("two-step", run.Meta.Name);
     }
