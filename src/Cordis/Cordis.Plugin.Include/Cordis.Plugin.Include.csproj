@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>default</LangVersion>
+    <RootNamespace>Cordis.Plugin.Include</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cordis.Core\Cordis.Core.csproj" />
+    <ProjectReference Include="..\Cordis.Plugin.Loader\Cordis.Plugin.Loader.csproj" />
+  </ItemGroup>
+
+</Project>
