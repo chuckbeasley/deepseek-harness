@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Cordis/">
+    <Project Path="src/Cordis/Cordis.Core/Cordis.Core.csproj" />
+    <Project Path="src/Cordis/Cordis.Cosmokit/Cordis.Cosmokit.csproj" />
+    <Project Path="src/Cordis/Cordis.Schemastery/Cordis.Schemastery.csproj" />
+  </Folder>
+  <Folder Name="/src/Dsh/">
+    <Project Path="src/Dsh/Dsh.Llm/Dsh.Llm.csproj" />
+    <Project Path="src/Dsh/Dsh.Session/Dsh.Session.csproj" />
+    <Project Path="src/Dsh/Dsh.Spike/Dsh.Spike.csproj" />
+    <Project Path="src/Dsh/Dsh.Tools/Dsh.Tools.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Cordis.Core.Tests/Cordis.Core.Tests.csproj" />
+    <Project Path="tests/Cordis.Tests/Cordis.Tests.csproj" />
+    <Project Path="tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj" />
+  </Folder>
+</Solution>
