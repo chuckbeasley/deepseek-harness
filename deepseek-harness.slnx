@@ -26,6 +26,7 @@
     <Project Path="src/Dsh/Dsh.Credentials/Dsh.Credentials.csproj" />
     <Project Path="src/Dsh/Dsh.Llm/Dsh.Llm.csproj" />
     <Project Path="src/Dsh/Dsh.Llm.DeepSeek/Dsh.Llm.DeepSeek.csproj" />
+    <Project Path="src/Dsh/Dsh.Llm.Replay/Dsh.Llm.Replay.csproj" />
     <Project Path="src/Dsh/Dsh.Scope/Dsh.Scope.csproj" />
     <Project Path="src/Dsh/Dsh.Session/Dsh.Session.csproj" />
     <Project Path="src/Dsh/Dsh.Session.Persistence/Dsh.Session.Persistence.csproj" />
@@ -105,6 +106,7 @@
     <Project Path="tests/Dsh.Sdk.Server.Tests/Dsh.Sdk.Server.Tests.csproj" />
     <Project Path="tests/Dsh.Sdk.Client.Tests/Dsh.Sdk.Client.Tests.csproj" />
     <Project Path="tests/Dsh.Acp.Tests/Dsh.Acp.Tests.csproj" />
+    <Project Path="tests/Dsh.Snapshot.Tests/Dsh.Snapshot.Tests.csproj" />
     <Project Path="tests/Dsh.Schedule.Tests/Dsh.Schedule.Tests.csproj" />
     <Project Path="tests/Dsh.Feedback.Tests/Dsh.Feedback.Tests.csproj" />
     <Project Path="tests/Dsh.Storage.Tests/Dsh.Storage.Tests.csproj" />

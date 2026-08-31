@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\Cordis\Cordis.Plugin.Timer\Cordis.Plugin.Timer.csproj" />
     <ProjectReference Include="..\Dsh.Llm\Dsh.Llm.csproj" />
     <ProjectReference Include="..\Dsh.Llm.DeepSeek\Dsh.Llm.DeepSeek.csproj" />
+    <ProjectReference Include="..\Dsh.Llm.Replay\Dsh.Llm.Replay.csproj" />
     <ProjectReference Include="..\Dsh.Session\Dsh.Session.csproj" />
 <ProjectReference Include="..\Dsh.Session.Projection\Dsh.Session.Projection.csproj" />
     <ProjectReference Include="..\Dsh.Session.Persistence\Dsh.Session.Persistence.csproj" />

@@ -1,0 +1,10 @@
+# Snapshot-run overlay: swap the live LLM rows for the recorded-session replay row. The replay
+# provider reads DSH_SNAPSHOT_FILE / DSH_SNAPSHOT_OVERRIDE / DSH_SNAPSHOT_CHILD_FILES and registers
+# under the recorded DSH_SNAPSHOT_PROVIDER route.
+- id: deepseek
+  disabled: true
+- id: mock
+  disabled: true
+- insert:
+    - id: replay
+      name: replay

@@ -106,6 +106,44 @@ public static class SpineRegistry
             });
             return ctx.Llm().RegisterAdapter(new[] { "deepseek" }, adapter);
         }));
+        catalog.Register("replay", new SpinePlugin("replay", (ctx, _) =>
+        {
+            // The snapshot-test LLM replay row: serves the recorded fixture streams keylessly.
+            // The fixture path is required (Config.file or $DSH_SNAPSHOT_FILE) and the provider
+            // route follows the recorded request header ($DSH_SNAPSHOT_PROVIDER).
+            var file = ConfigString(_, "file") ?? Environment.GetEnvironmentVariable(Dsh.Llm.Replay.SnapshotEnv.FileEnv);
+            if (string.IsNullOrEmpty(file))
+            {
+                throw new InvalidOperationException(
+                    "replay requires a fixture path (Config.file or $DSH_SNAPSHOT_FILE)");
+            }
+            var overrideFile = ConfigString(_, "overrideFile")
+                ?? Environment.GetEnvironmentVariable(Dsh.Llm.Replay.SnapshotEnv.OverrideEnv);
+            var childEnv = Environment.GetEnvironmentVariable(Dsh.Llm.Replay.SnapshotEnv.ChildFilesEnv);
+            var childFiles = childEnv is { Length: > 0 }
+                ? childEnv.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+                : null;
+            var handle = Dsh.Llm.Replay.ReplayInstall.Install(ctx.Llm(), new Dsh.Llm.Replay.ReplayConfig
+            {
+                File = file,
+                OverrideFile = string.IsNullOrEmpty(overrideFile) ? null : overrideFile,
+                ChildFiles = childFiles,
+                Provider = Dsh.Llm.Replay.SnapshotEnv.Provider,
+            });
+            // The end-of-run consumption check turns a fixture underrun into a crisp exit-1
+            // diagnostic; the CLI owns process lifetime, so dispose runs on ctx disposal.
+            return new SpineDisposables(new CallbackDisposable(() =>
+            {
+                try
+                {
+                    handle.AssertConsumed();
+                }
+                finally
+                {
+                    handle.Dispose();
+                }
+            }), handle);
+        }));
         catalog.Register("subprocess", new SpinePlugin("subprocess", (ctx, _) => new Dsh.Subprocess.LocalSubprocessProvider(ctx)));
         catalog.Register("fs", new SpinePlugin("fs", (ctx, config) =>
         {
@@ -504,11 +542,14 @@ public static class SpineRegistry
             // The ACP profile: the standard Agent Client Protocol over console stdio. Stdout is
             // the wire, so nothing else may write to it; the process exits when the client closes
             // stdin (EOF). The route follows DEEPSEEK_API_KEY like the headless/web rows
-            // (keyless runs use the mock route).
+            // (keyless runs use the mock route); a snapshot run follows the recorded
+            // DSH_SNAPSHOT_PROVIDER/MODEL instead.
             var key = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
             var provider = ConfigString(config, "provider")
+                ?? Dsh.Llm.Replay.SnapshotEnv.Provider
                 ?? (string.IsNullOrEmpty(key) ? Dsh.Spike.MockLlmProvider.Provider : "deepseek");
             var model = ConfigString(config, "model")
+                ?? Dsh.Llm.Replay.SnapshotEnv.Model
                 ?? (string.IsNullOrEmpty(key) ? Dsh.Spike.MockLlmProvider.Model : "deepseek-chat");
             var transport = new Dsh.Sdk.Protocol.JsonRpcLineTransport(
                 Console.OpenStandardInput(), Console.OpenStandardOutput());

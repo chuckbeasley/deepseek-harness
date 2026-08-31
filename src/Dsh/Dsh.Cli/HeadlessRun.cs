@@ -27,8 +27,12 @@ public sealed class HeadlessRun : ILoaderPlugin
         var loop = ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
             ?? throw new InvalidOperationException("dsh: headless requires the \"agentLoop\" row");
         var key = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
-        var provider = string.IsNullOrEmpty(key) ? Dsh.Spike.MockLlmProvider.Provider : "deepseek";
-        var model = string.IsNullOrEmpty(key) ? Dsh.Spike.MockLlmProvider.Model : "deepseek-chat";
+        // A snapshot run follows the recorded fixture's route; otherwise the key decides
+        // between the real DeepSeek adapter and the keyless mock route.
+        var provider = Dsh.Llm.Replay.SnapshotEnv.Provider
+            ?? (string.IsNullOrEmpty(key) ? Dsh.Spike.MockLlmProvider.Provider : "deepseek");
+        var model = Dsh.Llm.Replay.SnapshotEnv.Model
+            ?? (string.IsNullOrEmpty(key) ? Dsh.Spike.MockLlmProvider.Model : "deepseek-chat");
         var sessionId = new Dsh.Session.SessionId(SessionIdValue);
         var handle = loop.Create(sessionId, new Dsh.Agent.AgentOptions { Provider = provider, Model = model });
         var driver = loop.GetLoop(sessionId)
@@ -39,37 +43,44 @@ public sealed class HeadlessRun : ILoaderPlugin
             Content = new Dsh.Llm.ContentBlock[] { new Dsh.Llm.TextBlock(task) },
             Source = new Dsh.Llm.UserSource(),
         };
-        driver.Send(message, Dsh.Agent.InboxTarget.NextTurn, wakeup: true);
 
-        // The turn runs beside the loader mount; Main blocks on the appExit signal.
-        _ = Task.Run(async () =>
+        // The turn starts only after the loader settles (appReady.Commit), so later rows (e.g.
+        // the snapshot replay row) are mounted before the first model call; Main blocks on the
+        // appExit signal.
+        var ready = ctx.Get<AppReady>("appReady")
+            ?? throw new InvalidOperationException("dsh: headless requires the appReady launcher fact");
+        ready.OnReady(() =>
         {
-            try
+            driver.Send(message, Dsh.Agent.InboxTarget.NextTurn, wakeup: true);
+            _ = Task.Run(async () =>
             {
-                await driver.WhenIdleAsync();
-                var last = handle.Agent.Session.Events.OfType<Dsh.Session.AssistantMessageEvent>().LastOrDefault();
-                if (last is null)
+                try
                 {
-                    Console.Error.WriteLine("dsh: the turn produced no assistant message");
+                    await driver.WhenIdleAsync();
+                    var last = handle.Agent.Session.Events.OfType<Dsh.Session.AssistantMessageEvent>().LastOrDefault();
+                    if (last is null)
+                    {
+                        Console.Error.WriteLine("dsh: the turn produced no assistant message");
+                        Exit(ctx, 1);
+                        return;
+                    }
+                    var textBlocks = last.Message.Content.OfType<Dsh.Llm.TextBlock>().ToArray();
+                    if (textBlocks.Length == 0)
+                    {
+                        Console.Out.WriteLine("[the final assistant message carries no text]");
+                    }
+                    else
+                    {
+                        foreach (var block in textBlocks) Console.Out.WriteLine(block.Text);
+                    }
+                    Exit(ctx, 0);
+                }
+                catch (Exception error)
+                {
+                    Console.Error.WriteLine($"dsh: headless run failed: {error.Message}");
                     Exit(ctx, 1);
-                    return;
                 }
-                var textBlocks = last.Message.Content.OfType<Dsh.Llm.TextBlock>().ToArray();
-                if (textBlocks.Length == 0)
-                {
-                    Console.Out.WriteLine("[the final assistant message carries no text]");
-                }
-                else
-                {
-                    foreach (var block in textBlocks) Console.Out.WriteLine(block.Text);
-                }
-                Exit(ctx, 0);
-            }
-            catch (Exception error)
-            {
-                Console.Error.WriteLine($"dsh: headless run failed: {error.Message}");
-                Exit(ctx, 1);
-            }
+            });
         });
         return ValueTask.FromResult<IDisposable?>(null);
     }
