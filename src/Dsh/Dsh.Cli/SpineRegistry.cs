@@ -142,6 +142,14 @@ public static class SpineRegistry
             return new Dsh.Storage.JsonFileStorageProvider(ctx, new Dsh.Storage.JsonFileStorageConfig(root));
         }));
         catalog.Register("workspace", new SpinePlugin("workspace", (ctx, _) => new Dsh.Workspace.LocalWorkspaceProvider(ctx)));
+        catalog.Register("workspaceRegistry", new SpinePlugin("workspaceRegistry", (ctx, _) =>
+        {
+            var storage = ctx.Get<Dsh.Storage.IStorageService>("storage")
+                ?? throw new InvalidOperationException("workspaceRegistry requires the \"storage\" row");
+            var sessions = ctx.Get<Dsh.Session.SessionStore>("sessions");
+            return new Dsh.Workspace.WorkspaceRegistry(ctx, storage,
+                sessionKnown: sessions is null ? null : id => sessions.Get(id) is not null);
+        }));
         catalog.Register("spill", new SpinePlugin("spill", (ctx, config) =>
         {
             var root = ConfigString(config, "root")

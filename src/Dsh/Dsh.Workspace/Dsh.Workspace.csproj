@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
+    <ProjectReference Include="..\Dsh.Session\Dsh.Session.csproj" />
+    <ProjectReference Include="..\Dsh.Storage\Dsh.Storage.csproj" />
   </ItemGroup>
 
 </Project>

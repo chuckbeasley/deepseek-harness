@@ -1,5 +1,7 @@
 namespace Dsh.Workspace;
 
+using Dsh.Session;
+
 /// <summary>
 /// Stable identifier of one workspace (port of the TS <c>WorkspaceId</c> brand). A generated uuid,
 /// never the path: path normalization rewrites paths, and a reference anchor must stay stable.
@@ -22,9 +24,10 @@ public enum WorkspaceStatus
 }
 
 /// <summary>
-/// One workspace: a stable id over an existing directory, a display title, and creation/update
-/// instants (port of the TS <c>Workspace</c> record core — session accounting and reordering are
-/// deferred). <see cref="Root"/> is the canonical absolute directory path stamped at open; it is
+/// One workspace: a stable id over an existing directory, a display title, creation/update
+/// instants, and its accounted session membership (port of the TS <c>Workspace</c> record core —
+/// the membership arrives with the session/workspace attach flows).
+/// <see cref="Root"/> is the canonical absolute directory path stamped at open; it is
 /// never rewritten afterwards, even when the directory disappears (see <see cref="Status"/>).
 /// </summary>
 public sealed record Workspace(
@@ -32,8 +35,12 @@ public sealed record Workspace(
     string Root,
     string Title,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt)
+    DateTimeOffset UpdatedAt,
+    IReadOnlyList<SessionId>? SessionIds = null)
 {
+    /// <summary>The accounted session membership; empty when none was declared.</summary>
+    public IReadOnlyList<SessionId> SessionIdsOrEmpty => SessionIds ?? Array.Empty<SessionId>();
+
     /// <summary>
     /// Live directory check, uncached: whether <see cref="Root"/> currently exists. A missing
     /// directory never mutates the record — the directory may only be temporarily moved.

@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Cordis\Cordis.Core\Cordis.Core.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Workspace\Dsh.Workspace.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Storage\Dsh.Storage.csproj" />
   </ItemGroup>
 
 </Project>
