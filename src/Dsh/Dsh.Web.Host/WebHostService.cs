@@ -55,7 +55,13 @@ public sealed class WebHostService : Service
     /// <summary>Start the Kestrel host: build, wire the hub and the mounted shell, listen.</summary>
     public override async ValueTask StartAsync(CancellationToken cancellationToken = default)
     {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = Array.Empty<string>() });
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            Args = Array.Empty<string>(),
+            // The web app's wwwroot (and published Blazor assets) live next to the dsh binary,
+            // not in whatever directory the launcher happened to run from.
+            ContentRootPath = AppContext.BaseDirectory,
+        });
         builder.WebHost.UseUrls($"http://{_config.Host}:{_config.Port}");
         builder.Logging.ClearProviders();
         builder.Logging.AddProvider(new CordisLoggerProvider(Ctx));

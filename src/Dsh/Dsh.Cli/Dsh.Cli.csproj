@@ -1,4 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The CLI is the executable that boots the web host (dsh web), so it must be a Web SDK project:
+     the Blazor framework assets (_framework/blazor.web.js) only flow into an SDK.Web executable's
+     static web assets manifest. -->
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,6 +10,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Dsh.Cli</RootNamespace>
+    <!-- The bundle manifests are declared explicitly below; the Web SDK's default Content glob
+         (wwwroot and friends) would duplicate them. -->
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <!-- The CLI hosts the Razor components app (dsh web) but carries no .razor files of its own,
+         so the SDK's automatic condition would skip the Blazor framework assets; the host needs
+         them regardless. -->
+    <RequiresAspNetWebAssets>true</RequiresAspNetWebAssets>
   </PropertyGroup>
 
   <ItemGroup>
