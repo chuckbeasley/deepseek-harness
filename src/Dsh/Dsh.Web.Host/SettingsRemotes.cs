@@ -48,10 +48,17 @@ public static class SettingsRemotes
         return new RpcMethod("settings/replace", (args, _) => WriteAsync(ctx, args, WriteKind.Replace));
     }
 
+    /// <summary>Apply ordered path-addressed edits and answer the namespace's new redacted view.</summary>
+    public static RpcMethod Mutate(Context ctx)
+    {
+        ArgumentNullException.ThrowIfNull(ctx);
+        return new RpcMethod("settings/mutate", (args, _) => WriteAsync(ctx, args, WriteKind.Mutate));
+    }
+
     private static async Task<JsonElement?> WriteAsync(Context ctx, JsonElement? args, WriteKind kind)
     {
         var settings = Provider(ctx);
-        var verb = kind == WriteKind.Update ? "update" : "replace";
+        var verb = kind switch { WriteKind.Update => "update", WriteKind.Replace => "replace", _ => "mutate" };
         var ns = args is JsonElement element && element.TryGetProperty("ns", out var nsValue)
                 && nsValue.ValueKind == JsonValueKind.String
             ? nsValue.GetString()
@@ -60,25 +67,37 @@ public static class SettingsRemotes
         {
             throw new RpcBadRequestException($"settings/{verb} requires a non-empty ns");
         }
-        var section = args is JsonElement argsElement && argsElement.TryGetProperty(kind == WriteKind.Update ? "patch" : "section", out var sectionValue)
-                && sectionValue.ValueKind == JsonValueKind.Object
-            ? sectionValue
-            : default;
-        if (section.ValueKind != JsonValueKind.Object)
-        {
-            throw new RpcBadRequestException($"settings/{verb} requires a {(kind == WriteKind.Update ? "patch" : "section")} object");
-        }
         var expectedRevision = LongArg(args, "expectedRevision");
+        object? input;
+        if (kind == WriteKind.Mutate)
+        {
+            input = OpsArg(args);
+        }
+        else
+        {
+            var section = args is JsonElement argsElement && argsElement.TryGetProperty(kind == WriteKind.Update ? "patch" : "section", out var sectionValue)
+                    && sectionValue.ValueKind == JsonValueKind.Object
+                ? sectionValue
+                : default;
+            if (section.ValueKind != JsonValueKind.Object)
+            {
+                throw new RpcBadRequestException($"settings/{verb} requires a {(kind == WriteKind.Update ? "patch" : "section")} object");
+            }
+            input = SettingsWireValues.FromJsonElement(section);
+        }
         try
         {
-            var input = SettingsWireValues.FromJsonElement(section);
-            if (kind == WriteKind.Update)
+            switch (kind)
             {
-                await settings.UpdateAsync(ns, input!, expectedRevision);
-            }
-            else
-            {
-                await settings.ReplaceAsync(ns, input!, expectedRevision);
+                case WriteKind.Update:
+                    await settings.UpdateAsync(ns, input!, expectedRevision);
+                    break;
+                case WriteKind.Replace:
+                    await settings.ReplaceAsync(ns, input!, expectedRevision);
+                    break;
+                default:
+                    await settings.MutateAsync(ns, (IReadOnlyList<Dsh.Settings.SettingsPathOp>)input!, expectedRevision);
+                    break;
             }
         }
         catch (Exception error)
@@ -90,6 +109,54 @@ public static class SettingsRemotes
             ?? throw new RpcDomainError(RpcErrorCodes.Internal,
                 $"settings namespace \"{ns}\" was disposed after the {verb}");
         return JsonSerializer.SerializeToElement(NamespaceView(descriptor));
+    }
+
+    /// <summary>
+    /// Parse and validate the mutate ops array: every op is <c>{op:'set'|'unset', path: string[]}</c>
+    /// with a value for <c>set</c>. The seam re-validates the shape (the TS controller and seam
+    /// both guard it); wire-level violations refuse before the write.
+    /// </summary>
+    private static Dsh.Settings.SettingsPathOp[] OpsArg(JsonElement? args)
+    {
+        if (args is not JsonElement element
+            || !element.TryGetProperty("ops", out var opsValue)
+            || opsValue.ValueKind != JsonValueKind.Array)
+        {
+            throw new RpcBadRequestException("settings/mutate requires an ops array");
+        }
+        var ops = new List<Dsh.Settings.SettingsPathOp>();
+        foreach (var item in opsValue.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.Object
+                || !item.TryGetProperty("op", out var opValue)
+                || opValue.ValueKind != JsonValueKind.String
+                || (opValue.GetString() != "set" && opValue.GetString() != "unset")
+                || !item.TryGetProperty("path", out var pathValue)
+                || pathValue.ValueKind != JsonValueKind.Array)
+            {
+                throw new RpcBadRequestException("settings/mutate ops must be {op:'set'|'unset', path: string[]}");
+            }
+            var path = new List<string>();
+            foreach (var part in pathValue.EnumerateArray())
+            {
+                if (part.ValueKind != JsonValueKind.String)
+                {
+                    throw new RpcBadRequestException("settings/mutate op paths must be arrays of strings");
+                }
+                path.Add(part.GetString()!);
+            }
+            object? value = null;
+            if (opValue.GetString() == "set")
+            {
+                if (!item.TryGetProperty("value", out var valueElement))
+                {
+                    throw new RpcBadRequestException("settings/mutate set ops require a value");
+                }
+                value = SettingsWireValues.FromJsonElement(valueElement);
+            }
+            ops.Add(new Dsh.Settings.SettingsPathOp(opValue.GetString()!, path, value));
+        }
+        return ops.ToArray();
     }
 
     /// <summary>Project one redacted descriptor onto its wire view, omitting absent layers.</summary>
@@ -145,5 +212,6 @@ public static class SettingsRemotes
     {
         Update,
         Replace,
+        Mutate,
     }
 }

@@ -303,6 +303,7 @@ public static class SpineRegistry
             var settingsDescribe = registry.Register(Dsh.Web.Host.SettingsRemotes.Describe(ctx));
             var settingsUpdate = registry.Register(Dsh.Web.Host.SettingsRemotes.Update(ctx));
             var settingsReplace = registry.Register(Dsh.Web.Host.SettingsRemotes.Replace(ctx));
+            var settingsMutate = registry.Register(Dsh.Web.Host.SettingsRemotes.Mutate(ctx));
             var credentialsDescribe = registry.Register(Dsh.Web.Host.CredentialsRemotes.Describe(ctx));
             var credentialsSet = registry.Register(Dsh.Web.Host.CredentialsRemotes.Set(ctx));
             var credentialsUnset = registry.Register(Dsh.Web.Host.CredentialsRemotes.Unset(ctx));
@@ -344,7 +345,7 @@ public static class SpineRegistry
             }));
             return new SpineDisposables(
                 follow, page, prompt, create, list,
-                settingsDescribe, settingsUpdate, settingsReplace,
+                settingsDescribe, settingsUpdate, settingsReplace, settingsMutate,
                 credentialsDescribe, credentialsSet, credentialsUnset,
                 workspaceCreate,
                 directoryPickerPick, directoryPickerList, directoryPickerCreate);

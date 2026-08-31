@@ -1,4 +1,4 @@
-﻿# Agent Note: .NET port Phase 5 wave 1 — settings, credentials, and workspace remote namespaces land
+# Agent Note: .NET port Phase 5 wave 1 — settings, credentials, and workspace remote namespaces land
 
 Status: implemented
 
@@ -18,7 +18,7 @@ The gateway transports any string code verbatim through the new open-string `Rpc
 
 ## Consequence
 
-The wave-1 remote catalog now covers session, settings, credentials, and workspace; the host suite grew from 26 to 44 (settings 6, credentials 7, workspace 5), all green, with the full solution building at 0 errors and the settings/credentials/workspace seam suites unchanged and green. `dsh web` profiles now expose all three namespaces on the gateway. Still deferred and named in the port spec and sources: `settings/mutate` path ops and the document/preset openers, the workspace registry methods (rename/delete/insertBefore/insertSessionBefore/archiveSession/follow), directoryPicker, the Roslyn source generator, the ui-* plugin set, locale dictionaries, and the trust/auth fence.
+The wave-1 remote catalog now covers session, settings, credentials, and workspace; the host suite grew from 26 to 44 (settings 6, credentials 7, workspace 5), all green, with the full solution building at 0 errors and the settings/credentials/workspace seam suites unchanged and green. `dsh web` profiles now expose all three namespaces on the gateway. `settings/mutate` path ops landed afterwards on the same seam (ordered set/unset edits over the serialized write chain, later ops observing earlier ones, root-path semantics, and the redacted-view secret-field case), bringing the settings suite to 16 and the host suite to 62. Still deferred and named in the port spec and sources: the settings document/preset openers, the workspace registry methods (rename/delete/insertBefore/insertSessionBefore/archiveSession/follow), directoryPicker (stubbed with `directory-picker/unavailable`), the Roslyn source generator, the ui-* plugin set, locale dictionaries, and the trust/auth fence beyond the loopback token.
 
 ## Alternatives considered
 

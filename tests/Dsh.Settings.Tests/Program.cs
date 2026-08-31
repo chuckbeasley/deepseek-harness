@@ -19,6 +19,12 @@ public static class Program
         await RunAsync("file: an invalid stored section fails registration loud", SettingsTests.InvalidStoredSectionFailsRegistrationLoud);
         await RunAsync("namespace: a shape violation fails loud", SettingsTests.InvalidNamespaceFailsLoud);
         await RunAsync("file: an unsupported extension fails loud", SettingsTests.FileProviderRejectsUnsupportedExtension);
+        await RunAsync("mutate: a deep set creates intermediate objects", SettingsTests.Mutate_SetCreatesIntermediateObjects);
+        await RunAsync("mutate: unset removes and an absent path is satisfied", SettingsTests.Mutate_UnsetRemovesAndAbsentIsSatisfied);
+        await RunAsync("mutate: root op semantics", SettingsTests.Mutate_RootOpSemantics);
+        await RunAsync("mutate: ordered ops observe earlier ones", SettingsTests.Mutate_OrderedOpsObserveEarlierOnes);
+        await RunAsync("mutate: a stale expectedRevision refuses with a conflict", SettingsTests.Mutate_StaleRevisionRefusesWithConflict);
+        await RunAsync("mutate: names a secret field without restating the section", SettingsTests.Mutate_NamesSecretFieldWithoutRestatingSection);
 
         Console.WriteLine();
         Console.WriteLine($"{_passed} passed, {_failed} failed");

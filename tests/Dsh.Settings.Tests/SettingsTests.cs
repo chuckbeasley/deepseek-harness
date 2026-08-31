@@ -288,6 +288,156 @@ public static class SettingsTests
         }
     }
 
+    public static async Task Mutate_SetCreatesIntermediateObjects()
+    {
+        var ctx = new Context();
+        try
+        {
+            var provider = new MemorySettingsProvider(ctx, new Dictionary<string, object?>());
+            await provider.StartAsync();
+            var schema = Schema.Object(new Dictionary<string, Schema> { ["model"] = Schema.String().Default("deepseek-chat") });
+            var scope = provider.Register<Dictionary<string, object?>>("llm-test", schema);
+
+            await scope.MutateAsync(new[] { new SettingsPathOp("set", new[] { "a", "b", "c" }, 1L) });
+            var value = scope.Get();
+            var a = (Dictionary<string, object?>)value["a"];
+            var b = (Dictionary<string, object?>)a["b"];
+            Assert.Equal(1L, b["c"], "a deep set creates the intermediate objects");
+        }
+        finally
+        {
+            ctx.Dispose();
+        }
+    }
+
+    public static async Task Mutate_UnsetRemovesAndAbsentIsSatisfied()
+    {
+        var ctx = new Context();
+        try
+        {
+            var provider = new MemorySettingsProvider(ctx, new Dictionary<string, object?>());
+            await provider.StartAsync();
+            var schema = Schema.Object(new Dictionary<string, Schema> { ["model"] = Schema.String().Default("deepseek-chat") });
+            var scope = provider.Register<Dictionary<string, object?>>("llm-test", schema);
+            await scope.UpdateAsync(new Dictionary<string, object?> { ["model"] = "deepseek-reasoner" });
+
+            await scope.MutateAsync(new[] { new SettingsPathOp("unset", new[] { "model" }) });
+            Assert.Equal("deepseek-chat", scope.Get()["model"], "unset re-inherits the schema default");
+
+            var revision = provider.Describe()[0].Revision;
+            await scope.MutateAsync(new[] { new SettingsPathOp("unset", new[] { "never-there" }) });
+            Assert.Equal(revision, provider.Describe()[0].Revision, "an unset through an absent path is already satisfied (no revision bump)");
+        }
+        finally
+        {
+            ctx.Dispose();
+        }
+    }
+
+    public static async Task Mutate_RootOpSemantics()
+    {
+        var ctx = new Context();
+        try
+        {
+            var provider = new MemorySettingsProvider(ctx, new Dictionary<string, object?>());
+            await provider.StartAsync();
+            var schema = Schema.Object(new Dictionary<string, Schema> { ["model"] = Schema.String().Default("deepseek-chat") });
+            var scope = provider.Register<Dictionary<string, object?>>("llm-test", schema);
+            await scope.UpdateAsync(new Dictionary<string, object?> { ["model"] = "deepseek-reasoner" });
+
+            var rootSet = Assert.Throws<ArgumentException>(
+                () => scope.MutateAsync(new[] { new SettingsPathOp("set", Array.Empty<string>(), "not-an-object") })
+                    .GetAwaiter().GetResult(),
+                "setting the section root requires a plain object");
+
+            await scope.MutateAsync(new[] { new SettingsPathOp("unset", Array.Empty<string>()) });
+            Assert.Equal("deepseek-chat", scope.Get()["model"], "a root unset clears the section back to the defaults");
+        }
+        finally
+        {
+            ctx.Dispose();
+        }
+    }
+
+    public static async Task Mutate_OrderedOpsObserveEarlierOnes()
+    {
+        var ctx = new Context();
+        try
+        {
+            var provider = new MemorySettingsProvider(ctx, new Dictionary<string, object?>());
+            await provider.StartAsync();
+            var schema = Schema.Object(new Dictionary<string, Schema> { ["model"] = Schema.String().Default("deepseek-chat") });
+            var scope = provider.Register<Dictionary<string, object?>>("llm-test", schema);
+
+            // The first op writes a scalar at "a"; the second descends into it and must create
+            // the intermediate object instead of failing on the scalar.
+            await scope.MutateAsync(new[]
+            {
+                new SettingsPathOp("set", new[] { "a" }, "scalar"),
+                new SettingsPathOp("set", new[] { "a", "b" }, 2L),
+            });
+            var value = scope.Get();
+            var a = (Dictionary<string, object?>)value["a"];
+            Assert.Equal(2L, a["b"], "later ops observe earlier ones, creating intermediates");
+        }
+        finally
+        {
+            ctx.Dispose();
+        }
+    }
+
+    public static async Task Mutate_StaleRevisionRefusesWithConflict()
+    {
+        var ctx = new Context();
+        try
+        {
+            var provider = new MemorySettingsProvider(ctx, new Dictionary<string, object?>());
+            await provider.StartAsync();
+            var schema = Schema.Object(new Dictionary<string, Schema> { ["model"] = Schema.String().Default("deepseek-chat") });
+            var scope = provider.Register<Dictionary<string, object?>>("llm-test", schema);
+            await scope.UpdateAsync(new Dictionary<string, object?> { ["model"] = "a" });
+
+            var conflict = await Assert.ThrowsAsync<SettingsConflictError>(
+                () => scope.MutateAsync(new[] { new SettingsPathOp("set", new[] { "model" }, "b") }, expectedRevision: 0));
+            Assert.Equal(0L, conflict.Expected);
+            Assert.Equal(1L, conflict.Actual);
+        }
+        finally
+        {
+            ctx.Dispose();
+        }
+    }
+
+    public static async Task Mutate_NamesSecretFieldWithoutRestatingSection()
+    {
+        var ctx = new Context();
+        try
+        {
+            var provider = new MemorySettingsProvider(ctx, new Dictionary<string, object?>());
+            await provider.StartAsync();
+            var schema = Schema.Object(new Dictionary<string, Schema>
+            {
+                ["apiKey"] = Schema.String().Role("secret"),
+                ["model"] = Schema.String().Default("deepseek-chat"),
+            });
+            var scope = provider.Register<Dictionary<string, object?>>("llm-test", schema);
+            await scope.UpdateAsync(new Dictionary<string, object?> { ["model"] = "deepseek-reasoner" });
+
+            // The redacted view never carries the secret; a path op names the field without
+            // restating the section (the case a wholesale replace would silently delete).
+            var redacted = provider.Describe(new SettingsDescribeOptions(RedactSecrets: true));
+            Assert.True(!((Dictionary<string, object?>)redacted[0].Value!).ContainsKey("apiKey"), "the redacted view has no apiKey field");
+
+            await scope.MutateAsync(new[] { new SettingsPathOp("set", new[] { "apiKey" }, "sk-rotated") });
+            Assert.Equal("sk-rotated", scope.Get()["apiKey"], "the path op lands the secret without restating the section");
+            Assert.Equal("deepseek-reasoner", scope.Get()["model"], "the untouched fields survive");
+        }
+        finally
+        {
+            ctx.Dispose();
+        }
+    }
+
     /// <summary>In-memory settings provider exposing the protected publish hook for tests.</summary>
     private sealed class MemorySettingsProvider : SettingsProvider
     {

@@ -84,6 +84,20 @@ public sealed record SettingsDescriptor(
     object? User = null,
     IReadOnlyList<SettingsSecret>? Secrets = null);
 
+/// <summary>
+/// One path-addressed edit to a namespace's stored user section (port of the TS
+/// <c>SettingsPathOp</c>). Path mutation exists for a caller holding an INCOMPLETE view of the
+/// section — a configuration UI reads the redacted descriptor, which never received the
+/// <c>role("secret")</c> fields, so it can name the field it means without restating the section:
+/// a wholesale replace rebuilt from a redacted document silently deletes every secret the wire
+/// never returned.
+/// </summary>
+/// <param name="Op"><c>set</c> writes <see cref="Value"/> at the path, creating intermediate
+/// objects; <c>unset</c> removes it. The empty path addresses the section root.</param>
+/// <param name="Path">Path from the section root to the edited field; every part is a concrete key.</param>
+/// <param name="Value">The value for a <c>set</c> op; unused for <c>unset</c>.</param>
+public sealed record SettingsPathOp(string Op, IReadOnlyList<string> Path, object? Value = null);
+
 /// <summary>Options for <see cref="SettingsProvider.Describe"/>.</summary>
 /// <param name="RedactSecrets">Strip <c>role("secret")</c> fields from value/base/user and enumerate them per descriptor; wire surfaces must redact.</param>
 public sealed record SettingsDescribeOptions(bool RedactSecrets = false);
@@ -106,6 +120,9 @@ public interface ISettingsScope<T>
 
     /// <summary>Replace this namespace's user section wholesale; absent keys re-inherit the base and schema defaults.</summary>
     Task ReplaceAsync(object section, long? expectedRevision = null);
+
+    /// <summary>Apply ordered path-addressed edits to this namespace's user section; later ops observe earlier ones.</summary>
+    Task MutateAsync(IReadOnlyList<SettingsPathOp> ops, long? expectedRevision = null);
 }
 
 /// <summary>Hooks a consumer hands to <see cref="SettingsProvider.InstallSection"/>.</summary>

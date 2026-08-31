@@ -57,6 +57,7 @@ public abstract class SettingsProvider : Service
     {
         Merge,
         Replace,
+        Mutate,
     }
 
     /// <summary>Register the service under the <c>settings</c> key.</summary>
@@ -196,6 +197,15 @@ public abstract class SettingsProvider : Service
         => WriteAsync(SettingsNamespaces.Parse(ns), section, WriteMode.Replace, expectedRevision);
 
     /// <summary>
+    /// Apply ordered path-addressed edits to one registered namespace's user section, validate,
+    /// persist, then commit and emit. Later ops observe earlier ones, so a caller holding only the
+    /// redacted descriptor can name the field it means without restating the section.
+    /// </summary>
+    /// <exception cref="SettingsConflictError">when the namespace moved past <paramref name="expectedRevision"/>.</exception>
+    public Task MutateAsync(string ns, IReadOnlyList<SettingsPathOp> ops, long? expectedRevision = null)
+        => WriteAsync(SettingsNamespaces.Parse(ns), ops, WriteMode.Mutate, expectedRevision);
+
+    /// <summary>
     /// Describe every registered namespace for configuration surfaces, including the composition
     /// base and raw user layers so a form can mark which fields the user overrode.
     /// </summary>
@@ -278,7 +288,7 @@ public abstract class SettingsProvider : Service
     /// <summary>Validate a write, then queue it on the namespace's serialized write chain.</summary>
     private Task WriteAsync(SettingsNamespace ns, object input, WriteMode mode, long? expectedRevision)
     {
-        var verb = mode == WriteMode.Merge ? "update" : "replace";
+        var verb = mode switch { WriteMode.Merge => "update", WriteMode.Replace => "replace", _ => "mutate" };
         var registration = _registrations.GetValueOrDefault(ns);
         if (registration is null)
         {
@@ -292,12 +302,41 @@ public abstract class SettingsProvider : Service
         {
             throw new InvalidOperationException($"settings provider is read-only: \"{ns}\" cannot be updated in-process");
         }
-        if (input is not Dictionary<string, object?> plain)
+        Dictionary<string, object?> snapshot;
+        if (mode == WriteMode.Mutate)
         {
-            throw new ArgumentException($"settings {verb} for \"{ns}\" must be a plain object", nameof(input));
+            if (input is not IReadOnlyList<SettingsPathOp> ops)
+            {
+                throw new ArgumentException($"settings {verb} for \"{ns}\" must be an array of path ops", nameof(input));
+            }
+            ValidateOps(ops, ns, verb);
+            // The ops array is wrapped so one JSON-shape walk covers both the ops' values and
+            // their paths, mirroring the TS write path.
+            var wrapped = new Dictionary<string, object?>
+            {
+                ["ops"] = ops.Select(op => (object)WrapOp(op)).ToList(),
+            };
+            var cloned = SettingsJson.CloneJsonShaped(wrapped, (label, path) =>
+                new ArgumentException($"settings {verb} for \"{ns}\" must contain only JSON-compatible data (found {label} at {path})"));
+            snapshot = new Dictionary<string, object?>
+            {
+                ["ops"] = ((List<object?>)cloned["ops"]!).Cast<Dictionary<string, object?>>()
+                    .Select(entry => (object)new SettingsPathOp(
+                        (string)entry["op"]!,
+                        ((List<object?>)entry["path"]!).Cast<string>().ToArray(),
+                        entry.TryGetValue("value", out var value) ? value : null))
+                    .ToList(),
+            };
         }
-        var snapshot = SettingsJson.CloneJsonShaped(plain, (label, path) =>
-            new ArgumentException($"settings {verb} for \"{ns}\" must contain only JSON-compatible data (found {label} at {path})"));
+        else
+        {
+            if (input is not Dictionary<string, object?> plain)
+            {
+                throw new ArgumentException($"settings {verb} for \"{ns}\" must be a plain object", nameof(input));
+            }
+            snapshot = SettingsJson.CloneJsonShaped(plain, (label, path) =>
+                new ArgumentException($"settings {verb} for \"{ns}\" must contain only JSON-compatible data (found {label} at {path})"));
+        }
         var previous = _writeQueues.TryGetValue(ns.Value, out var tail) ? tail : Task.CompletedTask;
         var run = previous.ContinueWith(
             _ => WriteQueuedAsync(ns, registration, mode, expectedRevision, snapshot),
@@ -306,6 +345,69 @@ public abstract class SettingsProvider : Service
             TaskScheduler.Default).Unwrap();
         _writeQueues[ns.Value] = run.ContinueWith(static _ => { });
         return run;
+    }
+
+    /// <summary>Wrap one op for the JSON-shape walk: op, path, and (for set) the value.</summary>
+    private static Dictionary<string, object?> WrapOp(SettingsPathOp op)
+    {
+        var wrapped = new Dictionary<string, object?>
+        {
+            ["op"] = op.Op,
+            ["path"] = op.Path.ToList(),
+        };
+        if (op.Op == "set") wrapped["value"] = op.Value;
+        return wrapped;
+    }
+
+    /// <summary>Reject an op shape the typed surface cannot express (the TS TypeError checks).</summary>
+    private static void ValidateOps(IReadOnlyList<SettingsPathOp> ops, SettingsNamespace ns, string verb)
+    {
+        foreach (var op in ops)
+        {
+            if (op is null || (op.Op != "set" && op.Op != "unset"))
+            {
+                throw new ArgumentException($"settings {verb} for \"{ns}\" ops must be {{op:'set'|'unset', path}}", nameof(ops));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Apply one path op to a detached section, returning the next section (port of the TS
+    /// <c>applyPathOp</c>). The empty path addresses the section root: <c>unset</c> clears it,
+    /// <c>set</c> replaces it with a plain object. A deeper <c>set</c> creates the intermediate
+    /// objects it needs; an <c>unset</c> through an absent path is already satisfied.
+    /// </summary>
+    private static Dictionary<string, object?> ApplyPathOp(Dictionary<string, object?> section, SettingsPathOp op)
+    {
+        var head = op.Path.FirstOrDefault();
+        var rest = op.Path.Skip(1).ToArray();
+        if (head is null)
+        {
+            if (op.Op == "unset") return new Dictionary<string, object?>();
+            if (op.Value is not Dictionary<string, object?> root)
+            {
+                throw new ArgumentException("settings mutate: setting the section root requires a plain object");
+            }
+            return new Dictionary<string, object?>(root);
+        }
+        if (rest.Length == 0)
+        {
+            var next = new Dictionary<string, object?>(section);
+            if (op.Op == "set") next[head] = op.Value;
+            else next.Remove(head);
+            return next;
+        }
+        if (section.TryGetValue(head, out var child) && child is Dictionary<string, object?> childSection)
+        {
+            var next = new Dictionary<string, object?>(section);
+            next[head] = ApplyPathOp(childSection, op with { Path = rest });
+            return next;
+        }
+        if (op.Op == "unset") return section;
+        var created = new Dictionary<string, object?>();
+        var result = new Dictionary<string, object?>(section);
+        result[head] = ApplyPathOp(created, op with { Path = rest });
+        return result;
     }
 
     private async Task WriteQueuedAsync(
@@ -329,9 +431,12 @@ public abstract class SettingsProvider : Service
         {
             throw new SettingsConflictError(ns, expectedRevision.Value, registration.Revision);
         }
-        var section = mode == WriteMode.Merge
-            ? (Dictionary<string, object?>)SettingsJson.MergeLayers(stored, snapshot)!
-            : snapshot;
+        var section = mode switch
+        {
+            WriteMode.Merge => (Dictionary<string, object?>)SettingsJson.MergeLayers(stored, snapshot)!,
+            WriteMode.Replace => snapshot,
+            _ => ((List<object?>)snapshot["ops"]!).Cast<SettingsPathOp>().Aggregate(stored, ApplyPathOp),
+        };
         var next = Resolve(registration.Schema, registration.Base, section, registration.Validate);
         await PersistAsync(ns, section);
         // The write reached storage either way; the document cache must say so.
@@ -459,6 +564,9 @@ public abstract class SettingsProvider : Service
 
         public Task ReplaceAsync(object section, long? expectedRevision = null)
             => _owner.ReplaceAsync(_registration.Ns.Value, section, expectedRevision);
+
+        public Task MutateAsync(IReadOnlyList<SettingsPathOp> ops, long? expectedRevision = null)
+            => _owner.MutateAsync(_registration.Ns.Value, ops, expectedRevision);
     }
 
     private IDisposable AddWatcher(Registration registration, Func<object?, object?, Task> callback)

@@ -1,4 +1,4 @@
-﻿using Cordis.Core;
+using Cordis.Core;
 using Cordis.Schemastery;
 using Dsh.Settings;
 using Dsh.Web.Host;
@@ -196,6 +196,94 @@ public static class SettingsRemotesTests
         }
     }
 
+    public static void Mutate_AppliesPathOpsAndAnswersTheNewView()
+    {
+        var root = TempRoot();
+        var (ctx, registry, settings) = Boot(root);
+        try
+        {
+            _ = settings.Register<Dictionary<string, object?>>("llm-test", TestSchema());
+            var args = JsonSerializer.SerializeToElement(new
+            {
+                ns = "llm-test",
+                ops = new object[]
+                {
+                    new { op = "set", path = new[] { "model" }, value = "deepseek-reasoner" },
+                    new { op = "set", path = new[] { "apiKey" }, value = "sk-rotated" },
+                },
+            });
+            var response = registry.InvokeAsync(new RpcRequest("settings/mutate", args)).GetAwaiter().GetResult();
+            Assert.True(response.Ok, "the mutate must commit");
+            var ns = response.Result!.Value;
+            Assert.Equal("deepseek-reasoner", ns.GetProperty("value").GetProperty("model").GetString());
+            Assert.False(ns.GetProperty("value").TryGetProperty("apiKey", out _), "the view stays redacted");
+            Assert.True(ns.GetProperty("secrets").GetArrayLength() == 1, "the secret slot is reported");
+            Assert.True(ns.GetProperty("secrets")[0].GetProperty("set").GetBoolean(), "the path op set the secret");
+            Assert.True(ns.GetProperty("revision").GetInt64() == 1, "the mutate bumped the revision");
+
+            var unset = registry.InvokeAsync(new RpcRequest("settings/mutate", JsonSerializer.SerializeToElement(new
+            {
+                ns = "llm-test",
+                ops = new object[] { new { op = "unset", path = new[] { "model" } } },
+            }))).GetAwaiter().GetResult();
+            Assert.True(unset.Ok, "the unset must commit");
+            Assert.Equal("deepseek-chat", unset.Result!.Value.GetProperty("value").GetProperty("model").GetString(),
+                "an unset re-inherits the schema default");
+        }
+        finally
+        {
+            ctx.Dispose();
+            Cleanup(root);
+        }
+    }
+
+    public static void Mutate_BadOpShape_SettlesBadRequest()
+    {
+        var root = TempRoot();
+        var (ctx, registry, _) = Boot(root);
+        try
+        {
+            foreach (var ops in new object[]
+            {
+                new object[] { new { op = "bogus", path = new[] { "model" } } },
+                new object[] { new { op = "set", path = new[] { 1 } } },
+                new object[] { new { op = "unset" } },
+            })
+            {
+                var response = registry.InvokeAsync(new RpcRequest("settings/mutate",
+                    JsonSerializer.SerializeToElement(new { ns = "llm-test", ops }))).GetAwaiter().GetResult();
+                Assert.False(response.Ok, "a malformed op is refused before the write");
+                Assert.Equal("gateway/bad-request", response.Error!.Code);
+            }
+        }
+        finally
+        {
+            ctx.Dispose();
+            Cleanup(root);
+        }
+    }
+
+    public static void Mutate_UnknownNamespace_SettlesRejected()
+    {
+        var root = TempRoot();
+        var (ctx, registry, _) = Boot(root);
+        try
+        {
+            var response = registry.InvokeAsync(new RpcRequest("settings/mutate", JsonSerializer.SerializeToElement(new
+            {
+                ns = "ghost",
+                ops = new object[] { new { op = "set", path = new[] { "model" }, value = "a" } },
+            }))).GetAwaiter().GetResult();
+            Assert.False(response.Ok, "an unknown namespace write is refused");
+            Assert.Equal("settings/rejected", response.Error!.Code);
+        }
+        finally
+        {
+            ctx.Dispose();
+            Cleanup(root);
+        }
+    }
+
     private static (Context Ctx, DshRpcRegistry Registry, FileSettingsProvider Settings) Boot(string root)
     {
         var ctx = new Context();
@@ -205,6 +293,7 @@ public static class SettingsRemotesTests
         _ = registry.Register(Dsh.Web.Host.SettingsRemotes.Describe(ctx));
         _ = registry.Register(Dsh.Web.Host.SettingsRemotes.Update(ctx));
         _ = registry.Register(Dsh.Web.Host.SettingsRemotes.Replace(ctx));
+        _ = registry.Register(Dsh.Web.Host.SettingsRemotes.Mutate(ctx));
         return (ctx, registry, settings);
     }
 
