@@ -325,6 +325,12 @@ public static class SpineRegistry
             var credentialsSet = registry.Register(Dsh.Web.Host.CredentialsRemotes.Set(ctx));
             var credentialsUnset = registry.Register(Dsh.Web.Host.CredentialsRemotes.Unset(ctx));
             var workspaceCreate = registry.Register(Dsh.Web.Host.WorkspaceRemotes.Create(ctx));
+            var workspaceRename = registry.Register(Dsh.Web.Host.WorkspaceRemotes.Rename(ctx));
+            var workspaceDelete = registry.Register(Dsh.Web.Host.WorkspaceRemotes.Delete(ctx));
+            var workspaceInsertBefore = registry.Register(Dsh.Web.Host.WorkspaceRemotes.InsertBefore(ctx));
+            var workspaceInsertSessionBefore = registry.Register(Dsh.Web.Host.WorkspaceRemotes.InsertSessionBefore(ctx));
+            var workspaceArchiveSession = registry.Register(Dsh.Web.Host.WorkspaceRemotes.ArchiveSession(ctx));
+            var workspaceFollow = registry.RegisterStream(Dsh.Web.Host.WorkspaceRemotes.Follow(ctx));
             var directoryPickerPick = registry.Register(Dsh.Web.Host.DirectoryPickerRemotes.Pick(ctx));
             var directoryPickerList = registry.Register(Dsh.Web.Host.DirectoryPickerRemotes.List(ctx));
             var directoryPickerCreate = registry.Register(Dsh.Web.Host.DirectoryPickerRemotes.CreateDirectory(ctx));
@@ -365,7 +371,9 @@ public static class SpineRegistry
                 settingsDescribe, settingsUpdate, settingsReplace, settingsMutate,
                 settingsCanOpenPresetDir, settingsOpenDocument, settingsOpenPresetDir,
                 credentialsDescribe, credentialsSet, credentialsUnset,
-                workspaceCreate,
+                workspaceCreate, workspaceRename, workspaceDelete,
+                workspaceInsertBefore, workspaceInsertSessionBefore, workspaceArchiveSession,
+                workspaceFollow,
                 directoryPickerPick, directoryPickerList, directoryPickerCreate);
         }));
         catalog.Register("webHost", new SpinePlugin("webHost", (ctx, config) =>

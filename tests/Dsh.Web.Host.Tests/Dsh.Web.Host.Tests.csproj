@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\src\Dsh\Dsh.Jobs\Dsh.Jobs.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Todo\Dsh.Todo.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Preset\Dsh.Preset.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Storage\Dsh.Storage.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Session.Projection\Dsh.Session.Projection.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Llm\Dsh.Llm.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Tools\Dsh.Tools.csproj" />
