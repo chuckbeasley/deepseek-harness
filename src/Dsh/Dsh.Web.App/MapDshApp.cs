@@ -28,6 +28,7 @@ public static class DshWebApp
             .AddInteractiveServerComponents();
         services.AddSingleton<Slots.SlotRegistry>();
         services.AddSingleton<Store.WebSessionStore>();
+        services.AddSingleton(WebLocale.English);
         return services;
     }
 }

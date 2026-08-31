@@ -1,22 +1,33 @@
-﻿@page "/"
+@page "/"
 @inject Cordis.Core.Context Ctx
 @inject Dsh.Web.App.Store.WebSessionStore Store
 @inject SlotRegistry Slots
+@inject WebLocale Locale
 @implements IDisposable
 
 <div class="dsh-chat">
     <section class="dsh-session-list">
-        <h3>Sessions</h3>
+        <h3>@Locale.T("sessions")</h3>
         @if (Store.List().Count == 0)
         {
-            <p class="dsh-muted">No sessions yet. Send a message to start one.</p>
+            <p class="dsh-muted">@Locale.T("noSessions")</p>
         }
         @foreach (var entry in Store.List())
         {
             <button class="dsh-session-item @(entry.Session.Id == _selected?.Session.Id ? "dsh-selected" : "")"
                     @onclick="() => Select(entry)">
                 <span class="dsh-session-id">@entry.Session.Id.Value</span>
-                <span class="dsh-session-summary">@(entry.Summary ?? "new session")</span>
+                <span class="dsh-session-summary">@(entry.Summary ?? Locale.T("newSession"))</span>
+                <span class="dsh-session-state">
+                    @if (entry.Running)
+                    {
+                        <span class="dsh-running">@Locale.T("running")</span>
+                    }
+                    @if (entry.Queued > 0)
+                    {
+                        <span class="dsh-queued">@entry.Queued @Locale.T("queued")</span>
+                    }
+                </span>
             </button>
         }
     </section>
@@ -24,10 +35,14 @@
     <section class="dsh-transcript">
         @if (_selected is null)
         {
-            <p class="dsh-muted">Select a session to view its transcript.</p>
+            <p class="dsh-muted">@Locale.T("selectSession")</p>
         }
         else
         {
+            @if (_selected.Error is { } error)
+            {
+                <div class="dsh-error">@Locale.T("lastError") @error</div>
+            }
             <div class="dsh-messages">
                 @foreach (var evt in _selected.Events)
                 {
@@ -36,8 +51,8 @@
             </div>
         }
         <form class="dsh-input-row" @onsubmit="SendAsync" @onsubmit:preventDefault="true">
-            <input @bind="_input" placeholder="Message dsh..." />
-            <button type="submit" disabled="@_busy">Send</button>
+            <input @bind="_input" placeholder="@Locale.T("messagePlaceholder")" />
+            <button type="submit" disabled="@_busy">@Locale.T("send")</button>
         </form>
     </section>
 </div>

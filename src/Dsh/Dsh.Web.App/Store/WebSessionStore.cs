@@ -1,9 +1,11 @@
 using Cordis.Core;
+using Dsh.Agent;
+using Dsh.AgentLoop;
 using Dsh.Session;
 
 namespace Dsh.Web.App.Store;
 
-/// <summary>One session entry in the store: identity and the live transcript events.</summary>
+/// <summary>One session entry in the store: identity, the live transcript events, and the live agent state.</summary>
 public sealed class WebSessionEntry
 {
     internal WebSessionEntry(Dsh.Session.Session session)
@@ -26,13 +28,22 @@ public sealed class WebSessionEntry
         .OfType<Dsh.Llm.TextBlock>()
         .Select(block => block.Text)
         .FirstOrDefault();
+
+    /// <summary>Whether the session's agent driver is mid-activity (agent/status).</summary>
+    public bool Running { get; internal set; }
+
+    /// <summary>Messages awaiting a turn or step boundary in the live inbox.</summary>
+    public int Queued { get; internal set; }
+
+    /// <summary>The last agent failure message, cleared when a new activity starts.</summary>
+    public string? Error { get; internal set; }
 }
 
 /// <summary>
 /// The web session store (the store layer of the Phase-5 shell): an observable projection of the
-/// ported session store over the Cordis event stream. Components subscribe through
-/// <see cref="Changed"/>, and every change notification happens after the committed append, so
-/// renders always observe committed state.
+/// ported session store and the live agent state over the Cordis event stream. Components
+/// subscribe through <see cref="Changed"/>, and every change notification happens after the
+/// committed append, so renders always observe committed state.
 /// </summary>
 public sealed class WebSessionStore : IDisposable
 {
@@ -42,7 +53,7 @@ public sealed class WebSessionStore : IDisposable
     private readonly List<IDisposable> _subscriptions = new();
     private event Action? _changed;
 
-    /// <summary>Create the store and subscribe to the session event stream.</summary>
+    /// <summary>Create the store and subscribe to the session and agent event streams.</summary>
     public WebSessionStore(Context ctx)
     {
         _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
@@ -54,6 +65,23 @@ public sealed class WebSessionStore : IDisposable
         _subscriptions.Add(ctx.On<Dsh.Session.Session>("session/created", OnCreated));
         _subscriptions.Add(ctx.On<Dsh.Session.Session>("session/disposed", OnDisposed));
         _subscriptions.Add(ctx.On("session/event", new Action<Dsh.Session.Session, SessionEvent>((_, _) => NotifyChanged())));
+        var agents = ctx.Get<AgentRegistry>("agents");
+        if (agents is not null)
+        {
+            foreach (var agent in agents.List())
+            {
+                if (_entries.TryGetValue(agent.Session.Id, out var entry))
+                {
+                    entry.Running = agent.Status == AgentStatus.Running;
+                    entry.Queued = agent.Inbox.NextTurn.Count + agent.Inbox.NextStep.Count;
+                }
+            }
+            _subscriptions.Add(ctx.On("agent/status", new Action<AgentStatusPayload>(OnStatus)));
+            _subscriptions.Add(ctx.On("agent/inbox/inserted", new Action<AgentInboxInsertedPayload>(payload => OnInboxChanged(payload.Agent))));
+            _subscriptions.Add(ctx.On("agent/inbox/claimed", new Action<AgentInboxClaimedPayload>(payload => OnInboxChanged(payload.Agent))));
+            _subscriptions.Add(ctx.On("agent/inbox/discarded", new Action<AgentInboxDiscardedPayload>(payload => OnInboxChanged(payload.Agent))));
+            _subscriptions.Add(ctx.On("agent/error", new Action<AgentErrorPayload>(OnError)));
+        }
     }
 
     /// <summary>Every live session entry, in creation order.</summary>
@@ -92,6 +120,37 @@ public sealed class WebSessionStore : IDisposable
     private void OnDisposed(Dsh.Session.Session session)
     {
         lock (_gate) _entries.Remove(session.Id);
+        NotifyChanged();
+    }
+
+    private void OnStatus(AgentStatusPayload payload)
+    {
+        lock (_gate)
+        {
+            if (!_entries.TryGetValue(payload.Agent.Session.Id, out var entry)) return;
+            entry.Running = payload.Status == AgentStatus.Running;
+            if (entry.Running) entry.Error = null;
+        }
+        NotifyChanged();
+    }
+
+    private void OnInboxChanged(Dsh.Agent.Agent agent)
+    {
+        lock (_gate)
+        {
+            if (!_entries.TryGetValue(agent.Session.Id, out var entry)) return;
+            entry.Queued = agent.Inbox.NextTurn.Count + agent.Inbox.NextStep.Count;
+        }
+        NotifyChanged();
+    }
+
+    private void OnError(AgentErrorPayload payload)
+    {
+        lock (_gate)
+        {
+            if (!_entries.TryGetValue(payload.Agent.Session.Id, out var entry)) return;
+            entry.Error = payload.Error.Message;
+        }
         NotifyChanged();
     }
 

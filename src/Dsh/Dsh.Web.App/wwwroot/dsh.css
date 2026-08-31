@@ -114,3 +114,26 @@ body {
 }
 
 .dsh-muted { color: var(--muted); }
+
+.dsh-session-state { display: block; }
+
+.dsh-running {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.dsh-queued {
+    color: var(--muted);
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.dsh-error {
+    background: var(--danger, #7f1d1d);
+    color: white;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
