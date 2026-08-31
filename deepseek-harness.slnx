@@ -40,6 +40,7 @@
     <Project Path="src/Dsh/Dsh.Rpc.Generator/Dsh.Rpc.Generator.csproj" />
     <Project Path="src/Dsh/Dsh.Interaction/Dsh.Interaction.csproj" />
     <Project Path="src/Dsh/Dsh.Sdk.Protocol/Dsh.Sdk.Protocol.csproj" />
+    <Project Path="src/Dsh/Dsh.Sdk.Server/Dsh.Sdk.Server.csproj" />
     <Project Path="src/Dsh/Dsh.Ui.Sidebar/Dsh.Ui.Sidebar.csproj" />
     <Project Path="src/Dsh/Dsh.Ui.Approval/Dsh.Ui.Approval.csproj" />
     <Project Path="src/Dsh/Dsh.Ui.Settings/Dsh.Ui.Settings.csproj" />
@@ -99,6 +100,7 @@
     <Project Path="tests/Dsh.Goal.Tests/Dsh.Goal.Tests.csproj" />
     <Project Path="tests/Dsh.Interaction.Tests/Dsh.Interaction.Tests.csproj" />
     <Project Path="tests/Dsh.Sdk.Protocol.Tests/Dsh.Sdk.Protocol.Tests.csproj" />
+    <Project Path="tests/Dsh.Sdk.Server.Tests/Dsh.Sdk.Server.Tests.csproj" />
     <Project Path="tests/Dsh.Schedule.Tests/Dsh.Schedule.Tests.csproj" />
     <Project Path="tests/Dsh.Feedback.Tests/Dsh.Feedback.Tests.csproj" />
     <Project Path="tests/Dsh.Storage.Tests/Dsh.Storage.Tests.csproj" />
@@ -121,6 +123,7 @@
     <Project Path="tests/Dsh.Todo.Tests/Dsh.Todo.Tests.csproj" />
   </Folder>
 </Solution>
+
 
 
 

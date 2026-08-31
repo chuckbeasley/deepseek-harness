@@ -1,4 +1,4 @@
-namespace Dsh.Sdk.Protocol;
+﻿namespace Dsh.Sdk.Protocol;
 
 /// <summary>Wire method names and the wire-stable server identity (the TS constants).</summary>
 public static class SdkProtocol
@@ -45,7 +45,7 @@ public sealed record InitializeParams(
 public sealed record ServerInfo(string Name, string Version);
 
 /// <summary>Wire-stable server identity returned by initialization.</summary>
-public sealed record InitializeResult(ServerInfo Info);
+public sealed record InitializeResult([property: System.Text.Json.Serialization.JsonPropertyName("serverInfo")] ServerInfo Info);
 
 /// <summary>One user turn on one SDK session.</summary>
 public sealed record SessionPromptParams(
@@ -113,3 +113,4 @@ public sealed record SubagentFinishedNotification(
     Dsh.Subagent.SubagentStopReason StopReason,
     /// <summary>The child's selected assistant output; absent when the child produced none.</summary>
     IReadOnlyList<Dsh.Llm.ContentBlock>? LastAssistantMessage = null);
+
