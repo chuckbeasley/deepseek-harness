@@ -64,5 +64,18 @@ jobs:
       - name: Run console suite (Dsh.Spike.Tests)
         run: dotnet run --project tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj -c Release --no-build --no-restore
 
+      # Every remaining tests/* project is a zero-dependency console assertion
+      # suite (the capability-seam lanes). The ConPTY suites self-skip on
+      # non-Windows hosts and still exit 0.
+      - name: Run capability-seam console suites
+        run: |
+          set -euo pipefail
+          for project in tests/*/*.csproj; do
+            case "$project" in
+              *Cordis.Core.Tests.csproj|*Cordis.Core.Tests.Runner*) continue ;;
+            esac
+            dotnet run --project "$project" -c Release --no-build --no-restore
+          done
+
       - name: Run headless smoke (Dsh.Spike)
         run: dotnet run --project src/Dsh/Dsh.Spike/Dsh.Spike.csproj -c Release --no-build --no-restore
