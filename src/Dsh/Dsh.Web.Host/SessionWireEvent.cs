@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace Dsh.Web.Host;
 
@@ -10,19 +10,34 @@ namespace Dsh.Web.Host;
 /// </summary>
 public static class SessionWireEvent
 {
-    /// <summary>The session log's polymorphic codecs, camel-cased for the wire.</summary>
-    private static readonly JsonSerializerOptions SessionEventJson = new()
+    private static JsonSerializerOptions? _sessionEventJson;
+    private static int _sessionEventRevision = -1;
+
+    /// <summary>
+    /// The session log's polymorphic codecs, camel-cased for the wire. Rebuilt when the event-type
+    /// registry gains a registration (the registry is append-only and plugins register at boot).
+    /// </summary>
+    private static JsonSerializerOptions SessionEventJson()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        TypeInfoResolver = Dsh.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
-    };
+        var revision = Dsh.Session.SessionEventTypes.Revision;
+        if (_sessionEventJson is null || _sessionEventRevision != revision)
+        {
+            _sessionEventJson = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                TypeInfoResolver = Dsh.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
+            };
+            _sessionEventRevision = revision;
+        }
+        return _sessionEventJson;
+    }
 
     /// <summary>Project one committed session event to its wire spelling.</summary>
     /// <param name="evt">the committed event.</param>
     /// <returns>the <c>{ type, seq, time, data }</c> wire object.</returns>
     public static JsonElement Project(Dsh.Session.SessionEvent evt)
     {
-        var json = JsonSerializer.SerializeToElement(evt, SessionEventJson);
+        var json = JsonSerializer.SerializeToElement(evt, SessionEventJson());
         var data = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
         foreach (var property in json.EnumerateObject())
         {
@@ -38,6 +53,6 @@ public static class SessionWireEvent
             seq = evt.Seq,
             time = evt.TimeMs,
             data,
-        }, SessionEventJson);
+        }, SessionEventJson());
     }
 }

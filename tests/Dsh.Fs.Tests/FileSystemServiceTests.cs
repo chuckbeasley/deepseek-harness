@@ -61,7 +61,7 @@ public static class FileSystemServiceTests
         Assert.Equal(1, sub.Count);
         Assert.Equal("a.txt", sub[0].Name);
         Assert.Equal(FsPathType.File, sub[0].Type);
-        Assert.Equal("sub/a.txt", sub[0].Target.DisplayPath);
+        Assert.True(sub[0].Target.DisplayPath.EndsWith("/sub/a.txt", StringComparison.Ordinal), "the display path is the absolute TS-style path");
 
         var root = h.Fs.ListAsync(h.Fs.ResolveList(new FsListRequest("."))).GetAwaiter().GetResult();
         Assert.Equal(1, root.Count);
@@ -121,7 +121,7 @@ public static class FileSystemServiceTests
     public static void WorkspaceRootResolutionHonorsExplicitSpec(Harness h)
     {
         var spec = h.Fs.ResolveWrite(new FsWriteRequest("a/b/c.txt", "deep"));
-        Assert.Equal("a/b/c.txt", spec.Target.DisplayPath);
+        Assert.True(spec.Target.DisplayPath.EndsWith("/a/b/c.txt", StringComparison.Ordinal), "the display path is the absolute TS-style path");
         Assert.Equal(Path.Combine(h.WorkspaceRoot, "a", "b", "c.txt"), spec.Target.TargetKey.Value);
         h.Fs.WriteTextAsync(spec).GetAwaiter().GetResult();
         Assert.True(File.Exists(Path.Combine(h.WorkspaceRoot, "a", "b", "c.txt")), "write landed at the spec's key");
@@ -129,7 +129,7 @@ public static class FileSystemServiceTests
 
         // ".." segments that stay inside the root normalize and resolve.
         var dotDot = h.Fs.ResolveWrite(new FsWriteRequest("a/b/../d.txt", "x"));
-        Assert.Equal("a/d.txt", dotDot.Target.DisplayPath);
+        Assert.True(dotDot.Target.DisplayPath.EndsWith("/a/d.txt", StringComparison.Ordinal), "the display path is the absolute TS-style path");
         h.Fs.WriteTextAsync(dotDot).GetAwaiter().GetResult();
         Assert.True(File.Exists(Path.Combine(h.WorkspaceRoot, "a", "d.txt")), "contained .. normalized into the root");
     }

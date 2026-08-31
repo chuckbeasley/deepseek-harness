@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
@@ -159,7 +159,11 @@ public static class SessionRemotesTests
             }, InboxTarget.NextTurn, wakeup: true);
             await driver.WhenIdleAsync();
 
-            var firstLive = ReceiveItem(socket);
+            var probe1 = ReceiveItem(socket);
+            Console.Error.WriteLine("DEBUG frame1: " + probe1.GetRawText());
+            var probe2 = ReceiveItem(socket);
+            Console.Error.WriteLine("DEBUG frame2: " + probe2.GetRawText());
+            var firstLive = probe1;
             Assert.True(firstLive.TryGetProperty("type", out var liveKind) && liveKind.GetString() == "event", $"a live event frame arrives, got: {firstLive.GetRawText()}");
             var firstEvent = firstLive.GetProperty("event");
             Assert.True(firstEvent.TryGetProperty("seq", out var firstSeq) && firstSeq.GetInt64() == 0, $"the gap-free seq starts at the 0-based log head, got: {firstLive.GetRawText()}");

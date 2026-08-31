@@ -32,7 +32,8 @@ public sealed class Agent : IInboxNotifications
         Options = options ?? new AgentOptions();
         Config = config ?? new AgentConfig();
         _scope = new Context();
-        Inbox = new Inbox(this, Config.MaxPendingMessages);
+        Inbox = new Inbox(this, Config.MaxPendingMessages, evt => Session.Append(evt));
+        AgentEventTypes.Register();
     }
 
     /// <summary>The session-backed agent identity (the shared agent/session id).</summary>

@@ -144,6 +144,28 @@ public static class SpineRegistry
                 }
             }), handle);
         }));
+        catalog.Register("policyBaseline", new SpinePlugin("policyBaseline", (ctx, config) =>
+        {
+            var plugin = new PolicyBaselinePlugin();
+            var task = plugin.ApplyAsync(ctx, config);
+            return task.AsTask().GetAwaiter().GetResult();
+        }));
+        catalog.Register("policyContext", new SpinePlugin("policyContext", (ctx, config) =>
+        {
+            var plugin = new PolicyContextPlugin();
+            var task = plugin.ApplyAsync(ctx, config);
+            return task.AsTask().GetAwaiter().GetResult();
+        }));
+        catalog.Register("sessionTitle", new SpinePlugin("sessionTitle", (ctx, config) =>
+        {
+            var service = new Dsh.Session.Titles.FallbackSessionTitleService(ctx, new Dsh.Session.Titles.SessionTitleConfig
+            {
+                FallbackMaxWords = ConfigInt(config, "fallbackMaxWords") ?? 5,
+                FallbackMaxBytes = ConfigInt(config, "fallbackMaxBytes") ?? 40,
+                MaxTitleBytes = ConfigInt(config, "maxTitleBytes") ?? 80,
+            });
+            return service;
+        }));
         catalog.Register("subprocess", new SpinePlugin("subprocess", (ctx, _) => new Dsh.Subprocess.LocalSubprocessProvider(ctx)));
         catalog.Register("fs", new SpinePlugin("fs", (ctx, config) =>
         {
@@ -597,7 +619,7 @@ public static class SpineRegistry
         }));
     }
 
-    private static string? ConfigString(object? config, string key)
+    internal static string? ConfigString(object? config, string key)
         => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is string text
             ? text
             : null;

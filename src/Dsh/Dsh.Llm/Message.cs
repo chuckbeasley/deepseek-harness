@@ -32,11 +32,14 @@ public sealed record PluginSource : MessageSource
     public string? Form { get; init; }
 
     /// <summary>Optional named contributions that formed a snapshot message.</summary>
-    public IReadOnlyList<string>? Sections { get; init; }
+    public IReadOnlyList<NamedSection>? Sections { get; init; }
 
     [JsonIgnore]
     public override string Kind => "plugin";
 }
+
+/// <summary>One named contribution to a plugin message (the TS <c>{name, text}</c> section pair).</summary>
+public sealed record NamedSection(string Name, string Text);
 
 /// <summary>A model-produced message: provider route and model id.</summary>
 public sealed record ModelSource : MessageSource

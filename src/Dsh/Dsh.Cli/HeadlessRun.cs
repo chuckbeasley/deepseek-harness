@@ -34,9 +34,6 @@ public sealed class HeadlessRun : ILoaderPlugin
         var model = Dsh.Llm.Replay.SnapshotEnv.Model
             ?? (string.IsNullOrEmpty(key) ? Dsh.Spike.MockLlmProvider.Model : "deepseek-chat");
         var sessionId = new Dsh.Session.SessionId(SessionIdValue);
-        var handle = loop.Create(sessionId, new Dsh.Agent.AgentOptions { Provider = provider, Model = model });
-        var driver = loop.GetLoop(sessionId)
-            ?? throw new InvalidOperationException("dsh: headless published no loop");
         var message = new Dsh.Llm.UserMessage
         {
             Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("N")),
@@ -44,13 +41,17 @@ public sealed class HeadlessRun : ILoaderPlugin
             Source = new Dsh.Llm.UserSource(),
         };
 
-        // The turn starts only after the loader settles (appReady.Commit), so later rows (e.g.
-        // the snapshot replay row) are mounted before the first model call; Main blocks on the
-        // appExit signal.
+        // The session is created and the turn starts only after the loader settles
+        // (appReady.Commit), so later rows (e.g. the snapshot replay and policy-baseline rows)
+        // are mounted before the session exists and the first model call runs; Main blocks on
+        // the appExit signal.
         var ready = ctx.Get<AppReady>("appReady")
             ?? throw new InvalidOperationException("dsh: headless requires the appReady launcher fact");
         ready.OnReady(() =>
         {
+            var handle = loop.Create(sessionId, new Dsh.Agent.AgentOptions { Provider = provider, Model = model });
+            var driver = loop.GetLoop(sessionId)
+                ?? throw new InvalidOperationException("dsh: headless published no loop");
             driver.Send(message, Dsh.Agent.InboxTarget.NextTurn, wakeup: true);
             _ = Task.Run(async () =>
             {

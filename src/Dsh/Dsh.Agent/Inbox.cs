@@ -28,11 +28,12 @@ public interface IInboxNotifications
 /// <summary>
 /// The two ordered pending-message lists owned by one agent (port of the TS Inbox projection).
 ///
-/// Deviation from the TS projection: the TS inbox is a replay-once projection that consumes durable
-/// <c>agent/inbox/spliced</c> session events and appends a normalized splice per mutation. The C#
-/// session vocabulary does not carry that event yet, so this port is live-only: the same splice
-/// semantics, identity validation, and notifications operate on in-memory lists, and the durable
-/// splice event is deferred until the session event vocabulary gains it.
+/// The TS inbox is a replay-once projection that consumes durable <c>agent/inbox/spliced</c>
+/// session events and appends a normalized splice per mutation. The C# inbox appends the same
+/// splice event through the optional <paramref name="append"/> callback (the agent wires it to
+/// its session) and keeps the live lists as its projection; the replay-once restore path over
+/// committed splices stays a documented deviation (resume rebuilds pending input through the
+/// loop's live claims).
 /// </summary>
 public sealed class Inbox
 {
@@ -40,12 +41,14 @@ public sealed class Inbox
     private readonly List<UserMessage> _nextStep = new();
     private readonly IInboxNotifications _notifications;
     private readonly int? _maxPending;
+    private readonly Action<InboxSplicedEvent>? _append;
 
     /// <summary>Create the live inbox; <paramref name="notifications"/> receives every committed mutation.</summary>
-    public Inbox(IInboxNotifications notifications, int? maxPending = null)
+    public Inbox(IInboxNotifications notifications, int? maxPending = null, Action<InboxSplicedEvent>? append = null)
     {
         _notifications = notifications ?? throw new ArgumentNullException(nameof(notifications));
         _maxPending = maxPending;
+        _append = append;
     }
 
     /// <summary>Prompts awaiting individual turns.</summary>
@@ -154,6 +157,15 @@ public sealed class Inbox
         var removed = inbox.GetRange(actualStart, actualDeleteCount);
         inbox.RemoveRange(actualStart, actualDeleteCount);
         inbox.InsertRange(actualStart, inserted);
+        // The durable splice commits the normalized result (port of the TS mutate).
+        _append?.Invoke(new InboxSplicedEvent
+        {
+            Target = TargetName(target),
+            Start = actualStart,
+            RemovedCount = actualDeleteCount == 0 ? null : actualDeleteCount,
+            Inserted = inserted.ToArray(),
+            Outcome = discardRemoved && actualDeleteCount > 0 ? "canceled" : null,
+        });
         if (discardRemoved)
         {
             foreach (var message in removed) _notifications.Discarded(message);
@@ -161,6 +173,14 @@ public sealed class Inbox
         foreach (var message in inserted) _notifications.Inserted(message);
         return removed;
     }
+
+    /// <summary>The wire spelling of one inbox target.</summary>
+    public static string TargetName(InboxTarget target) => target switch
+    {
+        InboxTarget.NextTurn => "next-turn",
+        InboxTarget.NextStep => "next-step",
+        _ => throw new ArgumentOutOfRangeException(nameof(target)),
+    };
 
     /// <summary>Validate one normalized splice against the current projection and identity rules.</summary>
     private void Validate(InboxTarget target, int start, int deleteCount, IReadOnlyList<UserMessage> inserted)

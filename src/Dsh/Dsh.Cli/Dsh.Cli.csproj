@@ -29,6 +29,7 @@
     <ProjectReference Include="..\Dsh.Llm.DeepSeek\Dsh.Llm.DeepSeek.csproj" />
     <ProjectReference Include="..\Dsh.Llm.Replay\Dsh.Llm.Replay.csproj" />
     <ProjectReference Include="..\Dsh.Session\Dsh.Session.csproj" />
+    <ProjectReference Include="..\Dsh.Session.Titles\Dsh.Session.Titles.csproj" />
 <ProjectReference Include="..\Dsh.Session.Projection\Dsh.Session.Projection.csproj" />
     <ProjectReference Include="..\Dsh.Session.Persistence\Dsh.Session.Persistence.csproj" />
     <ProjectReference Include="..\Dsh.Agent\Dsh.Agent.csproj" />

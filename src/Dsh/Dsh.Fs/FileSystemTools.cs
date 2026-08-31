@@ -74,7 +74,7 @@ public static class FileSystemTools
         ArgumentNullException.ThrowIfNull(fs);
         var resolved = caps ?? new FsReadToolCaps();
         return new ToolDefinition(
-            Name: "fs_read",
+            Name: "read",
             Description: "Read a UTF-8 text file and return line-numbered content.",
             Parameters: ReadParameters(resolved),
             OutputSchema: JsonSerializer.SerializeToElement(JsonNode.Parse(ReadOutputSchemaJson)!),
@@ -113,7 +113,7 @@ public static class FileSystemTools
     {
         ArgumentNullException.ThrowIfNull(fs);
         return new ToolDefinition(
-            Name: "fs_write",
+            Name: "write",
             Description: "Create or fully replace a UTF-8 text file.",
             Parameters: JsonSerializer.SerializeToElement(JsonNode.Parse(WriteParametersSchemaJson)!),
             OutputSchema: JsonSerializer.SerializeToElement(JsonNode.Parse(WriteOutputSchemaJson)!),

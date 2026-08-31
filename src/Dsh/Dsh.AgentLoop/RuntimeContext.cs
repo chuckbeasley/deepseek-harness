@@ -42,18 +42,22 @@ public sealed class RuntimeContextProjection
     }
 
     /// <summary>
-    /// Create an uncommitted snapshot message only when the retained value differs from
-    /// <paramref name="current"/>: the first non-empty context projects once, a change projects
-    /// again, and emptying projects the cleared marker once.
+    /// Create an uncommitted snapshot message only when the retained value differs from the
+    /// rendered snapshot: the first non-empty context projects once, a change projects again,
+    /// and emptying projects the cleared marker once. The snapshot text is the TS
+    /// <c>joinContextSections</c> shape: the prefix plus the non-empty section texts joined with
+    /// blank lines.
     /// </summary>
-    /// <param name="current">fully rendered dynamic context.</param>
+    /// <param name="current">fully rendered dynamic context (the joined section texts).</param>
     /// <param name="sections">named contributions that formed the current snapshot.</param>
     /// <returns>a candidate user message, or <c>null</c> when no update is needed.</returns>
-    public UserMessage? Project(string current, IReadOnlyList<string> sections)
+    public UserMessage? Project(string current, IReadOnlyList<NamedSection> sections)
     {
         ArgumentNullException.ThrowIfNull(sections);
         if (!_initialized && current.Length == 0) return null;
-        var snapshot = current.Length == 0 ? AgentLoopConstants.ClearedRuntimeContext : current;
+        var snapshot = current.Length == 0
+            ? AgentLoopConstants.ClearedRuntimeContext
+            : $"{AgentLoopConstants.RuntimeContextPrefix}\n\n{current}";
         if (_retained?.Text == snapshot) return null;
         var source = sections.Count == 0
             ? new PluginSource { Plugin = AgentLoopConstants.RuntimeContextSource }

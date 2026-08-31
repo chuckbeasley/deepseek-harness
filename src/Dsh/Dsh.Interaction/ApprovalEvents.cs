@@ -1,4 +1,4 @@
-﻿using Dsh.Session;
+using Dsh.Session;
 
 namespace Dsh.Interaction;
 
@@ -69,5 +69,6 @@ public static class InteractionEventTypes
         SessionEventTypes.Register(ApprovalAskedEvent.EventTypeName, typeof(ApprovalAskedEvent));
         SessionEventTypes.Register(ApprovalDecidedEvent.EventTypeName, typeof(ApprovalDecidedEvent));
         SessionEventTypes.Register(ApprovalPolicyEvent.EventTypeName, typeof(ApprovalPolicyEvent));
+        SessionEventTypes.Register(PermissionPresetEvent.EventTypeName, typeof(PermissionPresetEvent));
     }
 }

@@ -24,4 +24,4 @@ public sealed record LoopRuntime(LlmRuntime Llm, ToolRuntime Tools, SystemPrompt
 }
 
 /// <summary>One contributed runtime-context part: dynamic system-prompt input for the next step.</summary>
-public sealed record RuntimeContextPart(string Text, IReadOnlyList<string> Sections);
+public sealed record RuntimeContextPart(string Text, IReadOnlyList<Dsh.Llm.NamedSection> Sections);

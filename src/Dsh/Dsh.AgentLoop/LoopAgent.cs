@@ -249,7 +249,7 @@ public sealed class LoopAgent
         {
             parts.Add(await provider());
         }
-        var current = string.Join('\n', parts.Select(part => part.Text).Where(text => text.Length > 0));
+        var current = string.Join("\n\n", parts.Select(part => part.Text).Where(text => text.Length > 0));
         var sections = parts.SelectMany(part => part.Sections).ToArray();
         var context = _runtimeContext.Project(current, sections);
         var messages = context is null ? claimed.ToList() : claimed.Concat(new[] { context }).ToList();

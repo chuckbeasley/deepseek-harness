@@ -19,12 +19,24 @@ namespace Dsh.Web.Host;
 /// </summary>
 public static class SessionControlRemotes
 {
-    /// <summary>The session-event serializer: the session log's polymorphic codecs, camel-cased for the wire.</summary>
-    private static readonly JsonSerializerOptions WireJson = new()
+    private static JsonSerializerOptions? _wireJson;
+    private static int _wireJsonRevision = -1;
+
+    /// <summary>The session-event serializer: the session log's polymorphic codecs, camel-cased for the wire; rebuilt when the event-type registry grows.</summary>
+    private static JsonSerializerOptions WireJson()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        TypeInfoResolver = Dsh.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
-    };
+        var revision = Dsh.Session.SessionEventTypes.Revision;
+        if (_wireJson is null || _wireJsonRevision != revision)
+        {
+            _wireJson = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                TypeInfoResolver = Dsh.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
+            };
+            _wireJsonRevision = revision;
+        }
+        return _wireJson;
+    }
 
     /// <summary>
     /// The live control stream: subscribe first, then baseline, so mutations during the baseline
@@ -105,7 +117,7 @@ public static class SessionControlRemotes
                 jobs = jobViews,
                 projections = projectionViews,
             },
-        }, WireJson);
+        }, WireJson());
     }
 
     /// <summary>One session's queued items: next-turn prompts then next-step input, all placed <c>queued</c>.</summary>
@@ -126,7 +138,7 @@ public static class SessionControlRemotes
             {
                 id = message.Id.Value,
                 content = message.Content
-                    .Select(block => JsonSerializer.SerializeToElement(block, WireJson))
+                    .Select(block => JsonSerializer.SerializeToElement(block, WireJson()))
                     .ToArray(),
             },
         };
@@ -161,7 +173,7 @@ public static class SessionControlRemotes
         {
             try
             {
-                values[pair.Key] = JsonSerializer.SerializeToElement(pair.Value, WireJson);
+                values[pair.Key] = JsonSerializer.SerializeToElement(pair.Value, WireJson());
             }
             catch (Exception)
             {
@@ -219,7 +231,7 @@ public static class SessionControlRemotes
             {
                 try
                 {
-                    cut[pair.Key] = JsonSerializer.SerializeToElement(pair.Value, WireJson);
+                    cut[pair.Key] = JsonSerializer.SerializeToElement(pair.Value, WireJson());
                 }
                 catch (Exception)
                 {
@@ -248,7 +260,7 @@ public static class SessionControlRemotes
                     JsonElement value;
                     try
                     {
-                        value = JsonSerializer.SerializeToElement(pair.Value, WireJson);
+                        value = JsonSerializer.SerializeToElement(pair.Value, WireJson());
                     }
                     catch (Exception)
                     {
@@ -284,7 +296,7 @@ public static class SessionControlRemotes
 
     private static void EmitFrame(Context ctx, Channel<JsonElement> channel, object frame)
     {
-        if (!channel.Writer.TryWrite(JsonSerializer.SerializeToElement(frame, WireJson)))
+        if (!channel.Writer.TryWrite(JsonSerializer.SerializeToElement(frame, WireJson())))
         {
             ctx.Logger.Warn("web: session/control frame dropped (stream closed)");
         }

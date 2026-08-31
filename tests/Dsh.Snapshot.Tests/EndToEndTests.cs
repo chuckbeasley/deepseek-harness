@@ -61,6 +61,30 @@ public static class EndToEndTests
             Assert.Equal(0, header.GetProperty("delegationDepth").GetInt32(), "top-level delegation depth");
             Assert.True(header.TryGetProperty("cwd", out var headerCwd) && headerCwd.GetString() is { Length: > 0 },
                 "the header carries the workspace cwd");
+            // The recorded policy baseline opens the log, in the recorded order.
+            var types = lines.Select(root => root.GetProperty("type").GetString()).ToList();
+            Assert.Equal("permission/preset", types[1], "permission preset baseline");
+            Assert.Equal("sandbox/mode", types[2], "sandbox mode baseline");
+            Assert.Equal("approval/policy", types[3], "approval policy baseline");
+            Assert.Equal("danger-full-access", lines[1].GetProperty("data").GetProperty("preset").GetString(), "preset value");
+            Assert.Equal("danger-full-access", lines[2].GetProperty("data").GetProperty("mode").GetString(), "mode value");
+            Assert.Equal("never", lines[3].GetProperty("data").GetProperty("policy").GetString(), "policy value");
+            // The inbox records its insert and consume splices around turn/start.
+            Assert.True(types.Contains("agent/inbox/spliced", StringComparer.Ordinal), "inbox splices are durable");
+            // The turn completes: the recorded stream replays and the read tool resolves.
+            Assert.Equal("completed", lines.Last().GetProperty("data").GetProperty("reason").GetProperty("kind").GetString(),
+                "turn completes");
+            Assert.True(types.Contains("tool/result", StringComparer.Ordinal), "the read tool produced a durable result");
+            var toolResult = lines.First(root => root.GetProperty("type").GetString() == "tool/result");
+            Assert.True(toolResult.GetProperty("data").TryGetProperty("meta", out var meta)
+                && meta.GetProperty("totalLines").GetInt32() == 1 && meta.GetProperty("lines").GetArrayLength() == 1,
+                "the read meta carries the TS {path, offset, lines, totalLines} shape");
+            // The runtime-context snapshot message carries the TS sections.
+            var context = lines.First(root => root.GetProperty("type").GetString() == "user/message"
+                && root.GetProperty("data").GetProperty("source").TryGetProperty("form", out var form)
+                && form.GetString() == "snapshot");
+            Assert.Equal("@deepseek-ai/dsh-system-prompt", context.GetProperty("data").GetProperty("source").GetProperty("plugin").GetString(),
+                "the snapshot source names the system-prompt plugin");
             // The fixture must be fully consumed by the end of the run: no underrun diagnostic.
             Assert.DoesNotContain("fixture not fully consumed", result.Stderr, "no fixture underrun");
         }

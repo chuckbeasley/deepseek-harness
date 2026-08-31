@@ -385,8 +385,9 @@ public sealed class LocalFileSystemProvider : Service, IFileSystemService
         {
             throw new FsError($"path \"{path}\" escapes the workspace root \"{_root}\"", FsErrorCodes.SandboxDenied);
         }
-        var relative = Path.GetRelativePath(_root, full);
-        var display = relative == "." ? string.Empty : relative.Replace('\\', '/');
+        // The TS surface renders the backend-resolved ABSOLUTE path (the snapshot fixtures
+        // tokenize it as {{cwd}}/…), so the display path is the full path, slash-normalized.
+        var display = full.Replace('\\', '/');
         return new FsTarget(new FsTargetKey(full), display);
     }
 

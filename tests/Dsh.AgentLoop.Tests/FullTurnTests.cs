@@ -18,7 +18,8 @@ public static class FullTurnTests
         await loop.WhenIdleAsync();
 
         var types = agent.Session.Events.Select(evt => evt.Type).ToArray();
-        Assert.Sequence(new[] { "turn/start", "step/start", "user/message" }, types.Take(3).ToArray(), "the turn must open before the step and the claimed message");
+        Assert.Sequence(new[] { "agent/inbox/spliced", "turn/start", "agent/inbox/spliced", "step/start", "user/message" },
+            types.Take(5).ToArray(), "the durable inbox splice opens the log, then the turn, the consume splice, the step, and the claimed message");
         Assert.Equal(1, types.Count(type => type == "request/header"), "request/header must be logged once (initial)");
         Assert.Equal(1, types.Count(type => type == "request/context"), "request/context must be logged once");
         Assert.Equal(2, types.Count(type => type == "step/start"), "the turn must run two steps");

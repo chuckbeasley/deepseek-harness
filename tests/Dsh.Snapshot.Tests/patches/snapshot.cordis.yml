@@ -1,10 +1,32 @@
-# Snapshot-run overlay: swap the live LLM rows for the recorded-session replay row. The replay
-# provider reads DSH_SNAPSHOT_FILE / DSH_SNAPSHOT_OVERRIDE / DSH_SNAPSHOT_CHILD_FILES and registers
-# under the recorded DSH_SNAPSHOT_PROVIDER route.
+# Snapshot-run overlay: swap the live LLM rows for the recorded-session replay row, mount the
+# recorded policy baseline (permission preset + sandbox mode + approval policy), the policy
+# runtime-context providers, and the fallback title service. The replay provider reads
+# DSH_SNAPSHOT_FILE / DSH_SNAPSHOT_OVERRIDE / DSH_SNAPSHOT_CHILD_FILES and registers under the
+# recorded DSH_SNAPSHOT_PROVIDER route.
 - id: deepseek
   disabled: true
 - id: mock
   disabled: true
 - insert:
+    - id: policyBaseline
+      name: policyBaseline
+      config:
+        preset: danger-full-access
+        sandboxMode: danger-full-access
+        approvalPolicy: never
+
+    - id: policyContext
+      name: policyContext
+      config:
+        sandboxMode: danger-full-access
+        approvalPolicy: never
+
+    - id: sessionTitle
+      name: sessionTitle
+      config:
+        fallbackMaxWords: 5
+        fallbackMaxBytes: 40
+        maxTitleBytes: 80
+
     - id: replay
       name: replay

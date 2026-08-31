@@ -15,6 +15,16 @@ public static class SessionEventTypes
 {
     private static readonly object Gate = new();
     private static readonly List<KeyValuePair<string, Type>> Extra = new();
+    private static int _revision;
+
+    /// <summary>Bumped on every registration; serializer caches keyed on this rebuild when it changes.</summary>
+    public static int Revision
+    {
+        get
+        {
+            lock (Gate) return _revision;
+        }
+    }
 
     /// <summary>
     /// Register one plugin-merged session event type. A later registration for the same
@@ -34,6 +44,7 @@ public static class SessionEventTypes
         {
             if (Extra.Any(entry => entry.Key == discriminator)) return;
             Extra.Add(new KeyValuePair<string, Type>(discriminator, eventType));
+            _revision++;
         }
     }
 

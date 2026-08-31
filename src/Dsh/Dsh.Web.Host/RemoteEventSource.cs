@@ -36,12 +36,24 @@ public static class RemoteEventSource
                 handler(new RemoteEventDispatch("authorization/settled", new[] { Json(key), Json(settlement) }))))),
     };
 
-    /// <summary>The session-event serializer: the session log's polymorphic codecs, camel-cased for the wire.</summary>
-    private static readonly JsonSerializerOptions WireJson = new()
+    private static JsonSerializerOptions? _wireJson;
+    private static int _wireJsonRevision = -1;
+
+    /// <summary>The session-event serializer: the session log's polymorphic codecs, camel-cased for the wire; rebuilt when the event-type registry grows.</summary>
+    private static JsonSerializerOptions WireJson()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        TypeInfoResolver = Dsh.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
-    };
+        var revision = Dsh.Session.SessionEventTypes.Revision;
+        if (_wireJson is null || _wireJsonRevision != revision)
+        {
+            _wireJson = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                TypeInfoResolver = Dsh.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
+            };
+            _wireJsonRevision = revision;
+        }
+        return _wireJson;
+    }
 
     /// <summary>
     /// Subscribe the selection. One subscription per event, contained per dispatch: a throwing
@@ -70,13 +82,13 @@ public static class RemoteEventSource
     }
 
     private static JsonElement SessionJson(Dsh.Session.Session session)
-        => JsonSerializer.SerializeToElement(new { id = session.Id.Value }, WireJson);
+        => JsonSerializer.SerializeToElement(new { id = session.Id.Value }, WireJson());
 
     private static JsonElement EventJson(Dsh.Session.SessionEvent evt)
-        => JsonSerializer.SerializeToElement(evt, WireJson);
+        => JsonSerializer.SerializeToElement(evt, WireJson());
 
     private static JsonElement Json(object value)
-        => JsonSerializer.SerializeToElement(value, WireJson);
+        => JsonSerializer.SerializeToElement(value, WireJson());
 
     private sealed class CompositeDisposer : IDisposable
     {
