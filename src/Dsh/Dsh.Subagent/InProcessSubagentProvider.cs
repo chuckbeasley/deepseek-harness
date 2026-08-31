@@ -3,27 +3,29 @@ using Cordis.Core;
 namespace Dsh.Subagent;
 
 /// <summary>
-/// In-process subagent provider (ctx.subagent; the in-process driver half of the TS subagent seam —
-/// the out-of-process drivers, child-agent composition, and control/report tools arrive with a
-/// later wave). Each delegation runs its task body on a worker task with a fresh cancellation;
-/// teardown cancels and awaits every live delegation.
+/// The subagent runtime (ctx.subagent): the in-process driver plus the provider registry the
+/// out-of-process drivers register into. The in-process driver runs each delegation's task body
+/// on a worker task with a fresh cancellation; teardown cancels and awaits every live delegation.
 /// </summary>
 public sealed class InProcessSubagentProvider : Service, ISubagentService
 {
     private readonly object _gate = new();
     private readonly List<LocalHandle> _live = new();
+    private readonly Dictionary<string, ISubagentProvider> _providers = new(StringComparer.Ordinal);
     private readonly Func<SubagentRequest, CancellationToken, Task<string>> _runner;
     private int _counter;
 
     /// <summary>
-    /// Create the provider and register it as <c>subagent</c>.
+    /// Create the runtime, register it as <c>subagent</c>, and register the in-process driver as
+    /// the provider named <c>subagent</c>.
     /// </summary>
     /// <param name="ctx">the context that owns the service.</param>
-    /// <param name="runner">the task body; returns the final text (throws to fail the delegation).</param>
+    /// <param name="runner">the in-process task body; returns the final text (throws to fail the delegation).</param>
     public InProcessSubagentProvider(Context ctx, Func<SubagentRequest, CancellationToken, Task<string>>? runner = null)
         : base(ctx, "subagent")
     {
         _runner = runner ?? DefaultRunner;
+        _providers.Add("subagent", new InProcessProviderAdapter(this));
     }
 
     /// <inheritdoc />
@@ -46,7 +48,57 @@ public sealed class InProcessSubagentProvider : Service, ISubagentService
         return handle;
     }
 
-    /// <summary>Teardown: cancel and await every live delegation.</summary>
+    /// <inheritdoc />
+    public IDisposable RegisterProvider(ISubagentProvider provider)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        if (provider.Name.Trim().Length == 0)
+        {
+            throw new ArgumentException("subagent: a provider name must be non-empty", nameof(provider));
+        }
+        lock (_gate)
+        {
+            if (_providers.ContainsKey(provider.Name))
+            {
+                throw new SubagentError($"a subagent provider named \"{provider.Name}\" is already registered", "DUPLICATE_PROVIDER");
+            }
+            _providers.Add(provider.Name, provider);
+        }
+        return new ActionDisposer(() =>
+        {
+            lock (_gate) _providers.Remove(provider.Name);
+        });
+    }
+
+    /// <inheritdoc />
+    public ISubagentProvider? GetProvider(string name)
+    {
+        lock (_gate) return _providers.TryGetValue(name, out var provider) ? provider : null;
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<ISubagentProvider> List()
+    {
+        lock (_gate) return _providers.Values.ToArray();
+    }
+
+    /// <inheritdoc />
+    public async Task<ISubagentRun> StartAsync(string name, SubagentRequest request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ISubagentProvider provider;
+        lock (_gate)
+        {
+            if (!_providers.TryGetValue(name, out var found))
+            {
+                throw new SubagentError($"no subagent provider is registered for \"{name}\"", "NO_PROVIDER");
+            }
+            provider = found;
+        }
+        return await provider.StartAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Teardown: cancel and await every live delegation, then drop the registered drivers.</summary>
     public override async ValueTask StopAsync()
     {
         LocalHandle[] live;
@@ -111,17 +163,17 @@ public sealed class InProcessSubagentProvider : Service, ISubagentService
             {
                 var text = await _runner(Request, _cts.Token);
                 Volatile.Write(ref _status, (int)SubagentStatus.Completed);
-                _done.TrySetResult(new SubagentResult(text, IsError: false));
+                _done.TrySetResult(new SubagentResult(text));
             }
             catch (OperationCanceledException)
             {
                 Volatile.Write(ref _status, (int)SubagentStatus.Cancelled);
-                _done.TrySetResult(new SubagentResult("delegation cancelled", IsError: false));
+                _done.TrySetResult(new SubagentResult("delegation cancelled", StopReason: SubagentStopReason.Aborted));
             }
             catch (Exception error)
             {
                 Volatile.Write(ref _status, (int)SubagentStatus.Failed);
-                _done.TrySetResult(new SubagentResult(error.Message, IsError: true));
+                _done.TrySetResult(new SubagentResult(error.Message, StopReason: SubagentStopReason.Error));
             }
             finally
             {
@@ -129,4 +181,66 @@ public sealed class InProcessSubagentProvider : Service, ISubagentService
             }
         }
     }
+
+    /// <summary>The in-process driver as a named provider: one published run per delegation.</summary>
+    private sealed class InProcessProviderAdapter : ISubagentProvider
+    {
+        private readonly InProcessSubagentProvider _service;
+
+        public InProcessProviderAdapter(InProcessSubagentProvider service)
+        {
+            _service = service;
+        }
+
+        public string Name => "subagent";
+
+        public SubagentCapabilities Capabilities => SubagentCapabilities.None;
+
+        public bool InheritsParentContext => false;
+
+        public (string Provider, string Model)? AgentRouteDefaults => null;
+
+        public Task<ISubagentRun> StartAsync(SubagentRequest request, CancellationToken cancellationToken)
+        {
+            var handle = _service.Delegate(request);
+            var withdrawal = cancellationToken.Register(() => handle.Cancel());
+            return Task.FromResult<ISubagentRun>(new HandleRun(handle, withdrawal));
+        }
+
+        private sealed class HandleRun : ISubagentRun
+        {
+            private readonly ISubagentHandle _handle;
+            private readonly CancellationTokenRegistration _withdrawal;
+
+            public HandleRun(ISubagentHandle handle, CancellationTokenRegistration withdrawal)
+            {
+                _handle = handle;
+                _withdrawal = withdrawal;
+            }
+
+            public SubagentId Id => _handle.Id;
+
+            public Task<SubagentResult> Result => _handle.Done;
+
+            public Task DisposeAsync()
+            {
+                _withdrawal.Dispose();
+                _handle.Cancel();
+                return Task.CompletedTask;
+            }
+        }
+    }
+}
+
+/// <summary>Minimal <see cref="IDisposable"/> built from an action; used for sync effect cleanups.</summary>
+internal sealed class ActionDisposer : IDisposable
+{
+    private readonly Action _action;
+
+    public ActionDisposer(Action action)
+    {
+        _action = action ?? throw new ArgumentNullException(nameof(action));
+    }
+
+    public void Dispose() => _action();
 }

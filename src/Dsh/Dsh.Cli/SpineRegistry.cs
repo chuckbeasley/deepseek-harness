@@ -155,6 +155,36 @@ public static class SpineRegistry
             return new SpineDisposables(disposers.Append(service).ToArray());
         }));
         catalog.Register("subagent", new SpinePlugin("subagent", (ctx, _) => new Dsh.Subagent.InProcessSubagentProvider(ctx)));
+        catalog.Register("sdkSubagent", new SpinePlugin("sdkSubagent", (ctx, config) =>
+        {
+            var service = ctx.Get<Dsh.Subagent.ISubagentService>("subagent")
+                ?? throw new InvalidOperationException("sdkSubagent requires the \"subagent\" row");
+            var dshBin = ConfigString(config, "dshBin")
+                ?? throw new InvalidOperationException("sdkSubagent requires a \"dshBin\" config pointing at the SDK runtime entry");
+            var provider = new Dsh.Subagent.SdkOutOfProcessProvider(new Dsh.Subagent.SdkOutOfProcessConfig(
+                dshBin,
+                ConfigString(config, "profile") ?? "sdk",
+                ConfigStrings(config, "patches"),
+                ConfigString(config, "dshHome") ?? Path.Combine(ctx.Get<string>("dshProfileDir") ?? ".", "subagent-home"),
+                ConfigString(config, "cwd"),
+                ConfigString(config, "provider") ?? "deepseek-official",
+                ConfigString(config, "model") ?? "deepseek-v4-flash",
+                ConfigInt(config, "maxTokens"),
+                ConfigMap(config, "env"),
+                Array.Empty<string>(),
+                ConfigInt(config, "shutdownTimeoutMs") ?? 1000,
+                ConfigInt(config, "disposeEofGraceMs") ?? 6000,
+                ConfigInt(config, "disposeGraceMs") ?? 3000));
+            return service.RegisterProvider(provider);
+        }));
+        catalog.Register("subagentTool", new SpinePlugin("subagentTool", (ctx, config) =>
+        {
+            var service = ctx.Get<Dsh.Subagent.ISubagentService>("subagent")
+                ?? throw new InvalidOperationException("subagentTool requires the \"subagent\" row");
+            var providerName = ConfigString(config, "provider")
+                ?? throw new InvalidOperationException("subagentTool requires a \"provider\" config naming the registered driver");
+            return ctx.Tools().Register(Dsh.Subagent.SubagentTool.Definition(service, providerName, ConfigString(config, "toolName")));
+        }));
         catalog.Register("jobs", new SpinePlugin("jobs", (ctx, _) =>
         {
             var service = new Dsh.Jobs.LocalJobsProvider(ctx);
@@ -224,6 +254,18 @@ public static class SpineRegistry
         => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is long integer
             ? (int)integer
             : null;
+
+    private static IReadOnlyList<string> ConfigStrings(object? config, string key)
+        => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is List<object?> list
+            ? list.OfType<string>().ToArray()
+            : Array.Empty<string>();
+
+    private static IReadOnlyDictionary<string, string> ConfigMap(object? config, string key)
+        => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is Dictionary<string, object?> entries
+            ? entries
+                .Where(entry => entry.Value is string)
+                .ToDictionary(entry => entry.Key, entry => (string)entry.Value!, StringComparer.Ordinal)
+            : new Dictionary<string, string>();
 }
 
 /// <summary>Disposes several disposers in order (service last, so its teardown runs first).</summary>
