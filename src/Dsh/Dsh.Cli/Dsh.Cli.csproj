@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- The CLI is the executable that boots the web host (dsh web), so it must be a Web SDK project:
      the Blazor framework assets (_framework/blazor.web.js) only flow into an SDK.Web executable's
      static web assets manifest. -->
@@ -38,6 +38,7 @@
     <ProjectReference Include="..\Dsh.Fs\Dsh.Fs.csproj" />
     <ProjectReference Include="..\Dsh.Identity\Dsh.Identity.csproj" />
     <ProjectReference Include="..\Dsh.Jobs\Dsh.Jobs.csproj" />
+    <ProjectReference Include="..\Dsh.Interaction\Dsh.Interaction.csproj" />
     <ProjectReference Include="..\Dsh.Workflow\Dsh.Workflow.csproj" />
     <ProjectReference Include="..\Dsh.Webhook\Dsh.Webhook.csproj" />
     <ProjectReference Include="..\Dsh.Plan\Dsh.Plan.csproj" />
@@ -74,3 +75,4 @@
   </ItemGroup>
 
 </Project>
+

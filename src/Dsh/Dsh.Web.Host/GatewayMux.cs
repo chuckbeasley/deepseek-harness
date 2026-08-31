@@ -2,6 +2,7 @@ using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading.Channels;
 using Cordis.Core;
+using Dsh.Interaction;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -207,6 +208,13 @@ public static class GatewayMux
                 ctx.Logger.Warn($"web: $events emit for {dispatch.Event} dropped (stream closed)");
             }
         });
+        var settlement = ctx.Get<RemoteEventSettlement>("remoteEventSettlement");
+        IDisposable? interaction = null;
+        if (settlement is not null)
+        {
+            settlement.RegisterClient(clientId);
+            interaction = BridgeInteractionWaterfalls(ctx, settlement, clientId, writer, ct);
+        }
         try
         {
             await Task.Delay(Timeout.InfiniteTimeSpan, ct);
@@ -217,6 +225,9 @@ public static class GatewayMux
         }
         finally
         {
+            // Pending proposals die with the stream: every awaiting ask settles cancelled/aborted.
+            settlement?.UnregisterClient(clientId);
+            interaction?.Dispose();
             channel.Writer.TryComplete();
             try
             {
@@ -226,6 +237,168 @@ public static class GatewayMux
             {
                 // the socket is gone; the pump ends with it
             }
+        }
+    }
+
+    /// <summary>
+    /// Bridge the interaction waterfall proposals onto this <c>$events</c> stream (the C# half of
+    /// the TS remote waterfall delivery): every <c>approval/request</c> and
+    /// <c>user-questions/ask</c> dispatch while the stream is open is forwarded as a
+    /// <c>waterfall</c> frame and held pending in the settlement until the client answers through
+    /// <c>$events/result</c> or the request/stream dies (a <c>cancel</c> frame, then the ask
+    /// settles cancelled/aborted). A listener that throws synchronously must land in the same
+    /// rejection path as an async one, so the resolve wrapper contains the continuation call.
+    /// </summary>
+    private static IDisposable BridgeInteractionWaterfalls(
+        Context ctx, RemoteEventSettlement settlement, string clientId, MuxWriter writer, CancellationToken ct)
+    {
+        var approval = ctx.On("approval/request",
+            new Func<ApprovalRequest, Func<Task<ApprovalOutcome>>, Task<ApprovalOutcome>>(async (request, next) =>
+            {
+                var agentId = request.Agent.Id.Value;
+                var projected = JsonSerializer.SerializeToElement(new
+                {
+                    toolName = request.ToolName,
+                    callId = request.CallId,
+                    reason = request.Reason,
+                }, WireJson);
+                var tcs = new TaskCompletionSource<ApprovalOutcome>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var eventId = settlement.Begin(clientId,
+                    resolve: async outcome =>
+                    {
+                        switch (outcome.Kind)
+                        {
+                            case RemoteEventOutcomeKind.Next:
+                                try { tcs.SetResult(await next()); }
+                                catch (Exception error) { tcs.SetException(error); }
+                                break;
+                            case RemoteEventOutcomeKind.Result:
+                                tcs.SetResult(ParseApprovalOutcome(outcome.Value));
+                                break;
+                            case RemoteEventOutcomeKind.Rejected:
+                                tcs.SetException(outcome.Error
+                                    ?? new RemoteRejectionException("Error", "the client rejected the approval request", null, null));
+                                break;
+                        }
+                    },
+                    cancel: () => tcs.TrySetResult(ApprovalOutcome.Cancelled));
+                using var cancellation = request.CancellationToken?.Register(() =>
+                {
+                    settlement.Cancel(clientId, eventId);
+                    _ = TrySendCancelFrameAsync(writer, eventId, ct);
+                });
+                try
+                {
+                    await writer.SendAsync(new { type = "waterfall", @event = "approval/request", eventId, agentId, request = projected }, ct);
+                    return await tcs.Task;
+                }
+                finally
+                {
+                    settlement.Cancel(clientId, eventId);
+                }
+            }));
+        var questions = ctx.On("user-questions/ask",
+            new Func<UserQuestionRequest, Func<Task<UserQuestionAnswer>>, Task<UserQuestionAnswer>>(async (request, next) =>
+            {
+                var agentId = request.Agent?.Id.Value ?? "";
+                var projected = JsonSerializer.SerializeToElement(request.Questions, WireJson);
+                var tcs = new TaskCompletionSource<UserQuestionAnswer>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var eventId = settlement.Begin(clientId,
+                    resolve: async outcome =>
+                    {
+                        switch (outcome.Kind)
+                        {
+                            case RemoteEventOutcomeKind.Next:
+                                try { tcs.SetResult(await next()); }
+                                catch (Exception error) { tcs.SetException(error); }
+                                break;
+                            case RemoteEventOutcomeKind.Result:
+                                tcs.SetResult(ParseQuestionAnswer(outcome.Value));
+                                break;
+                            case RemoteEventOutcomeKind.Rejected:
+                                tcs.SetException(outcome.Error
+                                    ?? new RemoteRejectionException("Error", "the client rejected the question", null, null));
+                                break;
+                        }
+                    },
+                    cancel: () => tcs.SetException(new UserQuestionError("ask_user_question was aborted before the user answered", "ASK_ABORTED")));
+                using var cancellation = request.CancellationToken?.Register(() =>
+                {
+                    settlement.Cancel(clientId, eventId);
+                    _ = TrySendCancelFrameAsync(writer, eventId, ct);
+                });
+                try
+                {
+                    await writer.SendAsync(new { type = "waterfall", @event = "user-questions/ask", eventId, agentId, request = projected }, ct);
+                    return await tcs.Task;
+                }
+                finally
+                {
+                    settlement.Cancel(clientId, eventId);
+                }
+            }));
+        return new BridgeDisposer(approval, questions);
+    }
+
+    /// <summary>Map a client-returned value to the closed approval vocabulary; anything else fails closed.</summary>
+    private static ApprovalOutcome ParseApprovalOutcome(JsonElement? value)
+    {
+        if (value is { } element && element.ValueKind == JsonValueKind.String)
+        {
+            try
+            {
+                return JsonSerializer.Deserialize<ApprovalOutcome>(element.GetRawText(), WireJson);
+            }
+            catch (JsonException)
+            {
+                // fall through to fail closed
+            }
+        }
+        return ApprovalOutcome.Unavailable;
+    }
+
+    /// <summary>Parse a client-returned answer; a malformed answer fails the question closed.</summary>
+    private static UserQuestionAnswer ParseQuestionAnswer(JsonElement? value)
+    {
+        if (value is { } element)
+        {
+            try
+            {
+                return JsonSerializer.Deserialize<UserQuestionAnswer>(element.GetRawText(), WireJson)
+                    ?? throw new InvalidOperationException("null answer");
+            }
+            catch (Exception)
+            {
+                // fall through to fail closed
+            }
+        }
+        throw new UserQuestionError("the client returned no usable answer", "UNAVAILABLE");
+    }
+
+    private static async Task TrySendCancelFrameAsync(MuxWriter writer, string eventId, CancellationToken ct)
+    {
+        try
+        {
+            await writer.SendAsync(new { type = "cancel", eventId }, ct);
+        }
+        catch (Exception)
+        {
+            // the socket is gone; the pending ask settles through its cancellation path
+        }
+    }
+
+    private sealed class BridgeDisposer : IDisposable
+    {
+        private readonly IDisposable[] _disposers;
+
+        public BridgeDisposer(params IDisposable[] disposers)
+        {
+            _disposers = disposers;
+        }
+
+        public void Dispose()
+        {
+            foreach (var disposer in _disposers) disposer.Dispose();
         }
     }
 

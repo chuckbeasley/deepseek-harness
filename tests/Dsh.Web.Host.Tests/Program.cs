@@ -108,6 +108,14 @@ public static class Program
         ("codec: generated encode carries structured details", RpcCodecTests.Encode_CarriesStructuredDetails),
         ("codec: generated decode round-trips the encode", RpcCodecTests.TryDecode_RoundTripsEncode),
         ("codec: generated decode refuses malformed elements", RpcCodecTests.TryDecode_RejectsMalformedElements),
+        ("events: the waterfall frame and result settlement round-trip", RemoteEventSettlementTests.WaterfallFrame_AndResultSettlement_RoundTrip),
+        ("events: the next outcome delegates to the continuation", RemoteEventSettlementTests.NextOutcome_DelegatesToTheContinuation),
+        ("events: a rejected outcome fails the ask closed", RemoteEventSettlementTests.RejectedOutcome_FailsTheAskClosed),
+        ("events: an aborted request delivers the cancel frame and settles cancelled", RemoteEventSettlementTests.AnAbortedRequest_DeliversTheCancelFrame_AndSettlesCancelled),
+        ("events: an unknown clientId settles gateway/internal", RemoteEventSettlementTests.UnknownClientId_SettlesGatewayInternal),
+        ("events: an unknown eventId on a known client acks as a no-op", RemoteEventSettlementTests.UnknownEventIdOnAKnownClient_AcksAsANoOp),
+        ("events: a user-questions ask answers over the stream", RemoteEventSettlementTests.UserQuestionsAsk_AnswersOverTheStream),
+        ("events: a malformed result payload settles bad-request", RemoteEventSettlementTests.MalformedResultPayload_SettlesBadRequest),
     };
 
     public static int Main()

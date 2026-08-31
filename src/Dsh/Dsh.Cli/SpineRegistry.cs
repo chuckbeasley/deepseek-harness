@@ -40,6 +40,22 @@ public static class SpineRegistry
             var registration = ctx.Tools().Register(Dsh.Todo.TodoTool.Definition(ctx, parallel));
             return new SpineDisposables(registration, service);
         }));
+        catalog.Register("approval", new SpinePlugin("approval", (ctx, config) =>
+        {
+            var policy = ConfigString(config, "policy") switch
+            {
+                null or "ask" => Dsh.Interaction.ApprovalPolicy.Ask,
+                "never" => Dsh.Interaction.ApprovalPolicy.Never,
+                var value => throw new InvalidOperationException($"approval policy must be \"ask\" or \"never\", got \"{value}\""),
+            };
+            return new Dsh.Interaction.ApprovalService(ctx, policy);
+        }));
+        catalog.Register("userQuestions", new SpinePlugin("userQuestions", (ctx, _) => new Dsh.Interaction.UserQuestionService(ctx)));
+        catalog.Register("toolAskUser", new SpinePlugin("toolAskUser", (ctx, _) =>
+        {
+            var tools = ctx.Get<Dsh.Tools.ToolRuntime>("tools");
+            return tools is null ? null : tools.Register(Dsh.Interaction.AskUserTool.Definition(ctx));
+        }));
         catalog.Register("mock", new SpinePlugin("mock", (ctx, _) =>
             ctx.Llm().RegisterAdapter(new[] { Dsh.Spike.MockLlmProvider.Provider }, new Dsh.Spike.MockLlmProvider())));
         catalog.Register("deepseek", new SpinePlugin("deepseek", (ctx, config) =>
@@ -384,6 +400,15 @@ public static class SpineRegistry
         }));
         catalog.Register("webHost", new SpinePlugin("webHost", (ctx, config) =>
         {
+            // The remote waterfall settlement: the $events stream registers pending proposals and
+            // the $events/result unary settles them (the interaction surface over the web).
+            var settlement = new Dsh.Web.Host.RemoteEventSettlement();
+            ctx.Set("remoteEventSettlement", settlement);
+            var rpc = ctx.Get<Dsh.Web.Host.DshRpcRegistry>("rpc");
+            if (rpc is not null)
+            {
+                rpc.Register(Dsh.Web.Host.RemoteEventSettlement.ResultMethod(settlement));
+            }
             var host = new Dsh.Web.Host.WebHostService(
                 ctx,
                 new Dsh.Web.Host.WebHostConfig(
