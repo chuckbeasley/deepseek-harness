@@ -26,6 +26,14 @@ public static class SnapshotNormalizer
     private static readonly Regex IdKeyRegex = new(@"(?:^id$|Id$|Ids$)");
     private static readonly Regex CwdRootedPathRegex = new(@"\{\{cwd\}\}(?:[\\/][^\s<>""'`]+)+");
     private static readonly Regex PathTagRegex = new(@"(<path>)([^<]*)(</path>)");
+    // Snapshot-mode and cwd-rooted spill locators tokenize by spill filename (the TS normalize
+    // spill rules): <root>/session-<12hex>/<12hex>-<name> followed by the retrieval hint or a boundary.
+    private static readonly Regex SnapshotSpillPathRegex = new(
+        @"(?:[A-Za-z]:)?[\\/](?:tmp|t)[\\/](?:dsh-acp-snap-[0-9a-f]{9}|dsh-acp-snapshot-spill)[\\/]session-[0-9a-f]{12}[\\/][0-9a-f]{12}-([A-Za-z0-9._~-]+?)(?=\. Use read with offset/limit|[\s)]|$)",
+        RegexOptions.CultureInvariant);
+    private static readonly Regex LocalSpillPathRegex = new(
+        @"\{\{cwd\}\}[\\/]\.spill[\\/]session-[0-9a-f]{12}[\\/][0-9a-f]{12}-([A-Za-z0-9._~-]+?)(?=\. Use read with offset/limit|[\s)]|$)",
+        RegexOptions.CultureInvariant);
     private static readonly string[] PackedRowTypes = { "text-chunks", "reasoning-chunks", "tool-call-chunks" };
 
     private static readonly char[] PathTextBoundary = { ' ', '\t', '<', '>', '"', '\'', '`', '(', ')', '[', ']', '{', '}', ',', ';', ':', '!', '?', '=' };
@@ -104,6 +112,9 @@ public static class SnapshotNormalizer
         {
             output = ReplaceCwd(output, escapedCwd.Substring(1, escapedCwd.Length - 2), CwdToken);
         }
+        // Spill locators tokenize by filename (snapshot root and cwd-rooted spellings).
+        output = SnapshotSpillPathRegex.Replace(output, match => $"{{{{spillLocator:{match.Groups[1].Value}}}}}");
+        output = LocalSpillPathRegex.Replace(output, match => $"{{{{spillLocator:{match.Groups[1].Value}}}}}");
         output = output.Replace("/private" + CwdToken, CwdToken);
         output = CwdRootedPathRegex.Replace(output, match => match.Value.Replace('\\', '/'));
         output = PathTagRegex.Replace(output, match => match.Groups[1].Value + match.Groups[2].Value.Replace('\\', '/') + match.Groups[3].Value);

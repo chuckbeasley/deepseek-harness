@@ -14,6 +14,12 @@ public sealed class Harness : IAsyncDisposable
 
     public required string WorkspaceRoot { get; init; }
 
+    /// <summary>The observation gate the policy-enabled tools share (null in the bare harness).</summary>
+    public FsObservations? Observations { get; init; }
+
+    /// <summary>The session store for policy tests (null in the bare harness).</summary>
+    public Dsh.Session.SessionStore? Sessions { get; init; }
+
     /// <summary>Boot the spine with a fresh temp workspace root.</summary>
     public static Harness Create()
     {
@@ -24,6 +30,28 @@ public sealed class Harness : IAsyncDisposable
         tools.Register(FileSystemTools.Read(fs));
         tools.Register(FileSystemTools.Write(fs));
         return new Harness { Ctx = ctx, Fs = fs, Tools = tools, WorkspaceRoot = workspaceRoot };
+    }
+
+    /// <summary>Boot the spine with the observation policy and the edit tool, plus a session store for owner-keyed state.</summary>
+    public static Harness CreateWithPolicy()
+    {
+        var ctx = new Context();
+        var workspaceRoot = Path.Combine(Path.GetTempPath(), "dsh-fs-tests-" + Guid.NewGuid().ToString("N"));
+        var fs = new LocalFileSystemProvider(ctx, new FsProviderConfig(workspaceRoot));
+        var observations = new FsObservations();
+        var tools = new ToolRuntime(ctx);
+        tools.Register(FileSystemTools.Read(fs, observations: observations));
+        tools.Register(FileSystemTools.Write(fs, observations));
+        tools.Register(FileSystemTools.Edit(fs, observations));
+        return new Harness
+        {
+            Ctx = ctx,
+            Fs = fs,
+            Tools = tools,
+            WorkspaceRoot = workspaceRoot,
+            Observations = observations,
+            Sessions = new Dsh.Session.SessionStore(ctx),
+        };
     }
 
     /// <summary>Dispose the context (unwinding every effect) and remove the temp workspace root.</summary>

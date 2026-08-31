@@ -41,7 +41,12 @@ public sealed class LocalSpillProvider : Service, ISpillService
         {
             throw new ArgumentException("spill root must be a non-empty path", nameof(config));
         }
-        _root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(config.Root));
+        // A POSIX-style absolute root ("/tmp/...") keeps its spelling verbatim: on Windows such a
+        // path resolves to the current drive's root, and the verbatim form keeps the model-facing
+        // locator byte-identical to the recorded snapshot spelling (the spill-policy budgets its
+        // preview against the real path, so a drive prefix would shift every notice's numbers).
+        _root = config.Root.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        if (!_root.StartsWith('/')) _root = Path.GetFullPath(_root);
         Directory.CreateDirectory(_root);
     }
 
@@ -246,7 +251,16 @@ public sealed class LocalSpillProvider : Service, ISpillService
 
     private bool IsInsideRoot(string fullPath)
     {
-        var relative = Path.GetRelativePath(_root, fullPath);
+        if (RelativeInside(_root, fullPath)) return true;
+        // A POSIX-style root on Windows resolves to a drive-rooted path on disk: admit only paths
+        // under that resolved spelling too.
+        var resolved = Path.GetFullPath(_root);
+        return resolved != _root && RelativeInside(resolved, fullPath);
+    }
+
+    private static bool RelativeInside(string root, string fullPath)
+    {
+        var relative = Path.GetRelativePath(root, fullPath);
         return relative != ".."
             && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
             && !Path.IsPathRooted(relative);

@@ -8,12 +8,13 @@ namespace Dsh.Fs;
 /// defaults inside the run methods; in particular the write intent is materialized by
 /// <see cref="ResolveWrite"/>.
 ///
-/// Wave-1 surface vs the TS seam: readText/writeText/readBytes/list/stat/delete/mkdir are
-/// ported; streamText, lstat, editText, contains, processPath, and fileUrl are deferred, as are
-/// the fs/observed + fs/write-intent policy events (the fs-observation-policy seam is named in
-/// the provider docs but not ported). The consumer tools (fs_read/fs_write) are non-durable:
-/// they append no session events. The local provider pins every path inside one workspace root,
-/// which the TS fs-local backend does not (containment is a port decision, not a TS fact).
+/// Wave-1 surface vs the TS seam: readText/writeText/editText/readBytes/list/stat/delete/mkdir are
+/// ported; streamText, lstat, contains, processPath, and fileUrl are deferred, as are the
+/// fs/observed + fs/write-intent policy events (the observation gate lives in the consumer tools;
+/// the fs-observation-policy seam is named in the provider docs but not ported). The consumer
+/// tools (read/write/edit) are non-durable: they append no session events. The local provider
+/// pins every path inside one workspace root, which the TS fs-local backend does not
+/// (containment is a port decision, not a TS fact).
 /// </summary>
 public interface IFileSystemService
 {
@@ -25,6 +26,9 @@ public interface IFileSystemService
 
     /// <summary>Explicit resolve(request): spec step for a write; an omitted intent becomes <see cref="FsUnconditionalIntent"/>.</summary>
     FsWriteSpec ResolveWrite(FsWriteRequest request);
+
+    /// <summary>Explicit resolve(request): spec step for a literal edit; an omitted version guard stays null.</summary>
+    FsEditSpec ResolveEdit(FsEditRequest request);
 
     /// <summary>Explicit resolve(request): spec step for a listing.</summary>
     FsListSpec ResolveList(FsListRequest request);
@@ -52,6 +56,9 @@ public interface IFileSystemService
 
     /// <summary>Atomically create or replace UTF-8 text under the spec's materialized intent.</summary>
     Task<FsWriteOutcome> WriteTextAsync(FsWriteSpec spec, CancellationToken ct = default);
+
+    /// <summary>Atomically apply one literal text edit under the spec's observed version guard (null = unconditional).</summary>
+    Task<FsEditOutcome> EditTextAsync(FsEditSpec spec, CancellationToken ct = default);
 
     /// <summary>Remove a file or an empty directory; a missing target fails with FS_NOT_FOUND.</summary>
     Task DeleteAsync(FsDeleteSpec spec, CancellationToken ct = default);

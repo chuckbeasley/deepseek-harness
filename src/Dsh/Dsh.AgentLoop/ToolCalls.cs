@@ -12,7 +12,11 @@ public static class ToolCallScheduler
 {
     /// <summary>
     /// Execute the calls in model order. The C# tool vocabulary carries no concludesTurn yet, so
-    /// the result is always false today; the signature keeps the TS contract slot.
+    /// the result is always false today; the signature keeps the TS contract slot. All
+    /// <c>tool/call</c> events are logged up front in model order (the TS dispatch pass), then the
+    /// calls run and their results append in model order — the recorded corpus interleaves
+    /// parallel dispatches exactly this way. The deployment-wide cap is resolved and validated at
+    /// the AgentLoop configuration boundary.
     /// </summary>
     public static async Task<bool> ExecuteAsync(
         Dsh.Agent.Agent agent, ToolRuntime tools, long turn, long step,
@@ -20,6 +24,15 @@ public static class ToolCallScheduler
     {
         ArgumentNullException.ThrowIfNull(tools);
         var session = agent.Session;
+        var callSeqs = new long[toolCalls.Count];
+        for (var index = 0; index < toolCalls.Count; index++)
+        {
+            var call = toolCalls[index];
+            callSeqs[index] = session.Append(new ToolCallEvent
+            {
+                Turn = turn, Step = step, CallId = call.Id, Name = call.Name, Arguments = call.Arguments,
+            }).Seq;
+        }
         var concluded = false;
         for (var index = 0; index < toolCalls.Count; index++)
         {
@@ -27,21 +40,18 @@ public static class ToolCallScheduler
             {
                 for (var skipped = index; skipped < toolCalls.Count; skipped++)
                 {
-                    AppendSkipped(session, turn, step, toolCalls[skipped]);
+                    AppendSkipped(session, turn, step, toolCalls[skipped], callSeqs[skipped]);
                 }
                 return concluded;
             }
             var call = toolCalls[index];
-            var callSeq = session.Append(new ToolCallEvent
-            {
-                Turn = turn, Step = step, CallId = call.Id, Name = call.Name, Arguments = call.Arguments,
-            }).Seq;
             var input = new ToolExecutionInput(call.Id, call.Name, ParseArguments(call.Arguments), ct)
             {
                 Session = session,
             };
             var result = await tools.ExecuteAsync(input, ct);
-            AppendToolResult(session, turn, step, call, result, callSeq);
+            result = ApplySpillPolicy(agent, call, result);
+            AppendToolResult(session, turn, step, call, result, callSeqs[index]);
         }
         return concluded;
     }
@@ -60,6 +70,29 @@ public static class ToolCallScheduler
         }
     }
 
+    /// <summary>
+    /// Apply the snapshot-run result-retention policy (port of the spill-policy post-execute arm):
+    /// a plain-text accepted result larger than $DSH_SNAPSHOT_SPILL_MAX_BYTES is spilled to the
+    /// session spill store and replaced with the bounded preview + notice. Best-effort: no policy
+    /// env, no spill service, a non-text result, or a storage failure keeps the original. The
+    /// product bundles adopt the policy row at cutover; the env is the snapshot config channel.
+    /// </summary>
+    private static ToolExecutionResult ApplySpillPolicy(Dsh.Agent.Agent agent, ToolCallBlock call, ToolExecutionResult result)
+    {
+        if (result is not ToolExecutionSuccess success) return result;
+        if (call.Name == "read") return result; // avoid a read -> spill -> read-again loop
+        var envCap = Environment.GetEnvironmentVariable("DSH_SNAPSHOT_SPILL_MAX_BYTES");
+        if (envCap is null || !int.TryParse(envCap, out var cap) || cap < 0) return result;
+        var spill = agent.Owner.Get<Dsh.Spill.ISpillService>("spill");
+        if (spill is null) return result;
+        var blocks = success.Blocks;
+        if (blocks.Count == 0 || blocks.Any(block => block is not TextBlock)) return result;
+        var text = string.Concat(blocks.Cast<TextBlock>().Select(block => block.Text));
+        var replaced = Dsh.Spill.SpillPolicy.Replacement(text, agent.Session.Id.Value, $"{call.Name}.txt", spill, cap);
+        if (replaced is null) return result;
+        return success with { Blocks = new ContentBlock[] { new TextBlock(replaced) } };
+    }
+
     /// <summary>Append a model-ordered result linked to its call event.</summary>
     private static void AppendToolResult(Dsh.Session.Session session, long turn, long step, ToolCallBlock call, ToolExecutionResult result, long callSeq)
     {
@@ -76,13 +109,9 @@ public static class ToolCallScheduler
         });
     }
 
-    /// <summary>Append the durable call/result pair for a model call skipped after cancellation.</summary>
-    private static void AppendSkipped(Dsh.Session.Session session, long turn, long step, ToolCallBlock call)
+    /// <summary>Append the durable result for a model call skipped after cancellation (its call event is already logged).</summary>
+    private static void AppendSkipped(Dsh.Session.Session session, long turn, long step, ToolCallBlock call, long callSeq)
     {
-        var callSeq = session.Append(new ToolCallEvent
-        {
-            Turn = turn, Step = step, CallId = call.Id, Name = call.Name, Arguments = call.Arguments,
-        }).Seq;
         var content = new ContentBlock[] { new TextBlock("Error: tool call aborted before dispatch") };
         session.Append(new ToolResultEvent
         {

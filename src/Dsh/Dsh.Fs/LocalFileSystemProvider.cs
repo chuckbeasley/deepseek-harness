@@ -80,6 +80,21 @@ public sealed class LocalFileSystemProvider : Service, IFileSystemService
     }
 
     /// <inheritdoc />
+    public FsEditSpec ResolveEdit(FsEditRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.OldString.Length == 0)
+        {
+            throw new ArgumentException("old_string must be a non-empty string", nameof(request));
+        }
+        if (request.OldString == request.NewString)
+        {
+            throw new ArgumentException("old_string and new_string must differ", nameof(request));
+        }
+        return new FsEditSpec(ResolveTarget(request.Path), request.OldString, request.NewString, request.ReplaceAll, request.Version);
+    }
+
+    /// <inheritdoc />
     public FsListSpec ResolveList(FsListRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -349,6 +364,129 @@ public sealed class LocalFileSystemProvider : Service, IFileSystemService
             after.Version,
             Before: before,
             After: NormalizeLineEndings(spec.Content));
+    }
+
+    /// <inheritdoc />
+    public async Task<FsEditOutcome> EditTextAsync(FsEditSpec spec, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(spec);
+        ThrowIfAborted(ct, "edit");
+        var key = spec.Target.TargetKey;
+        var display = spec.Target.DisplayPath;
+        var existing = Probe(key, display);
+        // Stale guard before literal matching: an edit based on an old read reports FS_STALE_VERSION,
+        // not FS_EDIT_NOT_FOUND/FS_AMBIGUOUS_EDIT against newer content (the TS editText contract).
+        if (existing is null)
+        {
+            throw new FsError($"cannot edit \"{display}\": file changed since it was read", FsErrorCodes.StaleVersion);
+        }
+        if (existing.Type != FsPathType.File)
+        {
+            throw new FsError($"cannot edit \"{display}\": not a regular file", FsErrorCodes.NotRegularFile);
+        }
+        if (spec.Version is { } version && existing.Version != version)
+        {
+            throw new FsError($"cannot edit \"{display}\": file changed since it was read", FsErrorCodes.StaleVersion);
+        }
+        byte[] raw;
+        try
+        {
+            raw = await File.ReadAllBytesAsync(key, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw new FsError("edit aborted", FsErrorCodes.Aborted);
+        }
+        catch (Exception error)
+        {
+            throw IoError("edit", display, error);
+        }
+        if (raw.AsSpan().IndexOf((byte)0) >= 0)
+        {
+            throw new FsError($"cannot edit \"{display}\": binary file", FsErrorCodes.NotText);
+        }
+        string text;
+        try
+        {
+            text = StrictUtf8.GetString(raw);
+        }
+        catch (DecoderFallbackException error)
+        {
+            throw new FsError($"cannot edit \"{display}\": invalid UTF-8 text", FsErrorCodes.NotText, error);
+        }
+        var lineEndings = text.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
+        var original = NormalizeLineEndings(text);
+        var edited = ApplyLiteralEdit(original, spec.OldString, spec.NewString, spec.ReplaceAll, display);
+        var content = lineEndings == "\r\n" ? edited.Content.Replace("\n", "\r\n") : edited.Content;
+        var directory = Path.GetDirectoryName(key)
+            ?? throw new FsError($"cannot edit \"{display}\": invalid path", FsErrorCodes.NotFound);
+        var temp = Path.Combine(directory, $".{Path.GetFileName(key)}.{Guid.NewGuid():N}.tmp");
+        try
+        {
+            Directory.CreateDirectory(directory);
+            await File.WriteAllTextAsync(temp, content, new UTF8Encoding(false), ct).ConfigureAwait(false);
+            File.Move(temp, key, overwrite: true);
+        }
+        catch (OperationCanceledException)
+        {
+            TryDeleteQuietly(temp);
+            throw new FsError("edit aborted", FsErrorCodes.Aborted);
+        }
+        catch (FsError)
+        {
+            TryDeleteQuietly(temp);
+            throw;
+        }
+        catch (Exception error)
+        {
+            TryDeleteQuietly(temp);
+            throw IoError("edit", display, error);
+        }
+        var after = Probe(key, display) ?? new FsInfo(new FsVersion($"missing:{key}"), FsPathType.File, null);
+        // The LF-normalized before/after text (the applied-hunk diff basis); line-ending
+        // restoration is a storage detail the diff ignores.
+        return new FsEditOutcome(after.Version, original, edited.Content);
+    }
+
+    /// <summary>
+    /// Apply a literal replacement to LF-normalized content (port of fs-local
+    /// <c>applyLiteralEdit</c>): empty search text or no match throws FS_EDIT_NOT_FOUND; multiple
+    /// matches throw FS_AMBIGUOUS_EDIT unless <paramref name="replaceAll"/> is true.
+    /// </summary>
+    public static (string Content, int Replacements) ApplyLiteralEdit(
+        string content, string oldString, string newString, bool replaceAll, string displayPath)
+    {
+        if (oldString.Length == 0)
+        {
+            throw new FsError("old_string must be a non-empty string", FsErrorCodes.EditNotFound);
+        }
+        var replacements = CountOccurrences(content, oldString);
+        if (replacements == 0)
+        {
+            throw new FsError($"old_string was not found in \"{displayPath}\"", FsErrorCodes.EditNotFound);
+        }
+        if (!replaceAll && replacements > 1)
+        {
+            throw new FsError(
+                $"old_string matched {replacements} times in \"{displayPath}\"; provide a more specific old_string or set replace_all to true",
+                FsErrorCodes.AmbiguousEdit);
+        }
+        return (content.Replace(oldString, newString), replacements);
+    }
+
+    private static int CountOccurrences(string content, string needle)
+    {
+        if (needle.Length == 0) return 0;
+        var count = 0;
+        var start = 0;
+        while (start <= content.Length - needle.Length)
+        {
+            var index = content.IndexOf(needle, start, StringComparison.Ordinal);
+            if (index < 0) break;
+            count++;
+            start = index + needle.Length;
+        }
+        return count;
     }
 
     /// <inheritdoc />

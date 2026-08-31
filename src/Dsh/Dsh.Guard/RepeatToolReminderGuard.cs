@@ -202,8 +202,8 @@ public sealed class RepeatToolReminderGuard : Service, IGuardService
     {
         switch (evt)
         {
-            case ToolCallEvent call:
-                Observe(session, call);
+            case ToolResultEvent result:
+                Observe(session, result);
                 break;
             case UserMessageEvent { Message: { Source: UserSource } }:
                 // A user interjection changes the context; repetition across it is not a loop.
@@ -216,14 +216,20 @@ public sealed class RepeatToolReminderGuard : Service, IGuardService
     private void Drop(Dsh.Session.Session session) => _chains.Remove(session);
 
     /// <summary>
-    /// Advance the calling session's chain for one committed tool call and inject the reminder,
-    /// if this run length hits a configured threshold. Counting happens on the committed
-    /// <c>tool/call</c> event, so calls that are later denied still draw the reminder — a model
-    /// hammering a denied call is exactly the loop worth breaking.
+    /// Advance the calling session's chain for one committed tool result and deliver the
+    /// reminder, if this run length hits a configured threshold. Counting happens on the
+    /// committed <c>tool/result</c> event (the TS post-execute timing), so the reminder lands
+    /// after the repeated call's result and denied calls still draw the reminder — a model
+    /// hammering a denied call is exactly the loop worth breaking. The reminder is spliced into
+    /// the agent's next-step inbox (the recorded <c>agent/inbox/spliced</c> insert + consume
+    /// pair), not appended directly to the log.
     /// </summary>
-    private void Observe(Dsh.Session.Session session, ToolCallEvent call)
+    private void Observe(Dsh.Session.Session session, ToolResultEvent result)
     {
-        if (!Tracked(call.Name)) return;
+        var callId = (result.Message.Source as ToolSource)?.CallId;
+        var call = callId is null ? null : session.Events.OfType<ToolCallEvent>()
+            .LastOrDefault(evt => evt.CallId == callId);
+        if (call is null || !Tracked(call.Name)) return;
         var canonical = CanonicalJson.Canonicalize(call.Arguments);
         var key = $"{call.Name}\u0000{canonical}";
         var chain = _chains.GetValue(session, _ => new RepeatChain());
@@ -231,15 +237,30 @@ public sealed class RepeatToolReminderGuard : Service, IGuardService
         chain.Key = key;
         chain.Count = count;
         if (!_thresholdSet.Contains(count)) return;
+        var toolName = call.Name;
         var text = count == _thresholds[0]
             ? GentleReminder
-            : DetailedReminder(call.Name, count, PreviewArguments(canonical, _argumentsPreviewChars));
-        session.Append(new UserMessageEvent
+            : DetailedReminder(toolName, count, PreviewArguments(canonical, _argumentsPreviewChars));
+        var reminder = Messages.CreateUserMessage(
+            new ContentBlock[] { new TextBlock(text) },
+            new PluginSource
+            {
+                Plugin = GuardName,
+                Form = "notice",
+                Summary = $"{toolName} × {count}",
+            });
+        var agent = Ctx.Get<Dsh.Agent.AgentRegistry>("agents")?.Get(session.Id);
+        if (agent is null)
         {
-            Message = Messages.CreateUserMessage(
-                new ContentBlock[] { new TextBlock(text) },
-                new PluginSource { Plugin = GuardName, Form = "notice" }),
-            SurfaceOp = SurfaceOp.Append,
-        });
+            // No live agent (a direct/test call): fall back to the durable append so the nudge
+            // still reaches the next request through derived history.
+            session.Append(new UserMessageEvent
+            {
+                Message = reminder,
+                SurfaceOp = SurfaceOp.Append,
+            });
+            return;
+        }
+        agent.Inbox.Append(Dsh.Agent.InboxTarget.NextStep, reminder);
     }
 }

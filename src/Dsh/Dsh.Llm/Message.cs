@@ -31,6 +31,9 @@ public sealed record PluginSource : MessageSource
     /// <summary>Optional form of the contribution (e.g. "snapshot" for runtime-context projections).</summary>
     public string? Form { get; init; }
 
+    /// <summary>Optional short summary of the contribution (e.g. the repeat-reminder "tool × count").</summary>
+    public string? Summary { get; init; }
+
     /// <summary>Optional named contributions that formed a snapshot message.</summary>
     public IReadOnlyList<NamedSection>? Sections { get; init; }
 

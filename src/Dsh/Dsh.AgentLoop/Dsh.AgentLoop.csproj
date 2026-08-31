@@ -13,6 +13,7 @@
     <ProjectReference Include="..\Dsh.Llm\Dsh.Llm.csproj" />
     <ProjectReference Include="..\Dsh.Session\Dsh.Session.csproj" />
     <ProjectReference Include="..\Dsh.Session.Persistence\Dsh.Session.Persistence.csproj" />
+    <ProjectReference Include="..\Dsh.Spill\Dsh.Spill.csproj" />
     <ProjectReference Include="..\Dsh.SystemPrompt\Dsh.SystemPrompt.csproj" />
     <ProjectReference Include="..\Dsh.Tools\Dsh.Tools.csproj" />
   </ItemGroup>

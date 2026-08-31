@@ -38,6 +38,7 @@ public static class CorpusTests
             var manifest = ParseManifest(Path.GetFileName(dir), File.ReadAllText(manifestPath));
             if (manifest is not null) scenarios.Add(manifest);
         }
+        var compositionOwners = CompositionOwners(scenariosDir);
 
         var passed = 0;
         var drifted = 0;
@@ -59,7 +60,7 @@ public static class CorpusTests
             }
             try
             {
-                var outcome = RunScenario(scenario);
+                var outcome = RunScenario(scenario, compositionOwners);
                 if (outcome.Reasons.Count == 0)
                 {
                     report($"{scenario.Name}: PASS");
@@ -83,10 +84,11 @@ public static class CorpusTests
 
     private sealed record ScenarioOutcome(List<string> Reasons);
 
-    private static ScenarioOutcome RunScenario(ScenarioManifest scenario)
+    private static ScenarioOutcome RunScenario(ScenarioManifest scenario, IReadOnlyDictionary<string, string> compositionOwners)
     {
         var reasons = new List<string>();
-        var dir = Path.Combine(SnapshotDriver.RepoRoot(), "snapshots", "session", scenario.Name);
+        var scenariosDir = Path.Combine(SnapshotDriver.RepoRoot(), "snapshots", "session");
+        var dir = Path.Combine(scenariosDir, scenario.Name);
         var fixtureFile = Path.Combine(dir, "session.jsonl");
         var fixture = File.ReadAllText(fixtureFile);
         var task = TaskFromSession(fixture) ?? scenario.InputTask;
@@ -101,10 +103,7 @@ public static class CorpusTests
             PrepareWorkspace(cwd, scenario.WorkspaceSetup);
             var env = new Dictionary<string, string>(scenario.Environment);
             if (scenario.Permission is not null) env["DSH_PERMISSION_MODE"] = scenario.Permission;
-            var metaJson = ModelMetadataEnvJson(dir, model.Model);
-            if (metaJson is not null) env["DSH_SNAPSHOT_MODEL_META"] = metaJson;
-            var diffBasis = DiffBasisEnv(dir);
-            if (diffBasis is not null) env["DSH_FS_DIFF_BASIS_MAX_BYTES"] = diffBasis;
+            ApplyScenarioEnv(env, scenario, model.Model, scenariosDir, compositionOwners);
             var result = SnapshotDriver.RunHeadless(home, cwd, task, fixtureFile,
                 provider: model.Provider, model: model.Model, extraEnv: env);
             var actualLog = SnapshotDriver.HarvestSessionLog(home);
@@ -205,6 +204,7 @@ public static class CorpusTests
         }
         var model = ModelFromSession(fixture);
         var expectedExit = (TurnReasonKind(fixture) == "completed" || (TurnReasonKind(fixture) is null && manifest.InputTask is not null)) ? 0 : 1;
+        var compositionOwners = CompositionOwners(scenariosDir);
         var (home, cwd) = SnapshotDriver.CreateRunDirs();
         try
         {
@@ -212,10 +212,7 @@ public static class CorpusTests
             PrepareWorkspace(cwd, manifest.WorkspaceSetup);
             var env = new Dictionary<string, string>(manifest.Environment);
             if (manifest.Permission is not null) env["DSH_PERMISSION_MODE"] = manifest.Permission;
-            var metaJson = ModelMetadataEnvJson(dir, model.Model);
-            if (metaJson is not null) env["DSH_SNAPSHOT_MODEL_META"] = metaJson;
-            var diffBasis = DiffBasisEnv(dir);
-            if (diffBasis is not null) env["DSH_FS_DIFF_BASIS_MAX_BYTES"] = diffBasis;
+            ApplyScenarioEnv(env, manifest, model.Model, scenariosDir, compositionOwners);
             var result = SnapshotDriver.RunHeadless(home, cwd, task, fixtureFile,
                 provider: model.Provider, model: model.Model, extraEnv: env);
             var actualLog = SnapshotDriver.HarvestSessionLog(home) ?? "";
@@ -276,7 +273,7 @@ public static class CorpusTests
             if (!line.Contains("\"tool/call\"", StringComparison.Ordinal)) continue;
             var call = JsonDocument.Parse(line).RootElement.GetProperty("data");
             var name = call.GetProperty("name").GetString();
-            if (name is not null && name != "bash" && name != "read" && name != "write" && name != "todo_write"
+            if (name is not null && name != "bash" && name != "read" && name != "write" && name != "edit" && name != "todo_write"
                 && name != "goal_write" && name != "plan_write" && name != "web_fetch" && name != "web_search"
                 && name != "job_list" && name != "job_output" && name != "job_kill" && name != "workflow"
                 && name != "message_feedback" && name != "terminal_open" && name != "terminal_read" && name != "terminal_send"
@@ -552,15 +549,78 @@ public static class CorpusTests
     }
 
     /// <summary>
-    /// The replay provider's per-model capability metadata declared in the scenario's
+    /// Apply the per-scenario environment the .NET CLI reads instead of the scenario's own
+    /// cordis patches: replay model metadata, the fs diff-basis bound, and the result-spill
+    /// policy (cap from the scenario's or its composition owner's cordis.snapshot.yml; root
+    /// mirrors the TS snapshotSpillRoot hash so both fixture and run paths normalize identically).
+    /// </summary>
+    private static void ApplyScenarioEnv(
+        Dictionary<string, string> env, ScenarioManifest scenario, string model,
+        string scenariosDir, IReadOnlyDictionary<string, string> compositionOwners)
+    {
+        var metaJson = ModelMetadataEnvJson(scenariosDir, scenario.Name, scenario.Composition, model, compositionOwners);
+        if (metaJson is not null) env["DSH_SNAPSHOT_MODEL_META"] = metaJson;
+        var diffBasis = DiffBasisEnv(scenariosDir, scenario.Name, scenario.Composition, compositionOwners);
+        if (diffBasis is not null) env["DSH_FS_DIFF_BASIS_MAX_BYTES"] = diffBasis;
+        var spillCap = SpillCapEnv(scenariosDir, scenario.Name, scenario.Composition, compositionOwners);
+        if (spillCap is not null) env["DSH_SNAPSHOT_SPILL_MAX_BYTES"] = spillCap;
+        env["DSH_SNAPSHOT_SPILL_ROOT"] = SpillRoot(scenario.Name);
+    }
+
+    /// <summary>The scenario dir that owns each composition (a scenario with a cordis.yml registers its composition).</summary>
+    private static Dictionary<string, string> CompositionOwners(string scenariosDir)
+    {
+        var owners = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var dir in Directory.EnumerateDirectories(scenariosDir))
+        {
+            var manifestPath = Path.Combine(dir, "snapshot.yml");
+            if (!File.Exists(manifestPath)) continue;
+            var manifest = ParseManifest(Path.GetFileName(dir), File.ReadAllText(manifestPath));
+            if (manifest is null || !File.Exists(Path.Combine(dir, "cordis.yml"))) continue;
+            owners.TryAdd(manifest.Composition, Path.GetFileName(dir));
+        }
+        return owners;
+    }
+
+    /// <summary>The scenario's effective cordis.snapshot.yml: its own, else its composition owner's (the TS replay patch resolution).</summary>
+    private static string? SnapshotPatchPath(string scenariosDir, string scenarioName, string composition, IReadOnlyDictionary<string, string> compositionOwners)
+    {
+        var own = Path.Combine(scenariosDir, scenarioName, "cordis.snapshot.yml");
+        if (File.Exists(own)) return own;
+        var owner = compositionOwners.GetValueOrDefault(composition);
+        var inherited = owner is null ? null : Path.Combine(scenariosDir, owner, "cordis.snapshot.yml");
+        return inherited is not null && File.Exists(inherited) ? inherited : null;
+    }
+
+    /// <summary>The deterministic snapshot spill root (mirror of the TS snapshotSpillRoot): /tmp/dsh-acp-snap-&lt;sha256-9&gt;.</summary>
+    private static string SpillRoot(string scenarioName)
+    {
+        var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(scenarioName))).ToLowerInvariant();
+        return $"/tmp/dsh-acp-snap-{hash.Substring(0, 9)}";
+    }
+
+    /// <summary>The spill-policy inline cap the scenario's (or its composition's) cordis.snapshot.yml declares.</summary>
+    private static string? SpillCapEnv(string scenariosDir, string scenarioName, string composition, IReadOnlyDictionary<string, string> compositionOwners)
+    {
+        var patch = SnapshotPatchPath(scenariosDir, scenarioName, composition, compositionOwners);
+        if (patch is null) return null;
+        foreach (var line in File.ReadAllLines(patch))
+        {
+            var match = Regex.Match(line, @"^\s+maxInlineBytes:\s*(\d+)");
+            if (match.Success) return match.Groups[1].Value;
+        }
+        return null;
+    }
+
+    /// <summary>The replay provider's per-model capability metadata declared in the scenario's
     /// <c>cordis.snapshot.yml</c> (the llm-replay <c>providers[].models[]</c> blocks) for the
     /// recorded model, as the DSH_SNAPSHOT_MODEL_META env JSON; null when the scenario declares
     /// none.
     /// </summary>
-    private static string? ModelMetadataEnvJson(string dir, string model)
+    private static string? ModelMetadataEnvJson(string scenariosDir, string scenarioName, string composition, string model, IReadOnlyDictionary<string, string> compositionOwners)
     {
-        var path = Path.Combine(dir, "cordis.snapshot.yml");
-        if (!File.Exists(path)) return null;
+        var path = SnapshotPatchPath(scenariosDir, scenarioName, composition, compositionOwners);
+        if (path is null) return null;
         var blocks = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
         string? current = null;
         foreach (var line in File.ReadAllLines(path))
@@ -610,11 +670,11 @@ public static class CorpusTests
     }
 
     /// <summary>The fs-sandbox <c>diffBasisMaxBytes</c> the scenario's cordis patch declares (its own fs-sandbox seam is deferred in the port).</summary>
-    private static string? DiffBasisEnv(string dir)
+    private static string? DiffBasisEnv(string scenariosDir, string scenarioName, string composition, IReadOnlyDictionary<string, string> compositionOwners)
     {
-        var path = Path.Combine(dir, "cordis.snapshot.yml");
-        if (!File.Exists(path)) return null;
-        foreach (var line in File.ReadAllLines(path))
+        var patch = SnapshotPatchPath(scenariosDir, scenarioName, composition, compositionOwners);
+        if (patch is null) return null;
+        foreach (var line in File.ReadAllLines(patch))
         {
             var match = Regex.Match(line, @"^\s+diffBasisMaxBytes:\s*(\d+)");
             if (match.Success) return match.Groups[1].Value;

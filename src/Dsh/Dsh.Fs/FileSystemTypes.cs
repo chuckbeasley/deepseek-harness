@@ -107,6 +107,9 @@ public sealed record FsWriteRequest(string Path, string Content, FsWriteIntent? 
 /// <summary>Consumer request for a directory listing.</summary>
 public sealed record FsListRequest(string Path);
 
+/// <summary>Consumer request for a literal text edit; the optional observed version guards the mutation.</summary>
+public sealed record FsEditRequest(string Path, string OldString, string NewString, bool ReplaceAll = false, FsVersion? Version = null);
+
 /// <summary>Consumer request for target metadata.</summary>
 public sealed record FsStatRequest(string Path);
 
@@ -127,6 +130,15 @@ public sealed record FsWriteSpec(FsTarget Target, string Content, FsWriteIntent 
 
 /// <summary>Resolved listing spec.</summary>
 public sealed record FsListSpec(FsTarget Target);
+
+/// <summary>Resolved literal-edit spec: stable target, the literal replacement, and the observed version guard.</summary>
+public sealed record FsEditSpec(FsTarget Target, string OldString, string NewString, bool ReplaceAll, FsVersion? Version);
+
+/// <summary>Outcome of a literal text edit (port of the TS <c>FsEditOutcome</c>).</summary>
+public sealed record FsEditOutcome(
+    [property: JsonPropertyName("version")] FsVersion Version,
+    [property: JsonPropertyName("before")] string Before,
+    [property: JsonPropertyName("after")] string After);
 
 /// <summary>Resolved stat spec.</summary>
 public sealed record FsStatSpec(FsTarget Target);

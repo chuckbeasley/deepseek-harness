@@ -178,9 +178,11 @@ public static class SpineRegistry
                 diffBasis = envDiffBasis is { Length: > 0 } && int.TryParse(envDiffBasis, out var parsed) ? parsed : null;
             }
             var service = new Dsh.Fs.LocalFileSystemProvider(ctx, new Dsh.Fs.FsProviderConfig(root, diffBasis ?? 10 * 1024 * 1024));
-            var read = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Read(service));
-            var write = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Write(service));
-            return new SpineDisposables(write, read, service);
+            var observations = new Dsh.Fs.FsObservations();
+            var read = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Read(service, observations: observations));
+            var write = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Write(service, observations));
+            var edit = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Edit(service, observations));
+            return new SpineDisposables(edit, write, read, service);
         }));
         catalog.Register("shell", new SpinePlugin("shell", (ctx, config) =>
         {
@@ -273,6 +275,7 @@ public static class SpineRegistry
         catalog.Register("spill", new SpinePlugin("spill", (ctx, config) =>
         {
             var root = ConfigString(config, "root")
+                ?? Environment.GetEnvironmentVariable("DSH_SNAPSHOT_SPILL_ROOT")
                 ?? Path.Combine(ctx.Get<string>("dshProfileDir") ?? ".", "spill");
             return new Dsh.Spill.LocalSpillProvider(ctx, new Dsh.Spill.SpillProviderConfig(root));
         }));

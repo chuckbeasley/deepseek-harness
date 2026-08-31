@@ -38,6 +38,16 @@ public static class FileSystemTools
     /// <summary>Validated fs_write arguments; content passes through untouched.</summary>
     public sealed record FsWriteArgs(string FilePath, string Content);
 
+    /// <summary>Validated edit arguments after defaulting; <c>ReplaceAll</c> defaults to false.</summary>
+    public sealed record FsEditArgs(string FilePath, string OldString, string NewString, bool ReplaceAll);
+
+    /// <summary>Canonical edit output (port of the TS edit tool's outcome).</summary>
+    public sealed record FsEditResult(
+        [property: JsonPropertyName("path")] string Path,
+        [property: JsonPropertyName("before")] string Before,
+        [property: JsonPropertyName("after")] string After,
+        [property: JsonPropertyName("requestedPath")] string? RequestedPath = null);
+
     /// <summary>Resolved read window; the consumer applies its defaults and caps before calling.</summary>
     public sealed record FsReadWindow(int Offset, int Limit, int MaxLineLength, int MaxBytes);
 
@@ -67,10 +77,11 @@ public static class FileSystemTools
 
     /// <summary>
     /// Build the fs_read ToolDefinition. Execute validates the model arguments, resolves and
-    /// stats the target, reads the whole text, windows it, and returns the canonical
-    /// {path, offset, lines, totalLines} value; Render projects it to the line-numbered envelope.
+    /// stats the target (recording the presence/absence observation), reads the whole text,
+    /// windows it, and returns the canonical {path, offset, lines, totalLines} value; Render
+    /// projects it to the line-numbered envelope.
     /// </summary>
-    public static ToolDefinition Read(IFileSystemService fs, FsReadToolCaps? caps = null)
+    public static ToolDefinition Read(IFileSystemService fs, FsReadToolCaps? caps = null, FsObservations? observations = null)
     {
         ArgumentNullException.ThrowIfNull(fs);
         var resolved = caps ?? new FsReadToolCaps();
@@ -83,12 +94,19 @@ public static class FileSystemTools
             {
                 var input = ParseReadArgs(args, resolved.Limit);
                 var spec = fs.ResolveRead(new FsReadRequest(input.FilePath));
-                var info = await fs.StatAsync(fs.ResolveStat(new FsStatRequest(input.FilePath)), context.CancellationToken).ConfigureAwait(false)
-                    ?? throw new FsError($"cannot read \"{spec.Target.DisplayPath}\": not found", FsErrorCodes.NotFound);
+                var info = await fs.StatAsync(fs.ResolveStat(new FsStatRequest(input.FilePath)), context.CancellationToken).ConfigureAwait(false);
+                if (info is null)
+                {
+                    observations?.Observe(context.Session?.Id.Value, spec.Target.TargetKey.Value,
+                        new FsObserved(FsObservedKind.Absent, new FsVersion("")));
+                    throw new FsError($"cannot read \"{spec.Target.DisplayPath}\": not found", FsErrorCodes.NotFound);
+                }
                 if (info.Type != FsPathType.File)
                 {
                     throw new FsError($"cannot read \"{spec.Target.DisplayPath}\": not a regular file", FsErrorCodes.NotRegularFile);
                 }
+                observations?.Observe(context.Session?.Id.Value, spec.Target.TargetKey.Value,
+                    new FsObserved(FsObservedKind.Present, info.Version));
                 var text = await fs.ReadTextAsync(spec, context.CancellationToken).ConfigureAwait(false);
                 var window = BuildWindow(text, new FsReadWindow(input.Offset, input.Limit, resolved.MaxLineLength, resolved.MaxBytes), spec.Target.DisplayPath);
                 return JsonSerializer.SerializeToElement(new FsReadOutcome(spec.Target.DisplayPath, input.Offset, window.Lines, window.TotalLines));
@@ -106,11 +124,13 @@ public static class FileSystemTools
 
     /// <summary>
     /// Build the fs_write ToolDefinition. Execute validates the model arguments, resolves the
-    /// write spec (unconditional intent — the bare default), runs the provider write with
-    /// guarded-mutation error remediation, and returns the canonical {path, operation, before,
-    /// after} value; Render projects it to the Created/Updated confirmation envelope.
+    /// write spec under the observation-policy intent (replaceIfVersion for an observed-present
+    /// target, createIfAbsent otherwise), runs the provider write with guarded-mutation error
+    /// remediation, records the resulting observation, and returns the canonical {path,
+    /// operation, before, after} value; Render projects it to the Created/Updated confirmation
+    /// envelope.
     /// </summary>
-    public static ToolDefinition Write(IFileSystemService fs)
+    public static ToolDefinition Write(IFileSystemService fs, FsObservations? observations = null)
     {
         ArgumentNullException.ThrowIfNull(fs);
         return new ToolDefinition(
@@ -121,7 +141,22 @@ public static class FileSystemTools
             Execute: async (args, context) =>
             {
                 var input = ParseWriteArgs(args);
+                var sessionId = context.Session?.Id.Value;
                 var spec = fs.ResolveWrite(new FsWriteRequest(input.FilePath, input.Content));
+                FsWriteIntent intent;
+                if (observations is null)
+                {
+                    intent = new FsUnconditionalIntent();
+                }
+                else if (observations.Get(sessionId, spec.Target.TargetKey.Value) is { Kind: FsObservedKind.Present } observed)
+                {
+                    intent = new FsReplaceIfVersionIntent(observed.Version);
+                }
+                else
+                {
+                    intent = new FsCreateIfAbsentIntent();
+                }
+                spec = fs.ResolveWrite(new FsWriteRequest(input.FilePath, input.Content, intent));
                 FsWriteOutcome outcome;
                 try
                 {
@@ -131,6 +166,8 @@ public static class FileSystemTools
                 {
                     throw RemediateFsError(error);
                 }
+                observations?.Observe(sessionId, spec.Target.TargetKey.Value,
+                    new FsObserved(FsObservedKind.Present, outcome.Version));
                 return JsonSerializer.SerializeToElement(new FsWriteResult(spec.Target.DisplayPath, outcome.Operation, outcome.Before, outcome.After, input.FilePath));
             },
             Render: (_, value) =>
@@ -161,6 +198,87 @@ public static class FileSystemTools
             });
     }
 
+    /// <summary>
+    /// Build the edit ToolDefinition. Execute validates the model arguments, resolves the edit
+    /// spec under the observation-policy guard (an unobserved target refuses with FS_NOT_OBSERVED,
+    /// a confirmed-absent target with FS_NOT_FOUND), runs the provider edit with guarded-mutation
+    /// error remediation, records the resulting observation, and returns the canonical {path,
+    /// before, after} value; Render projects it to the Claude-style confirmation sentence and the
+    /// durable meta carries the applied hunk diffs.
+    /// </summary>
+    public static ToolDefinition Edit(IFileSystemService fs, FsObservations? observations = null)
+    {
+        ArgumentNullException.ThrowIfNull(fs);
+        return new ToolDefinition(
+            Name: "edit",
+            Description: "Edit an existing UTF-8 text file by replacing literal text.",
+            Parameters: JsonSerializer.SerializeToElement(JsonNode.Parse(EditParametersSchemaJson)!),
+            OutputSchema: JsonSerializer.SerializeToElement(JsonNode.Parse(EditOutputSchemaJson)!),
+            Execute: async (args, context) =>
+            {
+                var input = ParseEditArgs(args);
+                var sessionId = context.Session?.Id.Value;
+                var spec = fs.ResolveEdit(new FsEditRequest(input.FilePath, input.OldString, input.NewString, input.ReplaceAll));
+                FsEditOutcome outcome;
+                try
+                {
+                    var version = observations is null ? null : EditGuard(observations, sessionId, spec.Target);
+                    spec = fs.ResolveEdit(new FsEditRequest(input.FilePath, input.OldString, input.NewString, input.ReplaceAll, version));
+                    outcome = await fs.EditTextAsync(spec, context.CancellationToken).ConfigureAwait(false);
+                }
+                catch (FsError error)
+                {
+                    throw RemediateFsError(error);
+                }
+                observations?.Observe(sessionId, spec.Target.TargetKey.Value,
+                    new FsObserved(FsObservedKind.Present, outcome.Version));
+                return JsonSerializer.SerializeToElement(new FsEditResult(spec.Target.DisplayPath, outcome.Before, outcome.After, input.FilePath));
+            },
+            Render: (args, value) =>
+            {
+                var input = ParseEditArgs(args);
+                var result = JsonSerializer.Deserialize<FsEditResult>(value)!;
+                return new ContentBlock[] { new TextBlock(FormatEditOutput(result.Path, input.ReplaceAll)) };
+            },
+            // The TS edit tool's durable meta is the {diffs} presentation payload: one
+            // {path, oldText, newText} entry per applied hunk (computeHunkDiffs over the
+            // LF-normalized before/after basis).
+            MetaOf: value =>
+            {
+                var result = JsonSerializer.Deserialize<FsEditResult>(value)!;
+                var diffs = new JsonArray();
+                foreach (var diff in HunkDiffs.Compute(result.RequestedPath ?? result.Path, result.Before, result.After))
+                {
+                    diffs.Add(new JsonObject
+                    {
+                        ["path"] = diff.Path,
+                        ["oldText"] = diff.OldText,
+                        ["newText"] = diff.NewText,
+                    });
+                }
+                return JsonSerializer.SerializeToElement(new JsonObject { ["diffs"] = diffs });
+            });
+    }
+
+    /// <summary>
+    /// Derive the edit version guard from the observation state (port of the fs-observation-policy
+    /// <c>editIntent</c>): an unseen target refuses with FS_NOT_OBSERVED, a confirmed-absent target
+    /// with FS_NOT_FOUND, and a present target supplies its observed version as the CAS basis.
+    /// </summary>
+    private static FsVersion? EditGuard(FsObservations observations, string? sessionId, FsTarget target)
+    {
+        var observed = observations.Get(sessionId, target.TargetKey.Value);
+        if (observed is null)
+        {
+            throw new FsError($"edit requires reading \"{target.DisplayPath}\" first", FsErrorCodes.NotObserved);
+        }
+        if (observed.Kind == FsObservedKind.Absent)
+        {
+            throw new FsError($"cannot edit \"{target.DisplayPath}\": not found", FsErrorCodes.NotFound);
+        }
+        return observed.Version;
+    }
+
     /// <summary>Validate constraints the read schema cannot express; offset/limit must be positive integers when given.</summary>
     public static FsReadArgs ParseReadArgs(JsonElement args, int maxLimit)
     {
@@ -188,6 +306,28 @@ public static class FileSystemTools
         }
         var content = args.TryGetProperty("content", out var contentElement) ? contentElement.GetString() ?? string.Empty : string.Empty;
         return new FsWriteArgs(filePath, content);
+    }
+
+    /// <summary>Validate edit arguments: a non-blank file_path, a non-empty old_string, and differing strings (the TS parseEditArgs).</summary>
+    public static FsEditArgs ParseEditArgs(JsonElement args)
+    {
+        var filePath = args.TryGetProperty("file_path", out var filePathElement) ? filePathElement.GetString() ?? string.Empty : string.Empty;
+        if (filePath.Trim().Length == 0)
+        {
+            throw new ArgumentException("file_path must be a non-empty string");
+        }
+        var oldString = args.TryGetProperty("old_string", out var oldElement) ? oldElement.GetString() ?? string.Empty : string.Empty;
+        if (oldString.Length == 0)
+        {
+            throw new ArgumentException("old_string must be a non-empty string");
+        }
+        var newString = args.TryGetProperty("new_string", out var newElement) ? newElement.GetString() ?? string.Empty : string.Empty;
+        if (oldString == newString)
+        {
+            throw new ArgumentException("old_string and new_string must differ");
+        }
+        var replaceAll = args.TryGetProperty("replace_all", out var replaceElement) && replaceElement.ValueKind == JsonValueKind.True;
+        return new FsEditArgs(filePath, oldString, newString, replaceAll);
     }
 
     /// <summary>
@@ -248,6 +388,12 @@ public static class FileSystemTools
         return $"<path>{displayPath}</path>\n<type>file</type>\n<content>\n{verb} file\n</content>";
     }
 
+    /// <summary>Format an edit success as one Claude-style confirmation sentence (port of edit.ts formatEditOutput).</summary>
+    public static string FormatEditOutput(string displayPath, bool replaceAll)
+        => replaceAll
+            ? $"The file {displayPath} has been updated. All occurrences were successfully replaced."
+            : $"The file {displayPath} has been updated successfully.";
+
     /// <summary>
     /// Append the correct recovery instruction to a guarded-mutation failure's message (port of
     /// tool-fs error.ts remediateFsError): FS_STALE_VERSION recovers only by re-reading,
@@ -304,6 +450,12 @@ public static class FileSystemTools
 
     private const string WriteOutputSchemaJson =
         "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"path\":{\"type\":\"string\",\"required\":true},\"operation\":{\"type\":\"string\",\"required\":true,\"enum\":[\"create\",\"update\"]},\"before\":{\"required\":true,\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"after\":{\"type\":\"string\",\"required\":true}}}";
+
+    private const string EditParametersSchemaJson =
+        "{\"file_path\":{\"type\":\"string\",\"required\":true,\"description\":\"Path to edit, resolved by the filesystem backend.\"},\"old_string\":{\"type\":\"string\",\"required\":true,\"description\":\"Literal text to replace. Must match exactly.\"},\"new_string\":{\"type\":\"string\",\"required\":true,\"description\":\"Literal replacement text. Use an empty string to delete the match.\"},\"replace_all\":{\"type\":\"boolean\",\"description\":\"Replace all matches. Defaults to false; when false, old_string must appear exactly once.\"}}";
+
+    private const string EditOutputSchemaJson =
+        "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"path\":{\"type\":\"string\",\"required\":true},\"before\":{\"type\":\"string\",\"required\":true},\"after\":{\"type\":\"string\",\"required\":true}}}";
 
     private sealed class WindowAccumulator
     {

@@ -17,6 +17,96 @@ public static class FileSystemToolTests
     private static ToolExecutionResult Execute(Harness h, string name, JsonElement args)
         => h.Tools.ExecuteAsync(new ToolExecutionInput(new ToolCallId("call-1"), name, args, CancellationToken.None), CancellationToken.None).GetAwaiter().GetResult();
 
+    private static ToolExecutionResult ExecuteWithSession(Harness h, Dsh.Session.Session session, string name, JsonElement args)
+        => h.Tools.ExecuteAsync(new ToolExecutionInput(new ToolCallId("call-1"), name, args, CancellationToken.None)
+        {
+            Session = session,
+        }, CancellationToken.None).GetAwaiter().GetResult();
+
+    private static JsonElement EditArgs(string path, string oldString, string newString, bool replaceAll = false)
+    {
+        var root = new JsonObject
+        {
+            ["file_path"] = path,
+            ["old_string"] = oldString,
+            ["new_string"] = newString,
+        };
+        if (replaceAll) root["replace_all"] = true;
+        return JsonSerializer.SerializeToElement(root);
+    }
+
+    public static void EditThroughRuntimeWithPolicy(Harness h)
+    {
+        Assert.True(h.Observations is not null && h.Sessions is not null, "policy harness");
+        var session = h.Sessions.Create();
+        ExecuteWithSession(h, session, "write", WriteArgs("config.txt", "mode=DEBUG\nlevel=info\n"));
+        ExecuteWithSession(h, session, "read", Args("{\"file_path\":\"config.txt\"}"));
+        var edit = ExecuteWithSession(h, session, "edit", EditArgs("config.txt", "DEBUG", "RELEASE"));
+        Assert.False(edit.IsError, "edit succeeded after a read");
+        var success = Assert.IsType<ToolExecutionSuccess>(edit);
+        Assert.Equal("mode=RELEASE", File.ReadAllText(Path.Combine(h.WorkspaceRoot, "config.txt")).Split('\n')[0]);
+        var block = Assert.IsType<TextBlock>(success.Content[0]);
+        Assert.Equal("The file " + Path.Combine(h.WorkspaceRoot, "config.txt").Replace('\\', '/') + " has been updated successfully.", block.Text);
+        var meta = Assert.IsType<JsonElement>(success.Meta);
+        Assert.Equal("mode=DEBUG\nlevel=info", meta.GetProperty("diffs")[0].GetProperty("oldText").GetString());
+        Assert.Equal("mode=RELEASE\nlevel=info", meta.GetProperty("diffs")[0].GetProperty("newText").GetString());
+    }
+
+    public static void EditWithoutReadRefusesWithRemedy(Harness h)
+    {
+        Assert.True(h.Observations is not null && h.Sessions is not null, "policy harness");
+        var session = h.Sessions.Create();
+        File.WriteAllText(Path.Combine(h.WorkspaceRoot, "settings.txt"), "color: blue\n");
+        var edit = ExecuteWithSession(h, session, "edit", EditArgs("settings.txt", "blue", "green"));
+        Assert.True(edit.IsError, "unobserved edit refuses");
+        var failure = Assert.IsType<ToolExecutionFailure>(edit);
+        Assert.Equal("FsError", failure.Error.Name);
+        Assert.Equal("FS_NOT_OBSERVED", failure.Error.Code);
+        Assert.True(failure.Error.Message.Contains("edit requires reading"), "message names the read-first rule");
+        Assert.True(failure.Error.Message.Contains("read the file, then retry"), "message carries the remediation");
+    }
+
+    public static void EditStaleVersionRefuses(Harness h)
+    {
+        Assert.True(h.Observations is not null && h.Sessions is not null, "policy harness");
+        var session = h.Sessions.Create();
+        ExecuteWithSession(h, session, "write", WriteArgs("stale.txt", "one\n"));
+        ExecuteWithSession(h, session, "read", Args("{\"file_path\":\"stale.txt\"}"));
+        // An external mutation between the read and the edit invalidates the observed version.
+        File.WriteAllText(Path.Combine(h.WorkspaceRoot, "stale.txt"), "two\n");
+        var edit = ExecuteWithSession(h, session, "edit", EditArgs("stale.txt", "two", "three"));
+        Assert.True(edit.IsError, "stale edit refuses");
+        var failure = Assert.IsType<ToolExecutionFailure>(edit);
+        Assert.Equal("FS_STALE_VERSION", failure.Error.Code);
+    }
+
+    public static void EditAmbiguousRefusesThenReplaceAllSucceeds(Harness h)
+    {
+        Assert.True(h.Observations is not null && h.Sessions is not null, "policy harness");
+        var session = h.Sessions.Create();
+        ExecuteWithSession(h, session, "write", WriteArgs("dup.txt", "a\nb\na\n"));
+        ExecuteWithSession(h, session, "read", Args("{\"file_path\":\"dup.txt\"}"));
+        var edit = ExecuteWithSession(h, session, "edit", EditArgs("dup.txt", "a", "x"));
+        Assert.True(edit.IsError, "ambiguous edit refuses");
+        Assert.Equal("FS_AMBIGUOUS_EDIT", Assert.IsType<ToolExecutionFailure>(edit).Error.Code);
+        var replaceAll = ExecuteWithSession(h, session, "edit", EditArgs("dup.txt", "a", "x", replaceAll: true));
+        Assert.False(replaceAll.IsError, "replace-all edit succeeds");
+        Assert.Equal("x\nb\nx\n", File.ReadAllText(Path.Combine(h.WorkspaceRoot, "dup.txt")));
+    }
+
+    public static void EditConfirmedAbsentRefusesWithNotFound(Harness h)
+    {
+        Assert.True(h.Observations is not null && h.Sessions is not null, "policy harness");
+        var session = h.Sessions.Create();
+        ExecuteWithSession(h, session, "write", WriteArgs("gone.txt", "here\n"));
+        // An absent observation (the read of a deleted file) makes the edit refuse with not-found.
+        File.Delete(Path.Combine(h.WorkspaceRoot, "gone.txt"));
+        ExecuteWithSession(h, session, "read", Args("{\"file_path\":\"gone.txt\"}"));
+        var edit = ExecuteWithSession(h, session, "edit", EditArgs("gone.txt", "here", "there"));
+        Assert.True(edit.IsError, "absent-target edit refuses");
+        Assert.Equal("FS_NOT_FOUND", Assert.IsType<ToolExecutionFailure>(edit).Error.Code);
+    }
+
     public static void WriteThenReadThroughRuntime(Harness h)
     {
         var write = Execute(h, "write", WriteArgs("greeting.txt", "hello\nworld\n"));
