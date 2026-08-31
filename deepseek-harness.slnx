@@ -13,6 +13,7 @@
   <Folder Name="/src/Dsh/">
     <Project Path="src/Dsh/Dsh.Agent/Dsh.Agent.csproj" />
     <Project Path="src/Dsh/Dsh.AgentLoop/Dsh.AgentLoop.csproj" />
+    <Project Path="src/Dsh/Dsh.Authorization/Dsh.Authorization.csproj" />
     <Project Path="src/Dsh/Dsh.Fs/Dsh.Fs.csproj" />
     <Project Path="src/Dsh/Dsh.Identity/Dsh.Identity.csproj" />
     <Project Path="src/Dsh/Dsh.Jobs/Dsh.Jobs.csproj" />
@@ -45,6 +46,7 @@
     <Project Path="src/Dsh/Dsh.Compaction/Dsh.Compaction.csproj" />
     <Project Path="src/Dsh/Dsh.Context/Dsh.Context.csproj" />
     <Project Path="src/Dsh/Dsh.SessionQuery/Dsh.SessionQuery.csproj" />
+    <Project Path="src/Dsh/Dsh.Sandbox/Dsh.Sandbox.csproj" />
     <Project Path="src/Dsh/Dsh.Preset/Dsh.Preset.csproj" />
     <Project Path="src/Dsh/Dsh.Guard/Dsh.Guard.csproj" />
     <Project Path="src/Dsh/Dsh.Terminal/Dsh.Terminal.csproj" />
@@ -63,6 +65,7 @@
     <Project Path="tests/Cordis.Tests/Cordis.Tests.csproj" />
     <Project Path="tests/Dsh.Agent.Tests/Dsh.Agent.Tests.csproj" />
     <Project Path="tests/Dsh.AgentLoop.Tests/Dsh.AgentLoop.Tests.csproj" />
+    <Project Path="tests/Dsh.Authorization.Tests/Dsh.Authorization.Tests.csproj" />
     <Project Path="tests/Dsh.Fs.Tests/Dsh.Fs.Tests.csproj" />
     <Project Path="tests/Dsh.Identity.Tests/Dsh.Identity.Tests.csproj" />
     <Project Path="tests/Dsh.Jobs.Tests/Dsh.Jobs.Tests.csproj" />
@@ -90,6 +93,7 @@
     <Project Path="tests/Dsh.Compaction.Tests/Dsh.Compaction.Tests.csproj" />
     <Project Path="tests/Dsh.Context.Tests/Dsh.Context.Tests.csproj" />
     <Project Path="tests/Dsh.SessionQuery.Tests/Dsh.SessionQuery.Tests.csproj" />
+    <Project Path="tests/Dsh.Sandbox.Tests/Dsh.Sandbox.Tests.csproj" />
     <Project Path="tests/Dsh.Preset.Tests/Dsh.Preset.Tests.csproj" />
     <Project Path="tests/Dsh.Guard.Tests/Dsh.Guard.Tests.csproj" />
     <Project Path="tests/Dsh.Terminal.Tests/Dsh.Terminal.Tests.csproj" />

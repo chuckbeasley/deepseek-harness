@@ -87,6 +87,15 @@ public static class SpineRegistry
             return new SpineDisposables(searchTool, fetchTool, fetchRegistration, web);
         }));
         catalog.Register("credentials", new SpinePlugin("credentials", (ctx, _) => new Dsh.Credentials.LocalCredentialsProvider(ctx)));
+        catalog.Register("authorization", new SpinePlugin("authorization", (ctx, _) =>
+        {
+            var credentials = ctx.Get<Dsh.Credentials.ICredentialsService>("credentials")
+                ?? throw new InvalidOperationException("authorization requires the \"credentials\" row");
+            return new Dsh.Authorization.LocalAuthorizationService(ctx, credentials);
+        }));
+        catalog.Register("sandbox", new SpinePlugin("sandbox", (ctx, config) =>
+            new Dsh.Sandbox.UnsandboxedSandboxProvider(ctx, new Dsh.Sandbox.SandboxConfig(
+                ConfigString(config, "workspaceRoot")))));
         catalog.Register("goal", new SpinePlugin("goal", (ctx, _) =>
         {
             var service = new Dsh.Goal.SessionGoalService(ctx);

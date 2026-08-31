@@ -53,6 +53,12 @@
     - id: credentials
       name: credentials
 
+    - id: authorization
+      name: authorization
+
+    - id: sandbox
+      name: sandbox
+
     - id: goal
       name: goal
 

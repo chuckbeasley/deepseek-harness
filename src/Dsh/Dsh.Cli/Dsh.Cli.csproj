@@ -31,6 +31,8 @@
     <ProjectReference Include="..\Dsh.Shell\Dsh.Shell.csproj" />
     <ProjectReference Include="..\Dsh.Subprocess\Dsh.Subprocess.csproj" />
     <ProjectReference Include="..\Dsh.Credentials\Dsh.Credentials.csproj" />
+    <ProjectReference Include="..\Dsh.Authorization\Dsh.Authorization.csproj" />
+    <ProjectReference Include="..\Dsh.Sandbox\Dsh.Sandbox.csproj" />
     <ProjectReference Include="..\Dsh.Web\Dsh.Web.csproj" />
     <ProjectReference Include="..\Dsh.Goal\Dsh.Goal.csproj" />
     <ProjectReference Include="..\Dsh.Schedule\Dsh.Schedule.csproj" />
