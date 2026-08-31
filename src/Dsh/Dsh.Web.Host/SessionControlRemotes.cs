@@ -60,6 +60,7 @@ public static class SessionControlRemotes
                 jobs = SessionJobs(jobs, ownerSession),
             });
         });
+        using var projectionSubscription = projections is null ? null : SubscribeProjections(ctx, channel, projections, sessions, agents);
         channel.Writer.TryWrite(BaselineFrame(sessions, agents, jobs, projections));
         // Cancellation completes the channel, so the token-free read ends normally and the
         // stream ends quietly without a terminal frame (the TS cancel contract).
@@ -195,6 +196,90 @@ public static class SessionControlRemotes
             ctx.On("agent/inbox/discarded", new Action<AgentInboxDiscardedPayload>(payload => OnChange(payload.Agent))),
         };
         return new CompositeDisposer(disposers);
+    }
+
+    /// <summary>
+    /// Subscribe the session event stream: after every committed event, diff the session's
+    /// projection cut against the last sent one and emit one frame per changed key (the TS
+    /// SessionProjectionUpdate shape). Frames are full-value and idempotent; a unit whose view is
+    /// not JSON-safe is omitted like the baseline omits it. The cut is seeded from the same state
+    /// the baseline reads, so the first delta only carries real changes.
+    /// </summary>
+    private static IDisposable SubscribeProjections(
+        Context ctx, Channel<JsonElement> channel, SessionProjectionRegistry projections,
+        SessionStore sessions, AgentRegistry agents)
+    {
+        var lastCut = new Dictionary<string, Dictionary<string, JsonElement>>(StringComparer.Ordinal);
+        foreach (var agent in agents.List())
+        {
+            if (sessions.Get(agent.Session.Id) is not { } session) continue;
+            var snapshot = projections.Snapshot(session);
+            var cut = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+            foreach (var pair in snapshot.Values)
+            {
+                try
+                {
+                    cut[pair.Key] = JsonSerializer.SerializeToElement(pair.Value, WireJson);
+                }
+                catch (Exception)
+                {
+                    // A projection unit whose view is not JSON-safe cannot ride the wire.
+                }
+            }
+            lastCut[agent.Session.Id.Value] = cut;
+        }
+        var gate = new object();
+        return ctx.On("session/event", new Action<Dsh.Session.Session, SessionEvent>((session, _) =>
+        {
+            Dictionary<string, JsonElement> changed;
+            long asOfSeq;
+            lock (gate)
+            {
+                var snapshot = projections.Snapshot(session);
+                asOfSeq = snapshot.AsOfSeq;
+                if (!lastCut.TryGetValue(session.Id.Value, out var previous))
+                {
+                    previous = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+                    lastCut[session.Id.Value] = previous;
+                }
+                changed = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+                foreach (var pair in snapshot.Values)
+                {
+                    JsonElement value;
+                    try
+                    {
+                        value = JsonSerializer.SerializeToElement(pair.Value, WireJson);
+                    }
+                    catch (Exception)
+                    {
+                        // A projection unit whose view is not JSON-safe cannot ride the wire.
+                        continue;
+                    }
+                    if (!previous.TryGetValue(pair.Key, out var prior) || !JsonElement.DeepEquals(prior, value))
+                    {
+                        previous[pair.Key] = value;
+                        changed[pair.Key] = value;
+                    }
+                }
+                // A key that left the cut (its unit unregistered) drops from the last cut; the TS
+                // sends no removal frame for projections.
+                foreach (var key in previous.Keys.Where(key => !snapshot.Values.ContainsKey(key)).ToArray())
+                {
+                    previous.Remove(key);
+                }
+            }
+            foreach (var pair in changed)
+            {
+                EmitFrame(ctx, channel, new
+                {
+                    type = "projection",
+                    sessionId = session.Id.Value,
+                    key = pair.Key,
+                    value = pair.Value,
+                    seq = asOfSeq,
+                });
+            }
+        }));
     }
 
     private static void EmitFrame(Context ctx, Channel<JsonElement> channel, object frame)

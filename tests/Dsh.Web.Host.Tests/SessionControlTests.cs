@@ -1,4 +1,4 @@
-﻿using Cordis.Core;
+using Cordis.Core;
 using Dsh.Agent;
 using Dsh.AgentLoop;
 using Dsh.Jobs;
@@ -164,6 +164,64 @@ public static class SessionControlTests
             Assert.True(projection.GetProperty("asOfSeq").GetInt64() >= 0, "the cut has a watermark");
             Assert.Equal("hello from the control stream test",
                 projection.GetProperty("values").GetProperty("title").GetString());
+        }
+        finally
+        {
+            ctx.Dispose();
+        }
+    }
+
+    public static async Task Control_ProjectionDeltas()
+    {
+        var ctx = Boot(out var sessions, out var loop, out var agents, out _, out var projections);
+        try
+        {
+            var titleUnit = new ProjectionUnit<string?>
+            {
+                Init = () => null,
+                Apply = (state, evt) => evt is UserMessageEvent user && state is null
+                    ? user.Message.Content.OfType<TextBlock>().Select(block => block.Text).FirstOrDefault()
+                    : state,
+                View = state => state,
+            };
+            _ = projections.Register("title", titleUnit);
+
+            var id = new SessionId($"session-{Guid.NewGuid():N}");
+            _ = loop.Create(id, new AgentOptions { Provider = MockLlmProvider.Provider, Model = MockLlmProvider.Model });
+            var driver = loop.GetLoop(id)!;
+
+            var control = SessionControlRemotes.Control(ctx, sessions, agents, null, projections);
+            using var cts = new CancellationTokenSource();
+            await using var enumerator = control.Invoke(null, cts.Token).GetAsyncEnumerator();
+
+            Assert.True(await enumerator.MoveNextAsync(), "the baseline frame arrives first");
+            Assert.Equal("baseline", enumerator.Current.GetProperty("type").GetString());
+
+            var message = new UserMessage
+            {
+                Id = new MessageId($"m-{Guid.NewGuid():N}"),
+                Content = new ContentBlock[] { new TextBlock("hello projection delta") },
+                Source = new UserSource(),
+            };
+            driver.Send(message, InboxTarget.NextTurn, wakeup: true);
+            await driver.WhenIdleAsync();
+
+            // The turn appends many events; the projection changes once, so one delta frame with
+            // the title arrives among the queue/jobs frames.
+            var deadline = Environment.TickCount64 + 10000;
+            var sawDelta = false;
+            while (Environment.TickCount64 < deadline && !sawDelta)
+            {
+                if (!await enumerator.MoveNextAsync()) break;
+                var frame = enumerator.Current;
+                if (frame.GetProperty("type").GetString() != "projection") continue;
+                if (frame.GetProperty("sessionId").GetString() != id.Value) continue;
+                if (frame.GetProperty("key").GetString() != "title") continue;
+                Assert.Equal("hello projection delta", frame.GetProperty("value").GetString());
+                Assert.True(frame.GetProperty("seq").GetInt64() >= 0, "the delta carries the log watermark");
+                sawDelta = true;
+            }
+            Assert.True(sawDelta, "a projection delta announces the changed title");
         }
         finally
         {

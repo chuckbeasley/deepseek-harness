@@ -10,10 +10,10 @@ namespace Dsh.Web.Host;
 /// Host/Origin trust fence over every API surface and the launch-token exchange that mints an
 /// authority-bound signed browser cookie. The fence shape matches the TS: 403 for an untrusted
 /// Host/Origin, 401 for a missing or invalid browser session, and index authorization through the
-/// process-token exchange or the persistent cookie. This loopback variant keeps the signing
-/// secret per host instance â€” the TS persists it in a credential record so cookies survive host
-/// restarts; here a restart invalidates every cookie and the operator reopens the URL printed by
-/// <c>dsh web</c> (documented reduction).
+/// process-token exchange or the persistent cookie. The signing secret is per host instance when
+/// no credentials seam is composed; when one is, the host resolves (or creates) a
+/// <c>DSH_WEB_SESSION_SECRET</c> credential so cookies survive host restarts like the TS
+/// credential record (see <see cref="WebHostService"/>).
 /// </summary>
 public sealed class WebAuthFence
 {
@@ -49,6 +49,10 @@ public sealed class WebAuthFence
 
     /// <summary>The application root URL carrying the launch token as its sole authentication input.</summary>
     public string AuthenticatedUrl(string origin) => $"{origin.TrimEnd('/')}/?{TokenQuery}={LaunchToken}";
+
+    /// <summary>Parse one stored signing secret: exactly <see cref="SecretBytes"/> decoded bytes, or <c>null</c>.</summary>
+    public static byte[]? DecodeSecret(string value)
+        => DecodeBase64Url(value) is { Length: SecretBytes } bytes ? bytes : null;
 
     /// <summary>
     /// The Host/Origin trust fence (the TS <c>isTrustedApiRequest</c>, loopback only): the Host

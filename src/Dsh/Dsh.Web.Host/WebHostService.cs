@@ -63,7 +63,7 @@ public sealed class WebHostService : Service
         builder.Services.AddSingleton(Ctx);
         if (_config.AuthFence)
         {
-            Fence = new WebAuthFence();
+            Fence = new WebAuthFence(signingSecret: ResolveSigningSecret(Ctx));
             builder.Services.AddSingleton(Fence);
         }
         var registry = Ctx.Get<DshRpcRegistry>("rpc");
@@ -99,6 +99,33 @@ public sealed class WebHostService : Service
             await app.DisposeAsync().ConfigureAwait(false);
         }
         await base.StopAsync();
+    }
+
+    /// <summary>
+    /// Resolve the cookie signing secret through the credentials seam when one is composed: read
+    /// the <c>DSH_WEB_SESSION_SECRET</c> reference (the environment or the managed store), or
+    /// create a fresh 32-byte value in the managed store, so cookies survive host restarts like
+    /// the TS credential record. Without a credentials seam the fence falls back to a per-instance
+    /// random secret (cookies die with the host).
+    /// </summary>
+    private static byte[]? ResolveSigningSecret(Context ctx)
+    {
+        const string secretRef = "DSH_WEB_SESSION_SECRET";
+        var credentials = ctx.Get<Dsh.Credentials.ICredentialsService>("credentials");
+        if (credentials is null) return null;
+        var resolved = credentials.ResolveAsync(secretRef).GetAwaiter().GetResult();
+        if (resolved is not null)
+        {
+            return WebAuthFence.DecodeSecret(resolved.Value)
+                ?? throw new InvalidOperationException(
+                    $"web: the {secretRef} credential must be a {WebAuthFence.SecretBytes}-byte base64url value");
+        }
+        var created = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(WebAuthFence.SecretBytes))
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+        credentials.SetAsync(secretRef, created).GetAwaiter().GetResult();
+        return WebAuthFence.DecodeSecret(created)!;
     }
 }
 

@@ -35,6 +35,7 @@ public static class Program
         ("session: control baseline shows queued messages then queue deltas", () => SessionControlTests.Control_BaselineShowsQueuedMessages_ThenQueueDelta().GetAwaiter().GetResult()),
         ("session: control jobs baseline and delta", () => SessionControlTests.Control_JobsBaselineAndDelta().GetAwaiter().GetResult()),
         ("session: control projections baseline", () => SessionControlTests.Control_ProjectionsBaseline().GetAwaiter().GetResult()),
+        ("session: control projection deltas", () => SessionControlTests.Control_ProjectionDeltas().GetAwaiter().GetResult()),
         ("session: control ends on cancellation", () => SessionControlTests.Control_EndsOnCancellation().GetAwaiter().GetResult()),
         ("store: queued counts project over inbox events", () => WebSessionStoreTests.Store_ProjectsQueuedCountsOverInboxEvents().GetAwaiter().GetResult()),
         ("store: running and summary project after a turn", () => WebSessionStoreTests.Store_ProjectsRunningAndSummaryAfterTurn().GetAwaiter().GetResult()),
@@ -90,6 +91,7 @@ public static class Program
         ("fence: hub negotiate without cookie settles 401", FenceTests.HubNegotiate_WithoutCookie_Settles401),
         ("fence: mux path gated then reaches the handler", FenceTests.MuxPath_WithoutCookie_Settles401_WithCookieReachesHandler),
         ("fence: cookie is bound to its authority", FenceTests.Cookie_IsBoundToItsAuthority),
+        ("fence: persistent secret survives a host restart", FenceTests.PersistentSecret_CookiesSurviveRestart),
     };
 
     public static int Main()

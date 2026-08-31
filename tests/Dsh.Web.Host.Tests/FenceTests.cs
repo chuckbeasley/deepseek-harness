@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using Cordis.Core;
+using Dsh.Credentials;
 using Dsh.Web.Host;
 using Microsoft.AspNetCore.Http;
 
@@ -243,6 +244,15 @@ public static class FenceTests
         }
     }
 
+    private static int FreePort()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return port;
+    }
+
     /// <summary>Run the launch-token exchange and return the minted cookie value.</summary>
     private static string MintCookie(HttpClient client, string launchToken)
     {
@@ -251,6 +261,60 @@ public static class FenceTests
         Assert.True((int)exchange.StatusCode == 303, "the launch token must mint the cookie");
         Assert.True(exchange.Headers.TryGetValues("Set-Cookie", out var cookies), "the exchange must set the cookie");
         return cookies!.First().Split(';')[0];
+    }
+
+    public static void PersistentSecret_CookiesSurviveRestart()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "dsh-fence-secret-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var managedPath = Path.Combine(root, ".credentials.env");
+        var port = FreePort();
+        string cookie;
+        var firstCtx = new Context();
+        var firstHost = BootWithCredentials(firstCtx, managedPath, port);
+        try
+        {
+            cookie = MintCookie(firstHost.Client, firstHost.Host.Fence!.LaunchToken);
+        }
+        finally
+        {
+            firstHost.Client.Dispose();
+            firstHost.Host.StopAsync().GetAwaiter().GetResult();
+            firstCtx.Dispose();
+        }
+
+        var secondCtx = new Context();
+        var secondHost = BootWithCredentials(secondCtx, managedPath, port);
+        try
+        {
+            var response = PostEnvelope(secondHost.Client, "/api/session/list", "r4", cookie);
+            Assert.True((int)response.StatusCode == 200,
+                "the pre-restart cookie still authenticates: the signing secret survives through the credentials store");
+        }
+        finally
+        {
+            secondHost.Client.Dispose();
+            secondHost.Host.StopAsync().GetAwaiter().GetResult();
+            secondCtx.Dispose();
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
+    }
+
+    /// <summary>Boot a fenced host whose signing secret resolves through a credentials provider over one managed file.</summary>
+    private static (Context Ctx, WebHostService Host, HttpClient Client) BootWithCredentials(Context ctx, string managedPath, int port)
+    {
+        _ = new LocalCredentialsProvider(ctx, new LocalCredentialsConfig
+        {
+            ManagedPath = managedPath,
+            ProjectEnvPath = null,
+            UserEnvPath = null,
+        }, _ => null);
+        var registry = new DshRpcRegistry(ctx);
+        _ = registry.Register(new RpcMethod("session/list", (_, _) =>
+            Task.FromResult<JsonElement?>(JsonSerializer.SerializeToElement(new { items = Array.Empty<object>() }))));
+        var host = new WebHostService(ctx, new WebHostConfig(Port: port), map: app => app.MapGet("/", () => Results.Text("index")));
+        host.StartAsync().GetAwaiter().GetResult();
+        return (ctx, host, new HttpClient(new HttpClientHandler { UseCookies = false }) { BaseAddress = new Uri(host.ListenUrl!) });
     }
 
     private static HttpResponseMessage PostEnvelope(HttpClient client, string path, string rpcId, string? cookie = null)
