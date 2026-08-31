@@ -268,14 +268,17 @@ public static class SpineRegistry
             var model = string.IsNullOrEmpty(key) ? "mock-todo" : "deepseek-chat";
             var list = registry.Register(new Dsh.Web.Host.RpcMethod("session/list", (_, _) =>
             {
-                var entries = sessions.List().Select(session => new
+                var items = sessions.List().Select(session => new
                 {
-                    id = session.Id.Value,
+                    sessionId = session.Id.Value,
+                    updatedAt = session.Events.LastOrDefault()?.TimeMs ?? 0,
+                    running = false,
+                    blank = !session.Events.OfType<Dsh.Session.AssistantMessageEvent>().Any(),
                     summary = session.Events.OfType<Dsh.Session.AssistantMessageEvent>()
                         .LastOrDefault()
                         ?.Message.Content.OfType<Dsh.Llm.TextBlock>().Select(block => block.Text).FirstOrDefault() ?? "",
                 });
-                return Task.FromResult<System.Text.Json.JsonElement?>(System.Text.Json.JsonSerializer.SerializeToElement(entries));
+                return Task.FromResult<System.Text.Json.JsonElement?>(System.Text.Json.JsonSerializer.SerializeToElement(new { items }));
             }));
             var create = registry.Register(new Dsh.Web.Host.RpcMethod("session/create", (_, _) =>
             {
@@ -283,8 +286,10 @@ public static class SpineRegistry
                 var id = new Dsh.Session.SessionId($"session-{Guid.NewGuid():N}");
                 _ = loop.Create(id, new Dsh.Agent.AgentOptions { Provider = provider, Model = model });
                 return Task.FromResult<System.Text.Json.JsonElement?>(
-                    System.Text.Json.JsonSerializer.SerializeToElement(new { id = id.Value }));
+                    System.Text.Json.JsonSerializer.SerializeToElement(new { sessionId = id.Value }));
             }));
+            var page = registry.Register(Dsh.Web.Host.SessionRemotes.Page(ctx, sessions));
+            var follow = registry.RegisterStream(Dsh.Web.Host.SessionRemotes.Follow(ctx, sessions));
             var prompt = registry.Register(new Dsh.Web.Host.RpcMethod("session/prompt", async (args, ct) =>
             {
                 var id = args is System.Text.Json.JsonElement element
@@ -315,9 +320,9 @@ public static class SpineRegistry
                 await driver.WhenIdleAsync();
                 var last = session.Events.OfType<Dsh.Session.AssistantMessageEvent>().LastOrDefault();
                 var answer = last?.Message.Content.OfType<Dsh.Llm.TextBlock>().Select(block => block.Text).FirstOrDefault() ?? "";
-                return System.Text.Json.JsonSerializer.SerializeToElement(new { id, text = answer });
+                return System.Text.Json.JsonSerializer.SerializeToElement(new { sessionId = id, text = answer });
             }));
-            return new SpineDisposables(prompt, create, list);
+            return new SpineDisposables(follow, page, prompt, create, list);
         }));
         catalog.Register("webHost", new SpinePlugin("webHost", (ctx, config) =>
         {

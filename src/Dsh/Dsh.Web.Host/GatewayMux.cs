@@ -116,9 +116,28 @@ public static class GatewayMux
             {
                 await RunEventStreamAsync(streamId, writer, ctx, streamCts.Token);
             }
+            else if (registry.GetStream(endpoint) is { } streamMethod)
+            {
+                var args = payload is JsonElement element && element.TryGetProperty("args", out var argsValue)
+                    ? argsValue.Clone()
+                    : (JsonElement?)null;
+                await foreach (var item in streamMethod.Invoke(args, streamCts.Token))
+                {
+                    await writer.SendAsync(new { type = "item", streamId, value = item }, streamCts.Token);
+                }
+            }
+            else if (registry.Get(endpoint) is not null)
+            {
+                await writer.SendAsync(new { type = "error", streamId, error = new
+                {
+                    code = RpcErrorCodes.SignatureInvalid,
+                    message = $"endpoint \"{endpoint}\" is a unary method and cannot be opened as a stream",
+                    details = new { },
+                } }, streamCts.Token);
+                return;
+            }
             else
             {
-                // The catalog wave registers stream methods; until then only $events streams.
                 await writer.SendAsync(new { type = "error", streamId, error = new
                 {
                     code = RpcErrorCodes.InvocationUnavailable,

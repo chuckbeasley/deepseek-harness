@@ -19,6 +19,20 @@ public sealed record RpcMethod(
     Func<JsonElement?, CancellationToken, Task<JsonElement?>> Invoke);
 
 /// <summary>
+/// One registered stream method (the Typert <c>mode: 'stream'</c> descriptor): the canonical
+/// endpoint and a yielding invocation. Stream methods are opened only through the mux; a unary
+/// dispatch on one settles <c>gateway/signature-invalid</c>.
+/// </summary>
+public sealed record RpcStreamMethod(
+    /// <summary>Canonical endpoint (<c>namespace/method</c>).</summary>
+    string Endpoint,
+    /// <summary>Invoke the stream.</summary>
+    /// <param name="args">the wire args object, or <c>null</c> for parameterless calls.</param>
+    /// <param name="cancellationToken">carrier cancellation.</param>
+    /// <returns>the yielded item sequence.</returns>
+    Func<JsonElement?, CancellationToken, IAsyncEnumerable<JsonElement>> Invoke);
+
+/// <summary>
 /// The RPC method registry (ctx.rpc): one method per endpoint, registered as effects, with the
 /// exact Typert failure vocabulary on dispatch. Registrations are effects: disposing the context
 /// (or the returned disposer) withdraws the method.
@@ -26,6 +40,7 @@ public sealed record RpcMethod(
 public sealed class DshRpcRegistry : Service
 {
     private readonly Dictionary<string, RpcMethod> _methods = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, RpcStreamMethod> _streams = new(StringComparer.Ordinal);
     private readonly object _gate = new();
 
     /// <summary>Create and register the registry under the <c>rpc</c> key.</summary>
@@ -74,6 +89,49 @@ public sealed class DshRpcRegistry : Service
         lock (_gate) return _methods.GetValueOrDefault(endpoint);
     }
 
+    /// <summary>
+    /// Register one stream method. One handler per endpoint, and an endpoint cannot be both unary
+    /// and stream.
+    /// </summary>
+    /// <returns>the disposer that withdraws the method.</returns>
+    /// <exception cref="ArgumentException">when the endpoint is empty, malformed, or already claimed.</exception>
+    public IDisposable RegisterStream(RpcStreamMethod method)
+    {
+        ArgumentNullException.ThrowIfNull(method);
+        ValidateEndpoint(method.Endpoint);
+        return Ctx.Effect(() =>
+        {
+            lock (_gate)
+            {
+                if (_streams.ContainsKey(method.Endpoint))
+                {
+                    throw new ArgumentException($"rpc: endpoint \"{method.Endpoint}\" is already registered", nameof(method));
+                }
+                if (_methods.ContainsKey(method.Endpoint))
+                {
+                    throw new ArgumentException($"rpc: endpoint \"{method.Endpoint}\" is already registered as a unary method", nameof(method));
+                }
+                _streams.Add(method.Endpoint, method);
+            }
+            return new ActionDisposer(() =>
+            {
+                lock (_gate) _streams.Remove(method.Endpoint);
+            });
+        }, $"rpc.registerStream(\"{method.Endpoint}\")");
+    }
+
+    /// <summary>One registered stream method, or <c>null</c> when nothing claims the endpoint.</summary>
+    public RpcStreamMethod? GetStream(string endpoint)
+    {
+        lock (_gate) return _streams.GetValueOrDefault(endpoint);
+    }
+
+    /// <summary>Whether the endpoint is registered as a stream method.</summary>
+    public bool IsStream(string endpoint)
+    {
+        lock (_gate) return _streams.ContainsKey(endpoint);
+    }
+
     /// <summary>Every registered method, in registration order.</summary>
     public IReadOnlyList<RpcMethod> List()
     {
@@ -92,7 +150,15 @@ public sealed class DshRpcRegistry : Service
     {
         ArgumentNullException.ThrowIfNull(request);
         RpcMethod? method;
-        lock (_gate) method = _methods.GetValueOrDefault(request.Endpoint);
+        lock (_gate)
+        {
+            method = _methods.GetValueOrDefault(request.Endpoint);
+            if (method is null && _streams.ContainsKey(request.Endpoint))
+            {
+                return new RpcResponse(null, new RpcError(RpcErrorCodes.SignatureInvalid,
+                    $"endpoint \"{request.Endpoint}\" is a stream method and cannot be invoked unary"));
+            }
+        }
         if (method is null)
         {
             return new RpcResponse(null, new RpcError(RpcErrorCodes.InvocationUnavailable, $"no rpc method is registered for \"{request.Endpoint}\""));
@@ -106,6 +172,10 @@ public sealed class DshRpcRegistry : Service
         {
             return new RpcResponse(null, new RpcError(RpcErrorCodes.BadRequest, error.Message));
         }
+        catch (RpcSessionNotFoundError error)
+        {
+            return new RpcResponse(null, new RpcError("session/not-found", error.Message));
+        }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             return new RpcResponse(null, new RpcError(RpcErrorCodes.Cancelled, "the rpc call was cancelled"));
@@ -113,6 +183,19 @@ public sealed class DshRpcRegistry : Service
         catch (Exception error)
         {
             return new RpcResponse(null, new RpcError(RpcErrorCodes.Internal, error.Message));
+        }
+    }
+
+    /// <summary>Validate the canonical endpoint contract; the stream variant shares it.</summary>
+    private static void ValidateEndpoint(string endpoint)
+    {
+        if (endpoint.Length == 0)
+        {
+            throw new ArgumentException("rpc: an endpoint must be non-empty", nameof(endpoint));
+        }
+        if (!endpoint.Contains('/', StringComparison.Ordinal))
+        {
+            throw new ArgumentException($"rpc: endpoint \"{endpoint}\" must be namespace/method", nameof(endpoint));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Dsh.Web.Host.Tests;
+namespace Dsh.Web.Host.Tests;
 
 /// <summary>Zero-dependency console test runner for the Phase-5 web host.</summary>
 public static class Program
@@ -27,6 +27,10 @@ public static class Program
         ("mux: events stream sends ready then live emits", GatewayMuxTests.EventsStream_SendsReadyThenLiveEmits),
         ("mux: unknown endpoint answers an error frame", GatewayMuxTests.UnknownEndpoint_AnswersErrorFrame),
         ("mux: cancel ends the logical stream", GatewayMuxTests.Cancel_EndsTheLogicalStream),
+        ("wire: SessionWireEvent lifts the envelope out of data", SessionRemotesTests.WireProjection_LiftsEnvelopeOutOfData),
+        ("session: page returns windowed records", SessionRemotesTests.Page_ReturnsWindowedRecords_OverRealTurns),
+        ("session: page unknown session settles session-not-found", SessionRemotesTests.Page_UnknownSession_SettlesSessionNotFound),
+        ("session: follow sends snapshot then gap-checked live events", () => SessionRemotesTests.Follow_SendsSnapshotThenLiveEvents_OverRealTurns().GetAwaiter().GetResult()),
     };
 
     public static int Main()
@@ -51,4 +55,7 @@ public static class Program
         return failures.Count == 0 ? 0 : 1;
     }
 }
+
+
+
 
