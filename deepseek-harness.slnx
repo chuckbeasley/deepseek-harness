@@ -41,6 +41,7 @@
     <Project Path="src/Dsh/Dsh.Storage/Dsh.Storage.csproj" />
     <Project Path="src/Dsh/Dsh.Workspace/Dsh.Workspace.csproj" />
     <Project Path="src/Dsh/Dsh.Workflow/Dsh.Workflow.csproj" />
+    <Project Path="src/Dsh/Dsh.Webhook/Dsh.Webhook.csproj" />
     <Project Path="src/Dsh/Dsh.Spill/Dsh.Spill.csproj" />
     <Project Path="src/Dsh/Dsh.Attachment/Dsh.Attachment.csproj" />
     <Project Path="src/Dsh/Dsh.Compaction/Dsh.Compaction.csproj" />
@@ -88,6 +89,7 @@
     <Project Path="tests/Dsh.Storage.Tests/Dsh.Storage.Tests.csproj" />
     <Project Path="tests/Dsh.Workspace.Tests/Dsh.Workspace.Tests.csproj" />
     <Project Path="tests/Dsh.Workflow.Tests/Dsh.Workflow.Tests.csproj" />
+    <Project Path="tests/Dsh.Webhook.Tests/Dsh.Webhook.Tests.csproj" />
     <Project Path="tests/Dsh.Spill.Tests/Dsh.Spill.Tests.csproj" />
     <Project Path="tests/Dsh.Attachment.Tests/Dsh.Attachment.Tests.csproj" />
     <Project Path="tests/Dsh.Compaction.Tests/Dsh.Compaction.Tests.csproj" />

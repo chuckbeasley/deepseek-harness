@@ -169,6 +169,30 @@ public static class SpineRegistry
             var registration = ctx.Tools().Register(Dsh.Workflow.WorkflowTools.Definition(ctx));
             return new SpineDisposables(registration, service);
         }));
+        catalog.Register("webhook", new SpinePlugin("webhook", (ctx, _) => new Dsh.Webhook.WebhookRuntime(ctx)));
+        catalog.Register("webhookIngress", new SpinePlugin("webhookIngress", (ctx, config) =>
+        {
+            var webhook = ctx.Get<Dsh.Webhook.IWebhookService>("webhook")
+                ?? throw new InvalidOperationException("webhookIngress requires the \"webhook\" row");
+            var credentials = ctx.Get<Dsh.Credentials.ICredentialsService>("credentials")
+                ?? throw new InvalidOperationException("webhookIngress requires the \"credentials\" row");
+            var prefix = ConfigString(config, "prefix")
+                ?? throw new InvalidOperationException("webhookIngress requires a \"prefix\" config (for example http://127.0.0.1:8080/webhook/)");
+            var secretRef = ConfigString(config, "secretRef")
+                ?? throw new InvalidOperationException("webhookIngress requires a \"secretRef\" credential reference");
+            var source = ConfigString(config, "source") ?? "primary-github";
+            var maxBodyBytes = ConfigInt(config, "maxBodyBytes") ?? 1024 * 1024;
+            var handler = new Dsh.Webhook.GitHubWebhookHandler(
+                ctx, webhook, credentials,
+                new Dsh.Webhook.GitHubWebhookHandlerConfig(
+                    new Dsh.Webhook.WebhookSourceId(source), secretRef, maxBodyBytes));
+            var ingress = new Dsh.Webhook.HttpListenerWebhookIngress(
+                ctx, new Dsh.Webhook.HttpListenerWebhookIngressConfig(prefix, handler.HandleAsync, maxBodyBytes));
+            // The ingress listens from mount time: a profile that names the row wants the
+            // listener up before the first delivery, and a bound prefix fails the boot loud.
+            ingress.StartAsync().GetAwaiter().GetResult();
+            return new SpineDisposables(ingress);
+        }));
         catalog.Register("tui", new SpinePlugin("tui", (ctx, _) =>
         {
             var args = ctx.Get<CmdlineArgs>("cmdlineArgs") ?? new CmdlineArgs(Array.Empty<string>());
