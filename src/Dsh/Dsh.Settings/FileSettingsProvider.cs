@@ -38,6 +38,21 @@ public sealed class FileSettingsProvider : SettingsProvider
     /// <summary>The resolved JSON document path exposed to local configuration surfaces.</summary>
     public override string? DocumentPath => _path;
 
+    /// <summary>Materialize an absent document as an empty JSON object and return the resolved path.</summary>
+    public override string? PrepareDocument()
+    {
+        if (!File.Exists(_path))
+        {
+            var directory = Path.GetDirectoryName(_path);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            File.WriteAllText(_path, "{}\n");
+        }
+        return _path;
+    }
+
     /// <summary>Load the stored document; an absent file is the empty document, an unparsable one fails loud.</summary>
     protected override Task<Dictionary<string, object?>> LoadAsync()
     {

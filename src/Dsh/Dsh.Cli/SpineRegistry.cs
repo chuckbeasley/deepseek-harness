@@ -310,6 +310,9 @@ public static class SpineRegistry
             var settingsUpdate = registry.Register(Dsh.Web.Host.SettingsRemotes.Update(ctx));
             var settingsReplace = registry.Register(Dsh.Web.Host.SettingsRemotes.Replace(ctx));
             var settingsMutate = registry.Register(Dsh.Web.Host.SettingsRemotes.Mutate(ctx));
+            var settingsCanOpenPresetDir = registry.Register(Dsh.Web.Host.SettingsRemotes.CanOpenAgentPresetDirectory(ctx));
+            var settingsOpenDocument = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenSettingsDocument(ctx));
+            var settingsOpenPresetDir = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx));
             var credentialsDescribe = registry.Register(Dsh.Web.Host.CredentialsRemotes.Describe(ctx));
             var credentialsSet = registry.Register(Dsh.Web.Host.CredentialsRemotes.Set(ctx));
             var credentialsUnset = registry.Register(Dsh.Web.Host.CredentialsRemotes.Unset(ctx));
@@ -352,6 +355,7 @@ public static class SpineRegistry
             return new SpineDisposables(
                 follow, control, page, prompt, create, list,
                 settingsDescribe, settingsUpdate, settingsReplace, settingsMutate,
+                settingsCanOpenPresetDir, settingsOpenDocument, settingsOpenPresetDir,
                 credentialsDescribe, credentialsSet, credentialsUnset,
                 workspaceCreate,
                 directoryPickerPick, directoryPickerList, directoryPickerCreate);

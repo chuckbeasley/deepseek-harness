@@ -72,6 +72,12 @@ public abstract class SettingsProvider : Service
     /// <summary>Absolute path of the provider's user-editable document, when its storage is one local file.</summary>
     public virtual string? DocumentPath => null;
 
+    /// <summary>
+    /// Materialize an absent local document (creating it when needed) and return its path, or
+    /// <c>null</c> for non-file storage (port of the TS <c>prepareDocument</c>).
+    /// </summary>
+    public virtual string? PrepareDocument() => null;
+
     /// <summary>Load the provider's document once and publish it when the service attaches (activates).</summary>
     protected abstract Task<Dictionary<string, object?>> LoadAsync();
 

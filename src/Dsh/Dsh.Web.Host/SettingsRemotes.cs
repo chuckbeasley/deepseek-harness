@@ -1,17 +1,18 @@
 using System.Text.Json;
 using Cordis.Core;
+using Dsh.Preset;
 using Dsh.Settings;
 
 namespace Dsh.Web.Host;
 
 /// <summary>
-/// The settings remote methods (port of the TS SettingsController): the redacted describe and the
-/// update/replace writes. Every read is redacted, and every provider refusal is classified as
-/// <c>settings/conflict</c> (stale revision) or <c>settings/rejected</c> (anything else). The
-/// settings/mutate path ops, canOpenAgentPresetDirectory, openSettingsDocument, and
-/// openAgentPresetDirectory methods are deferred: the path-op model and the native openers are not
-/// ported. The namespaces stay registered without a provider, answering an actionable
-/// <c>gateway/internal</c> like the TS controller.
+/// The settings remote methods (port of the TS SettingsController): the redacted describe, the
+/// update/replace/mutate writes, and the document/preset openers. Every read is redacted, and
+/// every provider refusal is classified as <c>settings/conflict</c> (stale revision) or
+/// <c>settings/rejected</c> (anything else). The namespaces stay registered without a provider,
+/// answering an actionable <c>gateway/internal</c> like the TS controller. The C# preset seam has
+/// no trust classification (the TS ships a system root), so the <c>agent-preset/read-only</c>
+/// refusal is deferred with the shipped-preset concept.
 /// </summary>
 public static class SettingsRemotes
 {
@@ -53,6 +54,118 @@ public static class SettingsRemotes
     {
         ArgumentNullException.ThrowIfNull(ctx);
         return new RpcMethod("settings/mutate", (args, _) => WriteAsync(ctx, args, WriteKind.Mutate));
+    }
+
+    /// <summary>Whether this deployment can open an authored Agent preset directory natively.</summary>
+    public static RpcMethod CanOpenAgentPresetDirectory(Context ctx, SettingsOpeners? openers = null)
+    {
+        ArgumentNullException.ThrowIfNull(ctx);
+        var native = openers ?? SettingsOpeners.Default;
+        return new RpcMethod("settings/canOpenAgentPresetDirectory", (_, _) =>
+            Task.FromResult<JsonElement?>(JsonSerializer.SerializeToElement(native.CanOpen)));
+    }
+
+    /// <summary>Materialize the provider-owned settings document and open it in a native text editor.</summary>
+    public static RpcMethod OpenSettingsDocument(Context ctx, SettingsOpeners? openers = null)
+    {
+        ArgumentNullException.ThrowIfNull(ctx);
+        var native = openers ?? SettingsOpeners.Default;
+        return new RpcMethod("settings/openSettingsDocument", async (_, ct) =>
+        {
+            var settings = Provider(ctx);
+            if (ct.IsCancellationRequested)
+            {
+                throw new RpcDomainError(RpcErrorCodes.Cancelled, "settings document open was aborted");
+            }
+            string? path;
+            try
+            {
+                path = settings.PrepareDocument();
+            }
+            catch (Exception error)
+            {
+                if (ct.IsCancellationRequested)
+                {
+                    throw new RpcDomainError(RpcErrorCodes.Cancelled, "settings document preparation was aborted");
+                }
+                throw new RpcDomainError(RpcErrorCodes.Internal, $"settings document preparation failed: {error.Message}");
+            }
+            if (path is null)
+            {
+                throw new RpcDomainError(RpcErrorCodes.Internal, "settings provider has no local document to open");
+            }
+            if (ct.IsCancellationRequested)
+            {
+                throw new RpcDomainError(RpcErrorCodes.Cancelled, "settings document open was aborted");
+            }
+            try
+            {
+                await native.OpenTextFile(path);
+            }
+            catch (Exception error)
+            {
+                if (ct.IsCancellationRequested)
+                {
+                    throw new RpcDomainError(RpcErrorCodes.Cancelled, "settings document open was aborted");
+                }
+                throw new RpcDomainError(RpcErrorCodes.Internal, $"path open failed: {error.Message}");
+            }
+            return JsonSerializer.SerializeToElement(new { opened = true });
+        });
+    }
+
+    /// <summary>Open one user-authored Agent preset directory or return its path when no native opener exists.</summary>
+    public static RpcMethod OpenAgentPresetDirectory(Context ctx, SettingsOpeners? openers = null)
+    {
+        ArgumentNullException.ThrowIfNull(ctx);
+        var native = openers ?? SettingsOpeners.Default;
+        return new RpcMethod("settings/openAgentPresetDirectory", async (args, ct) =>
+        {
+            var agentPreset = args is JsonElement element && element.TryGetProperty("agentPreset", out var presetValue)
+                    && presetValue.ValueKind == JsonValueKind.String
+                ? presetValue.GetString()
+                : null;
+            if (string.IsNullOrEmpty(agentPreset))
+            {
+                throw new RpcBadRequestException("agent preset id must not be empty");
+            }
+            var presets = ctx.Get<IPresetService>("preset");
+            if (presets is null)
+            {
+                throw new RpcDomainError("agent-preset/not-found",
+                    "this deployment composes no agent presets",
+                    JsonSerializer.SerializeToElement(new { agentPreset, available = Array.Empty<string>() }));
+            }
+            ComposedPreset preset;
+            try
+            {
+                preset = presets.Resolve(agentPreset);
+            }
+            catch (Exception error)
+            {
+                var available = presets.Discover().Select(candidate => candidate.Id).ToArray();
+                throw new RpcDomainError("agent-preset/not-found", error.Message,
+                    JsonSerializer.SerializeToElement(new { agentPreset, available }));
+            }
+            var directory = Path.GetDirectoryName(preset.CompositionPath) ?? preset.CompositionPath;
+            if (!native.CanOpen)
+            {
+                return JsonSerializer.SerializeToElement(new { opened = false, path = directory });
+            }
+            try
+            {
+                await native.OpenPath(directory);
+            }
+            catch (Exception error)
+            {
+                if (ct.IsCancellationRequested)
+                {
+                    throw new RpcDomainError(RpcErrorCodes.Cancelled, "path open was aborted");
+                }
+                throw new RpcDomainError(RpcErrorCodes.Internal, $"path open failed: {error.Message}");
+            }
+            return JsonSerializer.SerializeToElement(new { opened = true });
+        });
     }
 
     private static async Task<JsonElement?> WriteAsync(Context ctx, JsonElement? args, WriteKind kind)

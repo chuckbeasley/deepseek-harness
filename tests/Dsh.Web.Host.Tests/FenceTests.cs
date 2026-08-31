@@ -166,10 +166,15 @@ public static class FenceTests
         try
         {
             var cookie = MintCookie(client, host.Fence!.LaunchToken);
-            var last = cookie.Length - 1;
-            var tampered = cookie[..last] + (cookie[last] == 'A' ? 'B' : 'A');
+            // Tamper the signature's FIRST character: it contributes a full 6 bits to the decoded
+            // bytes. The last character of a 43-char base64url signature contributes only 4 bits
+            // (its low 2 bits are discarded), so an 'A'<->'B' flip there decodes to identical
+            // bytes and would not break the signature.
+            var sigStart = cookie.LastIndexOf('.') + 1;
+            var tampered = cookie[..sigStart] + (cookie[sigStart] == 'A' ? 'B' : 'A') + cookie[(sigStart + 1)..];
             var response = PostEnvelope(client, "/api/session/list", "r3", tampered);
-            Assert.True((int)response.StatusCode == 401, "a tampered cookie is refused");
+            Assert.True((int)response.StatusCode == 401,
+                $"a tampered cookie is refused (got {(int)response.StatusCode}: {response.Content.ReadAsStringAsync().GetAwaiter().GetResult()})");
         }
         finally
         {
@@ -279,6 +284,8 @@ public static class FenceTests
         var host = new WebHostService(ctx, new WebHostConfig(Port: port), map: app => app.MapGet("/", () => Results.Text("index")));
         host.StartAsync().GetAwaiter().GetResult();
         origin = host.ListenUrl!;
-        return (ctx, host, new HttpClient { BaseAddress = new Uri(origin) });
+        // The tests manage cookies explicitly; a container would add a second, hidden cookie
+        // source to every request.
+        return (ctx, host, new HttpClient(new HttpClientHandler { UseCookies = false }) { BaseAddress = new Uri(origin) });
     }
 }
