@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-01-dotnet-port-phase5-auth-fence-and-directory-picker.md
+2026-09-01-dotnet-port-phase5-auth-fence-and-directory-picker.md: 4b52dbc6b955e9cbd4caaa4cb97559a9acacbaac
+2026-09-01-dotnet-port-phase5-auth-fence-and-directory-picker.zh.md: 37d5bd4f86b09a0ba40c29c12825ce9b56f77f6f

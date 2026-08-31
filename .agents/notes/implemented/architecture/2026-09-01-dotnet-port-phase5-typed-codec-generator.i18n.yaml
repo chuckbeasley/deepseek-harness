@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-01-dotnet-port-phase5-typed-codec-generator.md
+2026-09-01-dotnet-port-phase5-typed-codec-generator.md: 1cdcfd6666adfd88a5538c2b6c32eeccf50de4c1
+2026-09-01-dotnet-port-phase5-typed-codec-generator.zh.md: a5a0b7d66636f903490dce867b9ac9b1dae861ab

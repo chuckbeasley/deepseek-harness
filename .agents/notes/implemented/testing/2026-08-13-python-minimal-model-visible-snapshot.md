@@ -10,7 +10,7 @@ The Python lane needs an exact record of what the standalone minimal profile sho
 
 ## Decision
 
-The `sdk-minimal` scenario in [the packaged-runtime smoke](../../../../scripts/smoke-python-runtime.py) boots the shipped profile and records `scripts/snapshots/python-sdk-single-exe/minimal/model-visible.json`: for every model request of the turn, the advertised tool schemas verbatim and the message list. System and user messages keep their full text with the scenario's temporary directory tokenized; assistant and tool messages keep only call identity, because their PTY and filesystem text differs across replay platforms. The profile omits dynamic runtime context, so every message it emits is compared.
+The `sdk-minimal` scenario in the packaged-runtime smoke boots the shipped profile and records `scripts/snapshots/python-sdk-single-exe/minimal/model-visible.json`: for every model request of the turn, the advertised tool schemas verbatim and the message list. System and user messages keep their full text with the scenario's temporary directory tokenized; assistant and tool messages keep only call identity, because their PTY and filesystem text differs across replay platforms. The profile omits dynamic runtime context, so every message it emits is compared.
 
 The snapshot, rather than inline mock-model assertions, owns the minimal scenario's tools and system prompts and reports their complete diff. Snapshot comparison takes its directory and file set as arguments, so the `minimal` and `advanced` expected outputs use one implementation, and `--update-snapshots` accepts `sdk-minimal`.
 

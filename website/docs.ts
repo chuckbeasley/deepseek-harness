@@ -131,14 +131,6 @@ const homeAndGuide = pairedPages([
     order: 2,
   },
   {
-    source: 'docs/user/guide/python-sdk.md',
-    route: 'guide/python-sdk.md',
-    label: { root: 'Python', en: 'Python' },
-    sidebar: { root: 'zh-guide', en: 'en-guide' },
-    section: { root: 'SDK', en: 'SDK' },
-    order: 1,
-  },
-  {
     source: 'docs/user/guide/github-review.md',
     route: 'guide/github-review.md',
     label: { root: 'GitHub 评审会话', en: 'GitHub review sessions' },

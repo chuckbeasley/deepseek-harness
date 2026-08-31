@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-01-dotnet-port-phase6-python-retirement.md
+2026-09-01-dotnet-port-phase6-python-retirement.md: 9450228efffab068dec0ac806dd30fe52a79e6aa
+2026-09-01-dotnet-port-phase6-python-retirement.zh.md: b0607a87917e2aed2bf422eb218aac3082c1cae3

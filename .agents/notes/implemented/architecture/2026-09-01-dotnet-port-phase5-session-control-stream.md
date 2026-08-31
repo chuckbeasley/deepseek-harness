@@ -1,6 +1,8 @@
-﻿# Agent Note: .NET port Phase 5 wave 1 — the session control stream and the stream-cancel contract
+# Agent Note: .NET port Phase 5 wave 1 — the session control stream and the stream-cancel contract
 
 Status: implemented
+
+English | [中文](2026-09-01-dotnet-port-phase5-session-control-stream.zh.md)
 
 ## Problem
 
@@ -14,7 +16,7 @@ The session catalog's last live wire surface, `session/control` (one baseline th
 - **Deltas**: a queue frame per `agent/inbox/inserted|claimed|discarded` event — the Agent itself already emits these through `IInboxNotifications` — each frame carrying the full current items (idempotent; the port's inbox-event substitute for the durable `agent/inbox/spliced` event, which the Inbox seam documents as deferred). A jobs frame per `IJobsService.OnJobsChanged` for the affected owner session. Live projection deltas stay deferred: the registry has no per-key change events, and the baseline carries the consistent cut.
 - **Cancellation**: the mux no longer answers a cancelled logical stream with an error frame; `session/follow` and `session/control` end quietly through a token-registered channel completion (the iterator constraint that a `yield return` cannot sit in a try-with-catch made the channel-completion approach the natural shape).
 
-## Consequence
+## Consequences
 
 The session catalog is now fully ported at the live-feed level: `session/control` serves the baseline and queue/jobs deltas over real mock-LLM turns and a real jobs provider, the host suite grew from 62 to 67 (4 control suites plus a mux registry-stream cancel suite), all green, with the full solution building at 0 errors and the CLI suite at 17. The wire now matches the TS cancel contract for every registry stream.
 

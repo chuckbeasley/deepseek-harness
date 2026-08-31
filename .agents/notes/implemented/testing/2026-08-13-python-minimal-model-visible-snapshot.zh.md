@@ -10,7 +10,7 @@ Python 通道需要精确记录独立极简 profile 实际展示给模型的内�
 
 ## 决策
 
-[打包运行时冒烟测试](../../../../scripts/smoke-python-runtime.py)的 `sdk-minimal` 场景会启动随附 profile，并录制 `scripts/snapshots/python-sdk-single-exe/minimal/model-visible.json`：对该回合的每个模型请求，逐字记录对外公布的工具 schema 与消息列表。system 与 user 消息保留全文，仅将场景的临时目录替换为占位符；assistant 与 tool 消息只保留调用标识，因为它们的 PTY 与文件系统文本在各回放平台上并不相同。该 profile 省略动态运行时上下文，因此它发出的每条消息都会参与比对。
+打包运行时冒烟测试的 `sdk-minimal` 场景会启动随附 profile，并录制 `scripts/snapshots/python-sdk-single-exe/minimal/model-visible.json`：对该回合的每个模型请求，逐字记录对外公布的工具 schema 与消息列表。system 与 user 消息保留全文，仅将场景的临时目录替换为占位符；assistant 与 tool 消息只保留调用标识，因为它们的 PTY 与文件系统文本在各回放平台上并不相同。该 profile 省略动态运行时上下文，因此它发出的每条消息都会参与比对。
 
 极简场景的工具与系统提示词由快照拥有，而不是由 mock 模型内联断言；快照会给出其完整差异。快照比对以目录与文件集合为参数，因此 `minimal` 与 `advanced` 两份期望输出共用一套实现，且 `--update-snapshots` 接受 `sdk-minimal`。
 

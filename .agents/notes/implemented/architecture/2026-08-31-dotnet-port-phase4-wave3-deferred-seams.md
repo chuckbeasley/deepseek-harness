@@ -1,6 +1,8 @@
-﻿# Agent Note: .NET port Phase 4 wave 3 — deferred capability seams land
+# Agent Note: .NET port Phase 4 wave 3 — deferred capability seams land
 
 Status: implemented
+
+English | [中文](2026-08-31-dotnet-port-phase4-wave3-deferred-seams.zh.md)
 
 ## Problem
 
@@ -17,7 +19,7 @@ Each remaining seam ships as a faithful but bounded C# port, verified by process
 - `Dsh.Lsp`: streaming Content-Length decoder with the exact 65536-byte header cap, structural-guard protocol translation, the JSON-RPC connection over a private `Process` handle (the subprocess seam has no pipe modes yet — documented fallback), the serialized abortable server instance with the transient didOpen/didClose lifecycle, `$/cancelRequest` grace, and the shutdown/terminate ladder, plus the pure tool renderers. A fixture server pins 90 suites.
 - `Dsh.Terminal`: the ConPTY backend (Windows) with the controlled-prompt readiness model (`stdin_read`/`inferred_idle`), the OSC 133 sanitizer, serialized resize, and the ClosePseudoConsole → tree-kill teardown ladder; suites self-skip on non-Windows.
 
-## Consequence
+## Consequences
 
 The wave-2 "deferred to wave 3" list is cleared except for surfaces whose dependencies genuinely belong to later phases (LSP provider pooling + fs host helpers, SDK/ACP child servers, Unix pty, and the per-seam named surfaces such as sqlite backends, fs diff/edit tools, and the observation policy). Those stay named in the seam sources, and the `dotnet-ci.yml` lane now runs every console suite so the platform matrix owns the signal. Phase 4 is recorded COMPLETE; Phase 5 (Blazor) remains the next phase.
 

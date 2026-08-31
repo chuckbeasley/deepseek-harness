@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-01-dotnet-port-phase5-workspace-registry.md
+2026-09-01-dotnet-port-phase5-workspace-registry.md: 5cd7c15471c82840cde2711692c6288f0a232566
+2026-09-01-dotnet-port-phase5-workspace-registry.zh.md: a7d3c70e8f0cef591c25559ab89506cd942b02d4

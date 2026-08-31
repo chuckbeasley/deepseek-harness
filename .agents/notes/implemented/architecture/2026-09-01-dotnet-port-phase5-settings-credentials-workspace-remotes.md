@@ -2,6 +2,8 @@
 
 Status: implemented
 
+English | [中文](2026-09-01-dotnet-port-phase5-settings-credentials-workspace-remotes.zh.md)
+
 ## Problem
 
 The Phase 5 web foundation (gateway, mux, `$events`, the Blazor shell, and the session remotes) recorded the settings, credentials, and workspace remote namespaces as deferred. Closing the wave's remote catalog meant porting those three namespaces over the already-ported seams (`Dsh.Settings`, `Dsh.Credentials`, `Dsh.Workspace`) with the exact TS controller behaviors: redacted reads, classified write refusals, grammar and batch bounds, and the provider-absent diagnostic.
@@ -16,7 +18,7 @@ Three remote classes in `Dsh.Web.Host` mirror the TS controllers field by field:
 
 The gateway transports any string code verbatim through the new open-string `RpcDomainError` (code + optional details), the same way the TS `RemoteErrorCode` union stays open. The namespaces stay registered without a provider and answer an actionable `gateway/internal`, matching the TS controllers. A `settings` spine row (FileSettingsProvider over `<dshHome>/settings.json` — the port is JSON-only, so the default document deviates from the TS `settings.yaml`) joins the dsh-base bundle, and the seam exposes one public wire-value converter (`SettingsWireValues.FromJsonElement`) so the host does not duplicate the seam's JSON-value representation.
 
-## Consequence
+## Consequences
 
 The wave-1 remote catalog now covers session, settings, credentials, and workspace; the host suite grew from 26 to 44 (settings 6, credentials 7, workspace 5), all green, with the full solution building at 0 errors and the settings/credentials/workspace seam suites unchanged and green. `dsh web` profiles now expose all three namespaces on the gateway. `settings/mutate` path ops landed afterwards on the same seam (ordered set/unset edits over the serialized write chain, later ops observing earlier ones, root-path semantics, and the redacted-view secret-field case), bringing the settings suite to 16 and the host suite to 62. Still deferred and named in the port spec and sources: the settings document/preset openers, the workspace registry methods (rename/delete/insertBefore/insertSessionBefore/archiveSession/follow), directoryPicker (stubbed with `directory-picker/unavailable`), the Roslyn source generator, the ui-* plugin set, locale dictionaries, and the trust/auth fence beyond the loopback token.
 
