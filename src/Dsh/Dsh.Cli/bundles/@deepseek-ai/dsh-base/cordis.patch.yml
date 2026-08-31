@@ -3,6 +3,9 @@
     - id: sessions
       name: sessions
 
+    - id: sessionProjections
+      name: sessionProjections
+
     - id: llm
       name: llm
 

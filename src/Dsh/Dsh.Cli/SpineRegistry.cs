@@ -17,6 +17,7 @@ public static class SpineRegistry
     {
         ArgumentNullException.ThrowIfNull(catalog);
         catalog.Register("sessions", new SpinePlugin("sessions", (ctx, _) => new Dsh.Session.SessionStore(ctx)));
+        catalog.Register("sessionProjections", new SpinePlugin("sessionProjections", (ctx, _) => new Dsh.Session.Projection.SessionProjectionRegistry(ctx)));
         catalog.Register("llm", new SpinePlugin("llm", (ctx, _) => new Dsh.Llm.LlmRuntime(ctx)));
         catalog.Register("tools", new SpinePlugin("tools", (ctx, _) => new Dsh.Tools.ToolRuntime(ctx)));
         catalog.Register("systemPrompt", new SpinePlugin("systemPrompt", (ctx, _) => new Dsh.SystemPrompt.SystemPromptService(ctx)));
@@ -298,6 +299,11 @@ public static class SpineRegistry
             }));
             var page = registry.Register(Dsh.Web.Host.SessionRemotes.Page(ctx, sessions));
             var follow = registry.RegisterStream(Dsh.Web.Host.SessionRemotes.Follow(ctx, sessions));
+            var agents = ctx.Get<Dsh.Agent.AgentRegistry>("agents")
+                ?? throw new InvalidOperationException("rpc requires the \"agents\" row");
+            var jobs = ctx.Get<Dsh.Jobs.IJobsService>("jobs");
+            var projections = ctx.Get<Dsh.Session.Projection.SessionProjectionRegistry>("sessionProjections");
+            var control = registry.RegisterStream(Dsh.Web.Host.SessionControlRemotes.Control(ctx, sessions, agents, jobs, projections));
             // Settings, credentials, and workspace namespaces resolve their providers at invoke
             // time (the TS controllers keep the namespaces registered when a provider is absent).
             var settingsDescribe = registry.Register(Dsh.Web.Host.SettingsRemotes.Describe(ctx));
@@ -344,7 +350,7 @@ public static class SpineRegistry
                 return System.Text.Json.JsonSerializer.SerializeToElement(new { sessionId = id, text = answer });
             }));
             return new SpineDisposables(
-                follow, page, prompt, create, list,
+                follow, control, page, prompt, create, list,
                 settingsDescribe, settingsUpdate, settingsReplace, settingsMutate,
                 credentialsDescribe, credentialsSet, credentialsUnset,
                 workspaceCreate,

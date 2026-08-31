@@ -91,9 +91,12 @@ public static class SessionRemotes
                     @event = SessionWireEvent.Project(evt),
                 }));
             }));
+        // Cancellation completes the channel, so the token-free read ends normally and the
+        // stream ends quietly without a terminal frame (the TS cancel contract).
+        using var cancel = ct.Register(() => channel.Writer.TryComplete());
         try
         {
-            await foreach (var frame in channel.Reader.ReadAllAsync(ct))
+            await foreach (var frame in channel.Reader.ReadAllAsync())
             {
                 yield return frame;
             }

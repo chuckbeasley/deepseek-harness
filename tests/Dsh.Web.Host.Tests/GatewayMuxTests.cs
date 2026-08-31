@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
@@ -29,12 +29,21 @@ public static class GatewayMuxTests
         var ctx = new Context();
         _ = new SessionStore(ctx);
         var rpc = new DshRpcRegistry(ctx);
+        _ = rpc.RegisterStream(new RpcStreamMethod("test/stream", (_, ct) => OneThenWait(ct)));
         var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort(), AuthFence: false));
         host.StartAsync().GetAwaiter().GetResult();
         var socket = new ClientWebSocket();
         var wsUrl = "ws://" + host.ListenUrl!["http://".Length..] + "/api/remote.mux";
         socket.ConnectAsync(new Uri(wsUrl), CancellationToken.None).GetAwaiter().GetResult();
         return (ctx, host, socket);
+    }
+
+    /// <summary>One item, then wait for cancellation (a live registry stream for the cancel path).</summary>
+    private static async IAsyncEnumerable<JsonElement> OneThenWait(
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct)
+    {
+        yield return JsonSerializer.SerializeToElement(new { hello = "stream" });
+        await Task.Delay(Timeout.InfiniteTimeSpan, ct);
     }
 
     private static void Send(ClientWebSocket socket, string text)
@@ -113,6 +122,29 @@ public static class GatewayMuxTests
             Send(socket, "{\"type\":\"cancel\",\"streamId\":\"s-3\"}");
             // No terminal frame is delivered for an aborted stream; the socket stays usable.
             Send(socket, "{\"type\":\"open\",\"streamId\":\"s-4\",\"endpoint\":\"no/such-stream\",\"payload\":{\"args\":{}}}");
+            var frame = Receive(socket);
+            Assert.True(frame.GetProperty("type").GetString() == "error", "a second stream still works after the cancel");
+        }
+        finally
+        {
+            socket.Dispose();
+            host.StopAsync().GetAwaiter().GetResult();
+            ctx.Dispose();
+        }
+    }
+
+    public static void Cancel_EndsARegistryStreamQuietly()
+    {
+        var (ctx, host, socket) = Boot();
+        try
+        {
+            Send(socket, "{\"type\":\"open\",\"streamId\":\"s-5\",\"endpoint\":\"test/stream\",\"payload\":{\"args\":{}}}");
+            var item = Receive(socket);
+            Assert.True(item.GetProperty("type").GetString() == "item", "the stream item arrives");
+            Send(socket, "{\"type\":\"cancel\",\"streamId\":\"s-5\"}");
+            // Cancelling a registry stream ends it without a terminal frame (the TS cancel
+            // contract); the socket stays usable.
+            Send(socket, "{\"type\":\"open\",\"streamId\":\"s-6\",\"endpoint\":\"no/such-stream\",\"payload\":{\"args\":{}}}");
             var frame = Receive(socket);
             Assert.True(frame.GetProperty("type").GetString() == "error", "a second stream still works after the cancel");
         }

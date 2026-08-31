@@ -151,6 +151,11 @@ public static class GatewayMux
                 await writer.SendAsync(new { type = "end", streamId }, CancellationToken.None);
             }
         }
+        catch (OperationCanceledException) when (streamCts.IsCancellationRequested)
+        {
+            // The caller cancelled the logical stream (or the socket closed): end quietly, no
+            // terminal frame (the TS cancel contract).
+        }
         catch (Exception error)
         {
             try

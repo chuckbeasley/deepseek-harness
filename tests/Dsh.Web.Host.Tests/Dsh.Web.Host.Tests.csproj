@@ -13,6 +13,8 @@
     <ProjectReference Include="..\..\src\Dsh\Dsh.Web.Host\Dsh.Web.Host.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Agent\Dsh.Agent.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.AgentLoop\Dsh.AgentLoop.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Jobs\Dsh.Jobs.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Session.Projection\Dsh.Session.Projection.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Llm\Dsh.Llm.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Tools\Dsh.Tools.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.SystemPrompt\Dsh.SystemPrompt.csproj" />
