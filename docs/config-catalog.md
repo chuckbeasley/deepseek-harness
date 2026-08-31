@@ -3137,7 +3137,7 @@ export interface Config {
    * executor to the same surface (a model-direct call may only name
    * `run_code`; `run_code` SDK sub-dispatches keep every visible tool); `both`
    * sends both forms. PTC mode requires a `ctx.codeRuntime` whose `language`
-   * has a registered SDK renderer (TypeScript or Python) and fail prompt
+   * has a registered SDK renderer (TypeScript) and fail prompt
    * assembly when it is absent or has no renderer. Under `ptc`, native names
    * in `toolOrder` are invalid.
    */

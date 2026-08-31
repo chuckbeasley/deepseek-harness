@@ -25,7 +25,7 @@ kind: "package-bundle"
 <a id="use-this-package"></a>
 ## 使用本包
 
-直接启动该 profile，或从 Python SDK 选择它。提供显式 `DSH_HOME`、使用一次性 workspace，并通过 `DEEPSEEK_API_KEY` 提供模型凭据。
+直接启动该 profile。提供显式 `DSH_HOME`、使用一次性 workspace，并通过 `DEEPSEEK_API_KEY` 提供模型凭据。
 
 ```sh
 export DSH_HOME=/absolute/path/to/example-dsh-home
@@ -64,7 +64,6 @@ dsh --profile sdk-minimal
 <a id="further-exploration"></a>
 ## 进一步探索
 
-- [Python SDK 示例](../../../python/sdk/examples/README.zh.md)——从 Python 针对显式 Harness home 启动本 profile。
 - [SDK 应用 bundle](../sdk-app/README.zh.md)——完整与极简 SDK profile 复用的 JSON-RPC 应用层。
 - [Base bundle](../base/README.zh.md)——本 profile 刻意省略的完整产品基础。
 

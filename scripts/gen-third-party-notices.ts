@@ -1,7 +1,7 @@
 /**
  * Generate `THIRD_PARTY_NOTICES.md` from the workspace manifests: every
  * external dependency named by a workspace `package.json`, the vendored-package
- * manifest in `vendor/README.md`, the Python `pyproject.toml` files, and the
+ * manifest in `vendor/README.md`, and the
  * pnpm patch list. License and repository metadata come from the installed
  * store, so the tree must be installed. `--check` verifies the committed
  * artifact. Tier policy and ownership live in
@@ -11,7 +11,6 @@
 import { existsSync, globSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import * as yaml from 'js-yaml'
-import { parse as parseToml, type TomlTableWithoutBigInt, type TomlValueWithoutBigInt } from 'smol-toml'
 import parseSpdx from 'spdx-expression-parse'
 
 const root = resolve(import.meta.dirname, '..')
@@ -75,30 +74,6 @@ const OVERRIDES: Record<string, { license?: string; repo?: string }> = {
   // No repository field in the published manifest.
   'node-addon-require-builtin': { repo: 'https://www.npmjs.com/package/node-addon-require-builtin' },
 }
-
-/**
- * Python dependencies are few and named directly in `pyproject.toml` files
- * without installed metadata to harvest, so license/repo are recorded here and
- * the generator fails when a manifest names a package this map misses.
- */
-const PYTHON_METADATA: Record<string, { license: string; repo: string; role: string }> = {
-  pydantic: { license: 'MIT', repo: 'https://github.com/pydantic/pydantic', role: 'runtime dependency of `deepseek-harness-sdk`' },
-  hatchling: { license: 'MIT', repo: 'https://github.com/pypa/hatch', role: 'build backend' },
-  pytest: { license: 'MIT', repo: 'https://github.com/pytest-dev/pytest', role: 'test-only' },
-}
-
-type PythonMetadata = typeof PYTHON_METADATA
-
-/** Tools fetched by scripts at build time, keyed by the pin the script owns. */
-const BUILD_TIME_TOOLS = [
-  {
-    name: '@yao-pkg/pkg',
-    license: 'MIT',
-    repo: 'https://github.com/yao-pkg/pkg',
-    role: 'invoked by `scripts/build-exe-for-python-sdk.ts` to assemble the single-file SDK runtime executable',
-    pinSource: 'scripts/build-exe-for-python-sdk.ts',
-  },
-]
 
 /** The `package.json` fields this generator reads. */
 export interface Manifest {
@@ -471,144 +446,10 @@ function collectVendored(): VendoredRow[] {
   return rows
 }
 
-/** Whether a parsed TOML value is a table rather than an array or scalar. */
-function isTomlTable(value: TomlValueWithoutBigInt | undefined): value is TomlTableWithoutBigInt {
-  return value !== undefined && typeof value === 'object' && !Array.isArray(value)
-}
-
-/** Parse one PEP 508 requirement string into its distribution name. */
-function parsePythonRequirement(requirement: string): string {
-  const name = /^\s*([a-zA-Z][a-zA-Z0-9._-]*)\s*(?:\[[^\]]*\])?\s*(?:[<>=!~;@].*)?$/.exec(requirement)?.[1]
-  if (name === undefined) {
-    throw new Error(`gen-third-party-notices: cannot read a distribution name from the requirement ${JSON.stringify(requirement)}.`)
-  }
-  return name
-}
-
-/** Add the string requirements from one parsed TOML array. */
-function collectPythonRequirementArray(
-  names: string[],
-  value: TomlValueWithoutBigInt | undefined,
-  location: string,
-  allowGroupIncludes = false,
-): void {
-  if (value === undefined) return
-  if (!Array.isArray(value)) {
-    throw new Error(`gen-third-party-notices: ${location} must be an array.`)
-  }
-  for (const item of value) {
-    if (typeof item === 'string') {
-      names.push(parsePythonRequirement(item))
-      continue
-    }
-    if (allowGroupIncludes && isTomlTable(item) && typeof item['include-group'] === 'string' && Object.keys(item).length === 1) {
-      continue
-    }
-    throw new Error(`gen-third-party-notices: ${location} contains an unsupported requirement entry.`)
-  }
-}
-
-/** Read an optional TOML table and reject a present non-table value. */
-function optionalTomlTable(value: TomlValueWithoutBigInt | undefined, location: string): TomlTableWithoutBigInt | undefined {
-  if (value === undefined || isTomlTable(value)) return value
-  throw new Error(`gen-third-party-notices: ${location} must be a table.`)
-}
-
-/**
- * Parse a `pyproject.toml` project identity and every requirement it declares:
- * `requires` under
- * `[build-system]`, `dependencies` under `[project]`, and every key under
- * `[project.optional-dependencies]` and `[dependency-groups]`. A TOML parser
- * owns comments, quoted keys, escapes, and array boundaries; unsupported
- * requirement forms fail instead of disappearing from the notices.
- * @param text - the complete `pyproject.toml` contents.
- * @returns the local project name and declared requirement names.
- */
-function parsePyproject(text: string): { projectName?: string; requirements: string[] } {
-  const names: string[] = []
-  const document = parseToml(text, { integersAsBigInt: false })
-  const buildSystem = optionalTomlTable(document['build-system'], '[build-system]')
-  const project = optionalTomlTable(document.project, '[project]')
-  const projectName = project?.name
-  if (projectName !== undefined && typeof projectName !== 'string') {
-    throw new Error('gen-third-party-notices: [project].name must be a string.')
-  }
-  collectPythonRequirementArray(names, buildSystem?.requires, '[build-system].requires')
-  collectPythonRequirementArray(names, project?.dependencies, '[project].dependencies')
-
-  const optional = optionalTomlTable(project?.['optional-dependencies'], '[project.optional-dependencies]')
-  for (const [group, requirements] of Object.entries(optional ?? {})) {
-    collectPythonRequirementArray(names, requirements, `[project.optional-dependencies].${group}`)
-  }
-
-  const groups = optionalTomlTable(document['dependency-groups'], '[dependency-groups]')
-  for (const [group, requirements] of Object.entries(groups ?? {})) {
-    collectPythonRequirementArray(names, requirements, `[dependency-groups].${group}`, true)
-  }
-  return projectName === undefined
-    ? { requirements: names }
-    : { projectName, requirements: names }
-}
-
-/**
- * Read every requirement name declared by one `pyproject.toml`.
- * @param text - the complete `pyproject.toml` contents.
- * @returns each declared requirement's distribution name, in file order.
- */
-export function parsePyprojectRequirements(text: string): string[] {
-  return parsePyproject(text).requirements
-}
-
-/** Normalize a Python distribution name according to the packaging name rule. */
-function normalizePythonDistributionName(name: string): string {
-  return name.toLowerCase().replace(/[-_.]+/g, '-')
-}
-
-/**
- * Resolve external Python dependencies after excluding local project names.
- * @param pyprojects - complete local `pyproject.toml` contents.
- * @param metadata - disclosure metadata for every external dependency.
- * @returns disclosed dependencies in normalized name order.
- */
-export function collectPythonDependencies(
-  pyprojects: string[],
-  metadata: PythonMetadata = PYTHON_METADATA,
-): { name: string; license: string; repo: string; role: string }[] {
-  const parsed = pyprojects.map(parsePyproject)
-  const firstParty = new Set(parsed.flatMap(({ projectName }) => (
-    projectName === undefined ? [] : [normalizePythonDistributionName(projectName)]
-  )))
-  const found = new Set(parsed
-    .flatMap(({ requirements }) => requirements.map(normalizePythonDistributionName))
-    .filter(name => !firstParty.has(name)))
-  return [...found].sort((a, b) => a.localeCompare(b)).map((name) => {
-    const entry = metadata[name]
-    if (entry === undefined) throw new Error(`gen-third-party-notices: python dependency ${name} is missing from PYTHON_METADATA.`)
-    return { name, ...entry }
-  })
-}
-
-/** Direct Python dependencies named by the `pyproject.toml` manifests under `python/`. */
-function collectPython(): { name: string; license: string; repo: string; role: string }[] {
-  const manifests = globSync('python/*/pyproject.toml', { cwd: root })
-  if (manifests.length === 0) throw new Error('gen-third-party-notices: no python/*/pyproject.toml found; the Python tree moved.')
-  return collectPythonDependencies(manifests.map(path => readFileSync(resolve(root, path), 'utf8')))
-}
-
 /** pnpm-patched external packages, from `pnpm-workspace.yaml`. */
 function collectPatched(): { spec: string; patch: string }[] {
   const workspace = yaml.load(readFileSync(resolve(root, 'pnpm-workspace.yaml'), 'utf8')) as { patchedDependencies?: Record<string, string> }
   return Object.entries(workspace.patchedDependencies ?? {}).map(([spec, patch]) => ({ spec, patch }))
-}
-
-/** Verify each build-time tool pin still appears in its owning script. */
-function verifyBuildTimePins(): void {
-  for (const tool of BUILD_TIME_TOOLS) {
-    const text = readFileSync(resolve(root, tool.pinSource), 'utf8')
-    if (!text.includes(tool.name)) {
-      throw new Error(`gen-third-party-notices: ${tool.pinSource} no longer references ${tool.name}; update BUILD_TIME_TOOLS.`)
-    }
-  }
 }
 
 /** SPDX identifiers this project may ship without further review. */
@@ -691,12 +532,10 @@ ${rows.join('\n')}
  * @returns the exact bytes `THIRD_PARTY_NOTICES.md` must hold.
  */
 export function render(): string {
-  verifyBuildTimePins()
   const npm = collectNpmDeps()
   const runtimeDeps = npm.filter(dep => dep.runtime)
   const devDeps = npm.filter(dep => !dep.runtime)
   const vendored = collectVendored()
-  const python = collectPython()
   const patched = collectPatched()
   const claudeDistribution = runtimeDeps.some(
     dep => dep.name === CLAUDE_AGENT_SDK_PACKAGE,
@@ -724,7 +563,7 @@ DeepSeek Harness is licensed under [MIT](LICENSE). It depends on the third-party
 
 This file lists **direct** dependencies declared by the workspace and the explicitly disclosed official Claude Code platform payload closure. It is generated from the workspace manifests by \`scripts/gen-third-party-notices.ts\`: a pre-commit hook regenerates it whenever a staged file changes one of its inputs, and \`scripts/gen-third-party-notices.spec.ts\` asserts in the test lane that the committed bytes match. Deleting a manifest runs no hook, so that case is caught by the assertion instead. Run \`pnpm run verify-third-party-notices\` for the standalone check.
 
-The complete npm transitive closure, including the Landlock launcher workspace, is recorded with exact pinned versions in [\`pnpm-lock.yaml\`](pnpm-lock.yaml) — inspect it with \`pnpm licenses list\`. The Python closure is recorded separately in [\`python/sdk/uv.lock\`](python/sdk/uv.lock).
+The complete npm transitive closure, including the Landlock launcher workspace, is recorded with exact pinned versions in [\`pnpm-lock.yaml\`](pnpm-lock.yaml) — inspect it with \`pnpm licenses list\`.
 
 ## Vendored source (\`vendor/\`)
 
@@ -736,7 +575,7 @@ ${vendored.map(row => `| \`${row.npmName}\` | \`${row.upstreamName}\` | [${row.u
 
 ## Runtime npm dependencies
 
-External packages that a workspace package resolves at runtime. The tier covers every plugin a user can mount from \`cordis.yml\` — not only what the \`dsh\` CLI, Web UI, and Python SDK runtime load by default.
+External packages that a workspace package resolves at runtime. The tier covers every plugin a user can mount from \`cordis.yml\` — not only what the \`dsh\` CLI and Web UI load by default.
 
 ${renderNpmTable(runtimeDeps)}
 
@@ -751,21 +590,6 @@ External packages **directly declared** only by repository tooling, test infrast
 
 ${renderNpmTable(devDeps)}
 ${renderNonPermissiveNote(nonPermissiveDev)}
-## Python SDK dependencies (\`python/\`)
-
-Direct dependencies of the \`pyproject.toml\` manifests, plus \`uv\` as the development workflow tool.
-
-| Package | License | Role |
-| --- | --- | --- |
-${python.map(dep => `| [\`${dep.name}\`](${dep.repo}) | ${dep.license} | ${dep.role} |`).join('\n')}
-| [\`uv\`](https://github.com/astral-sh/uv) | MIT / Apache-2.0 | development workflow tool |
-
-## Fetched at build time
-
-| Package | License | Role |
-| --- | --- | --- |
-${BUILD_TIME_TOOLS.map(tool => `| [\`${tool.name}\`](${tool.repo}) | ${tool.license} | ${tool.role} |`).join('\n')}
-
 ## First-party native packages
 
 \`@deepseek-ai/node-addon-landlock-run\` (and its platform packages) is built and released from this repository under BSD 3-Clause. It is listed here for completeness; it is first-party, not third-party.

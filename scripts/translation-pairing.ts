@@ -165,8 +165,6 @@ export const TRANSLATION_SCOPE_GLOB_EXCLUDES = [
   '**/.pytest_cache/**',
   'apps/web/dist/**',
   '.artifacts/**',
-  'python/sdk-runtime/src/deepseek_harness_runtime/runtime/deepseek-harness-sdk-runtime-*/**',
-  'python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/**',
   'vendor/**',
 ]
 
@@ -177,8 +175,6 @@ function isTranslationSourceExcluded(file: string): boolean {
       || segment.startsWith('.doc-typecheck-')
     || segment.startsWith('.node-next-types-'))
     || file.startsWith('apps/web/dist/')
-    || file.startsWith('python/sdk-runtime/src/deepseek_harness_runtime/runtime/deepseek-harness-sdk-runtime-')
-    || file.startsWith('python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/')
 }
 
 /** Whether one discovered Markdown or sidecar path belongs to the bilingual source corpus. */
@@ -187,8 +183,7 @@ export function isTranslationScopeFile(file: string): boolean {
     && !isTranslationSourceExcluded(file) && (README_ARTIFACT.test(file)
     || ROOT_PAIRED_DOCUMENT_ARTIFACT.test(file)
     || file.startsWith('.agents/notes/')
-    || file.startsWith('docs/')
-    || file.startsWith('python/'))
+    || file.startsWith('docs/'))
 }
 
 /** Read the manifest exclusion list or fail before enforcement starts. */

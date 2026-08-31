@@ -25,7 +25,7 @@ Use `dsh --profile sdk-minimal` when an SDK client needs a small, explicit codin
 <a id="use-this-package"></a>
 ## Use this package
 
-Launch the profile directly or select it from the Python SDK. Supply an explicit `DSH_HOME`, use a disposable workspace, and provide the model credential through `DEEPSEEK_API_KEY`.
+Launch the profile directly. Supply an explicit `DSH_HOME`, use a disposable workspace, and provide the model credential through `DEEPSEEK_API_KEY`.
 
 ```sh
 export DSH_HOME=/absolute/path/to/example-dsh-home
@@ -64,7 +64,6 @@ The bundle's single insert is the complete application tree: SDK stdio startup a
 <a id="further-exploration"></a>
 ## Further Exploration
 
-- [Python SDK example](../../../python/sdk/examples/README.md) — launches this profile from Python against an explicit Harness home.
 - [SDK application bundle](../sdk-app/README.md) — the JSON-RPC application layer reused by full and minimal SDK profiles.
 - [Base bundle](../base/README.md) — the full product foundation that this profile deliberately omits.
 
