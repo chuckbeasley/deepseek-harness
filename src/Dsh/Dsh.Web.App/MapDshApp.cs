@@ -17,6 +17,13 @@ public static class DshWebApp
     {
         app.UseStaticFiles();
         app.UseAntiforgery();
+        app.Use(async (http, next) =>
+        {
+            // Negotiate once per request so the prerendered shell and the circuit that replaces
+            // it can pin the same language (the page persists it across the boundary).
+            http.Items[WebLocale.ItemsKey] = WebLocale.Negotiate(http.Request.Headers.AcceptLanguage);
+            await next();
+        });
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
     }
@@ -26,9 +33,11 @@ public static class DshWebApp
     {
         services.AddRazorComponents()
             .AddInteractiveServerComponents();
+        services.AddHttpContextAccessor();
         services.AddSingleton<Slots.SlotRegistry>();
         services.AddSingleton<Store.WebSessionStore>();
-        services.AddSingleton(WebLocale.English);
+        services.AddScoped<LocaleScope>();
+        services.AddScoped(sp => new WebLocale(sp.GetRequiredService<LocaleScope>()));
         return services;
     }
 }

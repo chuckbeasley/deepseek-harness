@@ -99,6 +99,11 @@ public static class Program
         ("fence: trusted authority round-trips its own cookie", FenceTests.TrustedHost_CookieRoundTrip_UnderTheDeclaredAuthority),
         ("fence: malformed trustedHosts entries fail the boot", FenceTests.TrustedHosts_MalformedEntry_FailsLoud),
         ("settings: open preset directory system preset settles read-only", SettingsOpenersTests.OpenAgentPresetDirectory_SystemPreset_SettlesReadOnly),
+        ("locale: English resolves its keys and unknown keys render as themselves", WebLocaleTests.EnglishResolvesItsOwnKeys_UnknownKeysRenderAsThemselves),
+        ("locale: Chinese resolves its own keys", WebLocaleTests.ChineseResolvesItsOwnKeys),
+        ("locale: negotiation picks the first supported language", WebLocaleTests.NegotiatePicksTheFirstSupportedLanguage),
+        ("locale: an unknown locale id falls back to English", WebLocaleTests.ForUnknownLanguageFallsBackToEnglish),
+        ("locale: the shell prerenders in the negotiated locale", WebLocaleTests.ShellPrerendersInTheNegotiatedLocale),
     };
 
     public static int Main()

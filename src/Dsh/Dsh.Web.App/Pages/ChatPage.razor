@@ -4,6 +4,9 @@
 @inject Dsh.Web.App.Store.WebSessionStore Store
 @inject SlotRegistry Slots
 @inject WebLocale Locale
+@inject LocaleScope LocaleScope
+@inject IHttpContextAccessor Http
+@inject PersistentComponentState ComponentState
 @implements IDisposable
 
 <div class="dsh-chat">
@@ -68,6 +71,32 @@
     {
         _subscription = Store.Subscribe(StateHasChanged);
         _selected = Store.List().FirstOrDefault();
+        ResolveLocale();
+    }
+
+    /// <summary>
+    /// Pin the shell's language for this scope: the prerender takes it from the request's
+    /// Accept-Language (via the locale middleware) and persists it; the interactive circuit takes
+    /// the persisted value back, so both renders agree.
+    /// </summary>
+    private void ResolveLocale()
+    {
+        if (ComponentState.TryTakeFromJson(WebLocale.StateKey, out string? language) && language is not null)
+        {
+            LocaleScope.Language = language;
+            return;
+        }
+        if (Http.HttpContext is { } http
+            && http.Items.TryGetValue(WebLocale.ItemsKey, out var value)
+            && value is string negotiated)
+        {
+            LocaleScope.Language = negotiated;
+            ComponentState.RegisterOnPersisting(() =>
+            {
+                ComponentState.PersistAsJson(WebLocale.StateKey, negotiated);
+                return Task.CompletedTask;
+            });
+        }
     }
 
     public void Dispose()
