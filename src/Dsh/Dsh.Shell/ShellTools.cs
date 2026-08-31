@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Cordis.Core;
 using Dsh.Llm;
+using Dsh.Sandbox;
 using Dsh.Tools;
 
 namespace Dsh.Shell;
@@ -29,7 +30,8 @@ public static class ShellTools
         + "\"aborted\":{\"type\":\"boolean\",\"required\":true},"
         + "\"timeoutMs\":{\"type\":\"number\",\"required\":true},"
         + "\"stdout\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":true,\"properties\":{\"text\":{\"type\":\"string\",\"required\":true},\"truncated\":{\"type\":\"boolean\",\"required\":true},\"spillPath\":{\"type\":\"string\"}}},"
-        + "\"stderr\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":true,\"properties\":{\"text\":{\"type\":\"string\",\"required\":true},\"truncated\":{\"type\":\"boolean\",\"required\":true},\"spillPath\":{\"type\":\"string\"}}}}}";
+        + "\"stderr\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":true,\"properties\":{\"text\":{\"type\":\"string\",\"required\":true},\"truncated\":{\"type\":\"boolean\",\"required\":true},\"spillPath\":{\"type\":\"string\"}}},"
+        + "\"sandbox\":{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"mode\":{\"type\":\"string\",\"required\":true},\"denied\":{\"type\":\"boolean\",\"required\":true},\"enforcement\":{\"type\":\"string\"},\"runnerFailed\":{\"type\":\"boolean\"}}}}}";
 
     private const string Description =
         "Execute a shell command and return its stdout/stderr. Each call runs in a fresh shell: no state "
@@ -106,6 +108,10 @@ public static class ShellTools
             ["stdout"] = StreamJson(result.Stdout),
             ["stderr"] = StreamJson(result.Stderr),
         };
+        if (result.Sandbox is { } sandbox)
+        {
+            obj["sandbox"] = JsonSerializer.SerializeToNode(sandbox);
+        }
         return JsonSerializer.SerializeToElement(obj);
     }
 
@@ -124,6 +130,11 @@ public static class ShellTools
     {
         var stdout = StreamJsonOf(value.GetProperty("stdout"));
         var stderr = StreamJsonOf(value.GetProperty("stderr"));
+        ShellSandboxInfo? sandbox = null;
+        if (value.TryGetProperty("sandbox", out var sandboxJson) && sandboxJson.ValueKind != JsonValueKind.Null)
+        {
+            sandbox = JsonSerializer.Deserialize<ShellSandboxInfo>(sandboxJson);
+        }
         var result = new ShellRunResult(
             value.GetProperty("exitCode").ValueKind == JsonValueKind.Null ? null : value.GetProperty("exitCode").GetInt32(),
             value.GetProperty("signal").ValueKind == JsonValueKind.Null ? null : value.GetProperty("signal").GetString(),
@@ -131,7 +142,8 @@ public static class ShellTools
             value.GetProperty("aborted").GetBoolean(),
             value.GetProperty("timeoutMs").GetInt32(),
             stdout,
-            stderr);
+            stderr,
+            sandbox);
         return ShellRender.RenderResult(result);
     }
 

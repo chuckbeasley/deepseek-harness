@@ -1,11 +1,13 @@
+using Dsh.Sandbox;
 using Dsh.Subprocess;
 
 namespace Dsh.Shell;
 
 /// <summary>
 /// Model-facing result rendering for the shell tool (port of the tool-bash render module): stdout,
-/// then a marked stderr section, then interruption/exit markers. Non-zero exits are reported, not
-/// errored — the model decides how to react.
+/// then a marked stderr section, then the sandbox denial marker (when the run was denied) and
+/// interruption/exit markers. Non-zero exits are reported, not errored — the model decides how to
+/// react.
 /// </summary>
 public static class ShellRender
 {
@@ -22,6 +24,10 @@ public static class ShellRender
         if (body.Length == 0) body = "(no output)";
 
         var markers = new List<string>();
+        if (result.Sandbox is { Denied: true } sandbox)
+        {
+            markers.Add(SandboxEscalation.SandboxDenialMarker(sandbox.Mode));
+        }
         if (result.TimedOut) markers.Add($"[timed out after {result.TimeoutMs}ms]");
         if (result.Signal is not null) markers.Add($"[killed by signal: {result.Signal}]");
         else if (result.ExitCode is not null && result.ExitCode != 0) markers.Add($"[exit code: {result.ExitCode}]");
