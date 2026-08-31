@@ -25,7 +25,7 @@ public static class WebHostTests
     {
         var ctx = new Context();
         var rpc = new DshRpcRegistry(ctx);
-        using var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort()), map: app =>
+        using var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort(), AuthFence: false), map: app =>
         {
             app.MapGet("/", () => "dsh web");
             app.MapGet("/health", () => "ok");
@@ -47,7 +47,7 @@ public static class WebHostTests
         var rpc = new DshRpcRegistry(ctx);
         using var registration = rpc.Register(new RpcMethod("echo/hello", (args, _) =>
             Task.FromResult<JsonElement?>(args)));
-        using var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort()));
+        using var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort(), AuthFence: false));
         host.StartAsync().GetAwaiter().GetResult();
         Assert.NotNull(host.ListenUrl, "the host binds an address");
         try
@@ -79,7 +79,7 @@ public static class WebHostTests
     {
         var ctx = new Context();
         var rpc = new DshRpcRegistry(ctx);
-        using var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort()));
+        using var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort(), AuthFence: false));
         host.StartAsync().GetAwaiter().GetResult();
         try
         {
@@ -109,7 +109,7 @@ public static class WebHostTests
     public static void Stop_ClosesTheListener()
     {
         var ctx = new Context();
-        using var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort()));
+        using var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort(), AuthFence: false));
         host.StartAsync().GetAwaiter().GetResult();
         var url = host.ListenUrl!;
         host.StopAsync().GetAwaiter().GetResult();

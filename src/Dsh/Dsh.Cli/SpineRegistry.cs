@@ -307,6 +307,9 @@ public static class SpineRegistry
             var credentialsSet = registry.Register(Dsh.Web.Host.CredentialsRemotes.Set(ctx));
             var credentialsUnset = registry.Register(Dsh.Web.Host.CredentialsRemotes.Unset(ctx));
             var workspaceCreate = registry.Register(Dsh.Web.Host.WorkspaceRemotes.Create(ctx));
+            var directoryPickerPick = registry.Register(Dsh.Web.Host.DirectoryPickerRemotes.Pick(ctx));
+            var directoryPickerList = registry.Register(Dsh.Web.Host.DirectoryPickerRemotes.List(ctx));
+            var directoryPickerCreate = registry.Register(Dsh.Web.Host.DirectoryPickerRemotes.CreateDirectory(ctx));
             var prompt = registry.Register(new Dsh.Web.Host.RpcMethod("session/prompt", async (args, ct) =>
             {
                 var id = args is System.Text.Json.JsonElement element
@@ -343,7 +346,8 @@ public static class SpineRegistry
                 follow, page, prompt, create, list,
                 settingsDescribe, settingsUpdate, settingsReplace,
                 credentialsDescribe, credentialsSet, credentialsUnset,
-                workspaceCreate);
+                workspaceCreate,
+                directoryPickerPick, directoryPickerList, directoryPickerCreate);
         }));
         catalog.Register("webHost", new SpinePlugin("webHost", (ctx, config) =>
         {
@@ -356,6 +360,10 @@ public static class SpineRegistry
                 map: app => app.MapDshApp());
             // The web profile serves from mount time: a bound port fails the boot loud.
             host.StartAsync().GetAwaiter().GetResult();
+            if (host.Fence is not null && host.ListenUrl is not null)
+            {
+                Console.WriteLine($"dsh web: {host.Fence.AuthenticatedUrl(host.ListenUrl)}");
+            }
             return host;
         }));
         catalog.Register("headless", new SpinePlugin("headless", (ctx, config) =>

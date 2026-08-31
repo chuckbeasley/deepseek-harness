@@ -49,6 +49,21 @@ public static class Program
         ("workspace: missing path settles invalid-path", WorkspaceRemotesTests.Create_MissingPath_SettlesInvalidPath),
         ("workspace: second open settles invalid-path", WorkspaceRemotesTests.Create_WhileAnotherOpen_SettlesInvalidPath),
         ("workspace: missing path arg settles bad-request", WorkspaceRemotesTests.Create_WithoutPath_SettlesBadRequest),
+        ("directoryPicker: pick answers unavailable", DirectoryPickerTests.Pick_AnswersUnavailable),
+        ("directoryPicker: list answers unavailable", DirectoryPickerTests.List_AnswersUnavailable),
+        ("directoryPicker: bad create name settles bad-request", DirectoryPickerTests.CreateDirectory_BadName_SettlesBadRequest),
+        ("directoryPicker: valid create name answers unavailable", DirectoryPickerTests.CreateDirectory_ValidName_AnswersUnavailable),
+        ("fence: index without token settles 401", FenceTests.Index_WithoutToken_Settles401),
+        ("fence: token exchange mints the cookie then serves the index", FenceTests.TokenExchange_MintsCookie_ThenIndexServes),
+        ("fence: wrong token settles 401", FenceTests.Index_WithWrongToken_Settles401),
+        ("fence: api without cookie settles 401", FenceTests.Api_WithoutCookie_Settles401),
+        ("fence: api with cookie round-trips", FenceTests.Api_WithCookie_RoundTrips),
+        ("fence: untrusted host settles 403", FenceTests.UntrustedHost_Settles403),
+        ("fence: cross-site origin settles 403", FenceTests.CrossSiteOrigin_Settles403),
+        ("fence: tampered cookie settles 401", FenceTests.TamperedCookie_Settles401),
+        ("fence: hub negotiate without cookie settles 401", FenceTests.HubNegotiate_WithoutCookie_Settles401),
+        ("fence: mux path gated then reaches the handler", FenceTests.MuxPath_WithoutCookie_Settles401_WithCookieReachesHandler),
+        ("fence: cookie is bound to its authority", FenceTests.Cookie_IsBoundToItsAuthority),
     };
 
     public static int Main()

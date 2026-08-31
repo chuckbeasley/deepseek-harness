@@ -16,7 +16,9 @@ public sealed record WebHostConfig(
     /// <summary>Listen port; the TS GUI default.</summary>
     int Port = 3080,
     /// <summary>Hub route prefix (the gateway hub lives under <c>/hub</c>).</summary>
-    string HubPath = "/hub");
+    string HubPath = "/hub",
+    /// <summary>Whether the loopback process-token fence gates the index and every API surface (the TS fence shape).</summary>
+    bool AuthFence = true);
 
 /// <summary>
 /// The web host service (ctx.webHost): owns the Kestrel lifetime of the Phase-5 host — the
@@ -47,6 +49,9 @@ public sealed class WebHostService : Service
     /// <summary>The bound listen address once started, or <c>null</c> before start.</summary>
     public string? ListenUrl { get; private set; }
 
+    /// <summary>The auth fence when the config enables it; the caller prints <see cref="WebAuthFence.AuthenticatedUrl"/>.</summary>
+    public WebAuthFence? Fence { get; private set; }
+
     /// <summary>Start the Kestrel host: build, wire the hub and the mounted shell, listen.</summary>
     public override async ValueTask StartAsync(CancellationToken cancellationToken = default)
     {
@@ -56,11 +61,20 @@ public sealed class WebHostService : Service
         builder.Logging.AddProvider(new CordisLoggerProvider(Ctx));
         builder.Services.AddSignalR();
         builder.Services.AddSingleton(Ctx);
+        if (_config.AuthFence)
+        {
+            Fence = new WebAuthFence();
+            builder.Services.AddSingleton(Fence);
+        }
         var registry = Ctx.Get<DshRpcRegistry>("rpc");
         if (registry is not null) builder.Services.AddSingleton(registry);
         _configure(builder);
         var app = builder.Build();
         app.UseWebSockets();
+        if (Fence is not null)
+        {
+            app.UseFence(Fence, _config.HubPath);
+        }
         if (registry is not null)
         {
             app.MapGateway(registry);

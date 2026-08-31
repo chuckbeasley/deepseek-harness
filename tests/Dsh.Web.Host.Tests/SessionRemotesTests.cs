@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
@@ -17,7 +17,7 @@ namespace Dsh.Web.Host.Tests;
 
 /// <summary>
 /// The session remotes: the wire event projection, the history page, and the live follow stream
-/// through the mux Ã¢â‚¬â€ all over real mock-LLM turns on the ported loop spine.
+/// through the mux ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â all over real mock-LLM turns on the ported loop spine.
 /// </summary>
 public static class SessionRemotesTests
 {
@@ -126,7 +126,7 @@ public static class SessionRemotesTests
         var ctx = BootSpine(out var sessions, out var loop);
         var rpc = new DshRpcRegistry(ctx);
         using var follow = rpc.RegisterStream(SessionRemotes.Follow(ctx, sessions));
-        var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort()));
+        var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort(), AuthFence: false));
         host.StartAsync().GetAwaiter().GetResult();
         var id = new SessionId($"session-{Guid.NewGuid():N}");
         _ = loop.Create(id, new AgentOptions { Provider = MockLlmProvider.Provider, Model = MockLlmProvider.Model });

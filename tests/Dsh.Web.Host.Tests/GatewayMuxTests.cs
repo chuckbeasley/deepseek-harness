@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
@@ -29,7 +29,7 @@ public static class GatewayMuxTests
         var ctx = new Context();
         _ = new SessionStore(ctx);
         var rpc = new DshRpcRegistry(ctx);
-        var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort()));
+        var host = new WebHostService(ctx, new WebHostConfig(Port: FreePort(), AuthFence: false));
         host.StartAsync().GetAwaiter().GetResult();
         var socket = new ClientWebSocket();
         var wsUrl = "ws://" + host.ListenUrl!["http://".Length..] + "/api/remote.mux";

@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Cordis.Core;
@@ -33,7 +33,7 @@ public static class GatewayHttpTests
         {
             var ctx = new Context();
             var rpc = new DshRpcRegistry(ctx);
-            var host = new Dsh.Web.Host.WebHostService(ctx, new Dsh.Web.Host.WebHostConfig(Port: FreePort()));
+            var host = new Dsh.Web.Host.WebHostService(ctx, new Dsh.Web.Host.WebHostConfig(Port: FreePort(), AuthFence: false));
             host.StartAsync().GetAwaiter().GetResult();
             return new Spine { Ctx = ctx, Rpc = rpc, Host = host };
         }
