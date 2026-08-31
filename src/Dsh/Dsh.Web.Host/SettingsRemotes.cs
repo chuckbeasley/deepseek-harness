@@ -10,9 +10,10 @@ namespace Dsh.Web.Host;
 /// update/replace/mutate writes, and the document/preset openers. Every read is redacted, and
 /// every provider refusal is classified as <c>settings/conflict</c> (stale revision) or
 /// <c>settings/rejected</c> (anything else). The namespaces stay registered without a provider,
-/// answering an actionable <c>gateway/internal</c> like the TS controller. The C# preset seam has
-/// no trust classification (the TS ships a system root), so the <c>agent-preset/read-only</c>
-/// refusal is deferred with the shipped-preset concept.
+/// answering an actionable <c>gateway/internal</c> like the TS controller. The preset opener
+/// refuses a <c>system</c>-trust preset with <c>agent-preset/read-only</c> — a preset shipping
+/// with the deployment is not authorable (the TS read-only refusal); the default spine root is
+/// user-authored, and a deployment may mount a system root through the preset row's trust config.
 /// </summary>
 public static class SettingsRemotes
 {
@@ -146,6 +147,15 @@ public static class SettingsRemotes
                 var available = presets.Discover().Select(candidate => candidate.Id).ToArray();
                 throw new RpcDomainError("agent-preset/not-found", error.Message,
                     JsonSerializer.SerializeToElement(new { agentPreset, available }));
+            }
+            if (preset.Trust != PresetTrust.User)
+            {
+                // A preset shipping with the deployment is not authorable: it belongs to the
+                // deployment, and opening its directory for editing would invite a browser
+                // rewrite of the shipped set (the TS read-only refusal).
+                throw new RpcDomainError("agent-preset/read-only",
+                    $"agent-presets: preset \"{preset.Id}\" cannot be written: it ships with the deployment",
+                    JsonSerializer.SerializeToElement(new { agentPreset = preset.Id, reason = "it ships with the deployment" }));
             }
             var directory = Path.GetDirectoryName(preset.CompositionPath) ?? preset.CompositionPath;
             if (!native.CanOpen)

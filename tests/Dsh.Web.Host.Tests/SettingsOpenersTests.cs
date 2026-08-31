@@ -228,6 +228,32 @@ public static class SettingsOpenersTests
         }
     }
 
+    public static void OpenAgentPresetDirectory_SystemPreset_SettlesReadOnly()
+    {
+        var root = TempRoot();
+        var ctx = new Context();
+        try
+        {
+            var presetDir = Path.Combine(root, "shipped");
+            Directory.CreateDirectory(presetDir);
+            File.WriteAllText(Path.Combine(presetDir, FilePresetProvider.CompositionFile), "- id: tools\n  name: tools\n");
+            ctx.Set("preset", new FilePresetProvider(root, trust: PresetTrust.System));
+            var registry = new DshRpcRegistry(ctx);
+            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx));
+            var response = registry.InvokeAsync(new RpcRequest("settings/openAgentPresetDirectory",
+                JsonSerializer.SerializeToElement(new { agentPreset = "shipped" }))).GetAwaiter().GetResult();
+            Assert.False(response.Ok, "a preset shipping with the deployment is not authorable");
+            Assert.Equal("agent-preset/read-only", response.Error!.Code);
+            Assert.Equal("shipped", response.Error.Details!.Value.GetProperty("agentPreset").GetString());
+            Assert.Equal("it ships with the deployment", response.Error.Details.Value.GetProperty("reason").GetString());
+        }
+        finally
+        {
+            ctx.Dispose();
+            Cleanup(root);
+        }
+    }
+
     private static (Context Ctx, DshRpcRegistry Registry) Boot(string documentPath)
     {
         var ctx = new Context();

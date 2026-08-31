@@ -15,6 +15,7 @@ public static class Program
         ("resolution of a broken preset fails loud with the discovery reason", PresetTests.ResolveBrokenPresetFailsLoud),
         ("resolution of a missing preset id fails loud", PresetTests.ResolveEmptyIdFailsLoud),
         ("an absent root yields no presets instead of throwing", PresetTests.AbsentRootYieldsNoPresets),
+        ("discovery records the root trust on every preset and resolve carries it", PresetTests.DiscoveryRecordsTheRootTrust),
         ("the persona provider registers its text as a system-prompt section", PersonaTests.RegistersPersonaTextAsASection),
         ("disposing the persona registration removes the section", PersonaTests.DisposeRemovesTheSection),
         ("empty persona text registers an empty section that drops at render", PersonaTests.EmptyTextDropsAtRender),

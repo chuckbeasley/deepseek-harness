@@ -18,7 +18,10 @@ public sealed record WebHostConfig(
     /// <summary>Hub route prefix (the gateway hub lives under <c>/hub</c>).</summary>
     string HubPath = "/hub",
     /// <summary>Whether the loopback process-token fence gates the index and every API surface (the TS fence shape).</summary>
-    bool AuthFence = true);
+    bool AuthFence = true,
+    /// <summary>Non-loopback authorities this deployment serves; each entry must be a bare
+    /// <c>host</c> or <c>host:port</c> authority (validated loud at host start).</summary>
+    IReadOnlyList<string>? TrustedHosts = null);
 
 /// <summary>
 /// The web host service (ctx.webHost): owns the Kestrel lifetime of the Phase-5 host — the
@@ -69,7 +72,14 @@ public sealed class WebHostService : Service
         builder.Services.AddSingleton(Ctx);
         if (_config.AuthFence)
         {
-            Fence = new WebAuthFence(signingSecret: ResolveSigningSecret(Ctx));
+            var trustedHosts = _config.TrustedHosts ?? Array.Empty<string>();
+            foreach (var entry in trustedHosts)
+            {
+                // A malformed grant must fail the boot like the TS plugin load, not sit ignored
+                // until requests 403 or quietly broaden.
+                WebAuthFence.AssertTrustedAuthority(entry);
+            }
+            Fence = new WebAuthFence(signingSecret: ResolveSigningSecret(Ctx), trustedHosts: trustedHosts);
             builder.Services.AddSingleton(Fence);
         }
         var registry = Ctx.Get<DshRpcRegistry>("rpc");

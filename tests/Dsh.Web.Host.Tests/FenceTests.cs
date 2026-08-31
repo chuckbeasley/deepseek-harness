@@ -253,6 +253,180 @@ public static class FenceTests
         return port;
     }
 
+    public static void TrustedHost_MatchesDeclaredAuthority_UntrustedStill403()
+    {
+        var (ctx, host, client) = BootTrusted(new[] { "harness.example" }, out _);
+        try
+        {
+            var trusted = new HttpRequestMessage(HttpMethod.Get, "/api/session/list");
+            trusted.Headers.Host = "harness.example";
+            var passed = client.SendAsync(trusted).GetAwaiter().GetResult();
+            Assert.True((int)passed.StatusCode == 401,
+                "a declared trusted Host passes the trust fence and is refused only by auth (got " + (int)passed.StatusCode + ")");
+
+            var untrusted = new HttpRequestMessage(HttpMethod.Get, "/api/session/list");
+            untrusted.Headers.Host = "evil.example";
+            var refused = client.SendAsync(untrusted).GetAwaiter().GetResult();
+            Assert.True((int)refused.StatusCode == 403, "an undeclared Host is still refused");
+        }
+        finally
+        {
+            client.Dispose();
+            host.StopAsync().GetAwaiter().GetResult();
+            ctx.Dispose();
+        }
+    }
+
+    public static void TrustedHost_PortlessEntry_MatchesAnyPort()
+    {
+        var (ctx, host, client) = BootTrusted(new[] { "harness.example" }, out _);
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/api/session/list");
+            request.Headers.Host = "harness.example:9999";
+            var response = client.SendAsync(request).GetAwaiter().GetResult();
+            Assert.True((int)response.StatusCode == 401,
+                "a port-less entry trusts the hostname on any port (got " + (int)response.StatusCode + ")");
+        }
+        finally
+        {
+            client.Dispose();
+            host.StopAsync().GetAwaiter().GetResult();
+            ctx.Dispose();
+        }
+    }
+
+    public static void TrustedHost_ExplicitPortEntry_MatchesOnlyThatPort()
+    {
+        var (ctx, host, client) = BootTrusted(new[] { "harness.example:3080" }, out _);
+        try
+        {
+            var wrong = new HttpRequestMessage(HttpMethod.Get, "/api/session/list");
+            wrong.Headers.Host = "harness.example:9999";
+            var refused = client.SendAsync(wrong).GetAwaiter().GetResult();
+            Assert.True((int)refused.StatusCode == 403, "an explicit port entry does not broaden to other ports");
+
+            var exact = new HttpRequestMessage(HttpMethod.Get, "/api/session/list");
+            exact.Headers.Host = "harness.example:3080";
+            var passed = client.SendAsync(exact).GetAwaiter().GetResult();
+            Assert.True((int)passed.StatusCode == 401,
+                "the exact authority passes the trust fence (got " + (int)passed.StatusCode + ")");
+        }
+        finally
+        {
+            client.Dispose();
+            host.StopAsync().GetAwaiter().GetResult();
+            ctx.Dispose();
+        }
+    }
+
+    public static void TrustedHost_ExplicitDefaultPort_MatchesDefaultPortRequests()
+    {
+        var (ctx, host, client) = BootTrusted(new[] { "harness.example:80" }, out _);
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/api/session/list");
+            request.Headers.Host = "harness.example";
+            var response = client.SendAsync(request).GetAwaiter().GetResult();
+            Assert.True((int)response.StatusCode == 401,
+                "the http default port is dropped on both sides, so an explicit :80 entry equals the port-less authority (got " + (int)response.StatusCode + ")");
+        }
+        finally
+        {
+            client.Dispose();
+            host.StopAsync().GetAwaiter().GetResult();
+            ctx.Dispose();
+        }
+    }
+
+    public static void TrustedHost_CookieRoundTrip_UnderTheDeclaredAuthority()
+    {
+        var (ctx, host, client) = BootTrusted(new[] { "harness.example" }, out _);
+        try
+        {
+            var noRedirect = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false }) { BaseAddress = new Uri(host.ListenUrl!) };
+            var exchange = new HttpRequestMessage(HttpMethod.Get, $"/?token={host.Fence!.LaunchToken}");
+            exchange.Headers.Host = "harness.example";
+            var minted = noRedirect.SendAsync(exchange).GetAwaiter().GetResult();
+            Assert.True((int)minted.StatusCode == 303,
+                $"the exchange mints under the trusted authority (got {(int)minted.StatusCode}: {minted.Content.ReadAsStringAsync().GetAwaiter().GetResult()})");
+            Assert.True(minted.Headers.TryGetValues("Set-Cookie", out var cookies), "the exchange sets the cookie");
+            var cookie = cookies!.First().Split(';')[0];
+
+            var body = JsonSerializer.Serialize(new
+            {
+                type = "client-request",
+                rpcId = "r5",
+                method = "session/list",
+                payload = new { args = new { } },
+            });
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/session/list")
+            {
+                Content = new StringContent(body, Encoding.UTF8, "application/json"),
+            };
+            request.Headers.Host = "harness.example";
+            request.Headers.TryAddWithoutValidation("Cookie", cookie);
+            var response = client.SendAsync(request).GetAwaiter().GetResult();
+            Assert.True((int)response.StatusCode == 200, "the trusted authority round-trips with its own cookie");
+        }
+        finally
+        {
+            client.Dispose();
+            host.StopAsync().GetAwaiter().GetResult();
+            ctx.Dispose();
+        }
+    }
+
+    public static void TrustedHosts_MalformedEntry_FailsLoud()
+    {
+        foreach (var entry in new[]
+        {
+            "harness.internal/path",
+            "user@harness.internal",
+            "harness.internal: ",
+            "harness.internal:99999",
+            "harness.internal:080",
+            "127.1",
+            "010.0.0.1",
+            "256.1.1.1",
+            "",
+        })
+        {
+            Assert.Throws<ArgumentException>(
+                () => WebAuthFence.AssertTrustedAuthority(entry),
+                $"entry \"{entry}\" must be refused as not a bare authority");
+        }
+        foreach (var entry in new[]
+        {
+            "harness.example",
+            "HARNESS.example",
+            "harness.example:3080",
+            "harness.example:80",
+            "127.0.0.1:3080",
+            "[::1]:3080",
+            "192.168.1.5",
+        })
+        {
+            WebAuthFence.AssertTrustedAuthority(entry);
+        }
+    }
+
+    private static (Context Ctx, WebHostService Host, HttpClient Client) BootTrusted(IReadOnlyList<string> trustedHosts, out string origin)
+    {
+        var ctx = new Context();
+        var registry = new DshRpcRegistry(ctx);
+        _ = registry.Register(new RpcMethod("session/list", (_, _) =>
+            Task.FromResult<JsonElement?>(JsonSerializer.SerializeToElement(new { items = Array.Empty<object>() }))));
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        var host = new WebHostService(ctx, new WebHostConfig(Port: port, TrustedHosts: trustedHosts), map: app => app.MapGet("/", () => Results.Text("index")));
+        host.StartAsync().GetAwaiter().GetResult();
+        origin = host.ListenUrl!;
+        return (ctx, host, new HttpClient(new HttpClientHandler { UseCookies = false }) { BaseAddress = new Uri(origin) });
+    }
+
     /// <summary>Run the launch-token exchange and return the minted cookie value.</summary>
     private static string MintCookie(HttpClient client, string launchToken)
     {

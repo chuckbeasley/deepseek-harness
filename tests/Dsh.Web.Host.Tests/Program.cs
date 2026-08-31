@@ -92,6 +92,13 @@ public static class Program
         ("fence: mux path gated then reaches the handler", FenceTests.MuxPath_WithoutCookie_Settles401_WithCookieReachesHandler),
         ("fence: cookie is bound to its authority", FenceTests.Cookie_IsBoundToItsAuthority),
         ("fence: persistent secret survives a host restart", FenceTests.PersistentSecret_CookiesSurviveRestart),
+        ("fence: declared trusted host passes trust, undeclared still 403", FenceTests.TrustedHost_MatchesDeclaredAuthority_UntrustedStill403),
+        ("fence: port-less trustedHosts entry matches any port", FenceTests.TrustedHost_PortlessEntry_MatchesAnyPort),
+        ("fence: explicit-port trustedHosts entry matches only that port", FenceTests.TrustedHost_ExplicitPortEntry_MatchesOnlyThatPort),
+        ("fence: explicit default port entry matches default-port requests", FenceTests.TrustedHost_ExplicitDefaultPort_MatchesDefaultPortRequests),
+        ("fence: trusted authority round-trips its own cookie", FenceTests.TrustedHost_CookieRoundTrip_UnderTheDeclaredAuthority),
+        ("fence: malformed trustedHosts entries fail the boot", FenceTests.TrustedHosts_MalformedEntry_FailsLoud),
+        ("settings: open preset directory system preset settles read-only", SettingsOpenersTests.OpenAgentPresetDirectory_SystemPreset_SettlesReadOnly),
     };
 
     public static int Main()

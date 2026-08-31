@@ -35,13 +35,15 @@ public sealed class WebAuthFence
 
     private readonly byte[] _signingSecret;
     private readonly TimeSpan _maxAge;
+    private readonly IReadOnlyList<string> _trustedHosts;
 
     /// <summary>Create the fence with a fresh launch token and a fresh signing secret.</summary>
-    public WebAuthFence(byte[]? signingSecret = null, TimeSpan? cookieMaxAge = null)
+    public WebAuthFence(byte[]? signingSecret = null, TimeSpan? cookieMaxAge = null, IReadOnlyList<string>? trustedHosts = null)
     {
         LaunchToken = Base64Url(RandomNumberGenerator.GetBytes(SecretBytes));
         _signingSecret = signingSecret ?? RandomNumberGenerator.GetBytes(SecretBytes);
         _maxAge = cookieMaxAge ?? DefaultCookieMaxAge;
+        _trustedHosts = trustedHosts ?? Array.Empty<string>();
     }
 
     /// <summary>This host instance's launch token; the operator opens the URL carrying it once.</summary>
@@ -55,15 +57,19 @@ public sealed class WebAuthFence
         => DecodeBase64Url(value) is { Length: SecretBytes } bytes ? bytes : null;
 
     /// <summary>
-    /// The Host/Origin trust fence (the TS <c>isTrustedApiRequest</c>, loopback only): the Host
-    /// must name the loopback authority, an explicit cross-site fetch marker is refused, and a
-    /// present Origin must equal the Host authority. No trustedHosts deployment authorities are
-    /// ported: the loopback binding is the Wave-1 surface (documented reduction).
+    /// The Host/Origin trust fence (the TS <c>isTrustedApiRequest</c>): the Host must name the
+    /// loopback authority or a declared <c>trustedHosts</c> authority, an explicit cross-site
+    /// fetch marker is refused, and a present Origin must equal the Host authority. A
+    /// <c>trustedHosts</c> entry matches the WHATWG way: a port-less entry trusts the hostname on
+    /// any port (the LAN-serving shape), an explicit entry trusts the exact authority with the
+    /// http default port dropped on both sides. Configured entries are asserted at host start
+    /// (see <see cref="AssertTrustedAuthority"/>), so a malformed grant fails the boot loudly.
     /// </summary>
     public bool IsTrustedRequest(HttpContext http)
     {
         var host = http.Request.Host;
-        if (host.Host.Length == 0 || !IsLoopbackHostname(host.Host)) return false;
+        if (host.Host.Length == 0) return false;
+        if (!IsLoopbackHostname(host.Host) && !IsTrustedAuthority(host.Host, host.Port, _trustedHosts)) return false;
         if (string.Equals(http.Request.Headers["sec-fetch-site"].FirstOrDefault(), "cross-site", StringComparison.OrdinalIgnoreCase))
         {
             return false;
@@ -75,6 +81,123 @@ public sealed class WebAuthFence
             && originUri.Scheme is "http" or "https"
             && Uri.TryCreate($"http://{http.Request.Host}", UriKind.Absolute, out var hostUri)
             && string.Equals(originUri.Authority, hostUri.Authority, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Assert one configured <c>trustedHosts</c> entry is a bare authority (<c>host</c> or
+    /// <c>host:port</c>) in canonical form — it must survive parsing unchanged, case aside (the
+    /// TS <c>assertTrustedAuthority</c>). Anything parsing would silently rewrite is refused as
+    /// a typo that must fail the load loudly instead of being ignored until requests 403 or
+    /// quietly changing the grant: URL parts beyond the authority (a path, userinfo), stripped
+    /// whitespace, a dangling or zero-padded port, and non-canonical host spellings. The one
+    /// documented divergence from WHATWG: numeric dotted literals are validated as canonical
+    /// IPv4, but hex forms like <c>0x7f.0.0.1</c> are accepted as hostnames (the .NET Uri never
+    /// normalizes them), where the TS rejects them through WHATWG normalization.
+    /// </summary>
+    /// <param name="entry">the configured value, verbatim.</param>
+    /// <exception cref="ArgumentException">when the entry is not a bare authority.</exception>
+    public static void AssertTrustedAuthority(string entry)
+    {
+        var canonical = CanonicalAuthority(entry);
+        if (canonical is null || !string.Equals(canonical, entry.ToLowerInvariant(), StringComparison.Ordinal))
+        {
+            throw new ArgumentException($"trustedHosts entry \"{entry}\" is not a bare host[:port] authority");
+        }
+    }
+
+    /// <summary>
+    /// Canonical form of a parsed authority: <c>hostname</c> when no port was written, else
+    /// <c>hostname:port</c>, with the IPv6 literal bracketed and the hostname lowercased; null
+    /// when the entry is not a bare authority. A zero-padded port is refused up front (it would
+    /// broaden an intended exact-port grant to every port after normalization).
+    /// </summary>
+    private static string? CanonicalAuthority(string entry)
+    {
+        var colon = PortColon(entry);
+        if (colon >= 0)
+        {
+            var port = entry[(colon + 1)..];
+            if (port.Length > 1 && port[0] == '0') return null;
+        }
+        if (!TryParseAuthority(entry, out var hostname, out var portValue)) return null;
+        if (IsNumericDotted(hostname) && !IsCanonicalIPv4(hostname)) return null;
+        return portValue is null ? hostname : $"{hostname}:{portValue}";
+    }
+
+    /// <summary>Whether the request authority matches a <c>trustedHosts</c> entry (the TS matching rules).</summary>
+    private static bool IsTrustedAuthority(string hostname, int? port, IReadOnlyList<string> trustedHosts)
+    {
+        var requestHost = CanonicalHostname(hostname);
+        foreach (var entry in trustedHosts)
+        {
+            if (!TryParseAuthority(entry, out var entryHost, out var entryPort)) continue;
+            if (!string.Equals(entryHost, requestHost, StringComparison.OrdinalIgnoreCase)) continue;
+            // A port-less entry matches the hostname on any port (the CLI-derived LAN shape).
+            if (entryPort is null) return true;
+            // An explicit entry compares WHATWG hosts: the http default port (80) is dropped on
+            // both sides, so an explicit :80 entry equals any request on the default port.
+            var entryHostForm = entryPort == "80" ? entryHost : $"{entryHost}:{entryPort}";
+            var requestHostForm = port is null or 80 ? requestHost : $"{requestHost}:{port}";
+            if (string.Equals(entryHostForm, requestHostForm, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Parse a Host-header authority into its hostname and explicit port, or false when it is not
+    /// a bare authority. The port is read from the raw string (the .NET Uri drops the scheme's
+    /// default port from <see cref="Uri.Authority"/>, but an explicit <c>:80</c> still counts as
+    /// explicit — the TS judges the port from both special-scheme parses) and must be numeric.
+    /// </summary>
+    private static bool TryParseAuthority(string authority, out string hostname, out string? port)
+    {
+        hostname = "";
+        port = null;
+        if (authority.Length == 0 || !Uri.TryCreate("http://" + authority, UriKind.Absolute, out var uri)) return false;
+        if (uri.UserInfo.Length > 0 || uri.AbsolutePath != "/" || uri.Query.Length > 0 || uri.Fragment.Length > 0) return false;
+        hostname = CanonicalHostname(uri.Host);
+        var colon = PortColon(authority);
+        if (colon >= 0)
+        {
+            port = authority[(colon + 1)..];
+            if (port.Length == 0 || !port.All(char.IsAsciiDigit)) return false;
+        }
+        return true;
+    }
+
+    /// <summary>Bracket an unbracketed IPv6 literal so both sides of a comparison share one form.</summary>
+    private static string CanonicalHostname(string hostname)
+        => hostname.IndexOf(':') >= 0 && !hostname.StartsWith('[') ? $"[{hostname}]" : hostname;
+
+    /// <summary>Index of the authority's port colon (outside an IPv6 bracket group), or -1.</summary>
+    private static int PortColon(string entry)
+    {
+        var start = entry.StartsWith('[') ? entry.IndexOf(']') : -1;
+        return entry.IndexOf(':', start + 1);
+    }
+
+    /// <summary>Whether a hostname consists only of digits and dots (a numeric dotted literal).</summary>
+    private static bool IsNumericDotted(string hostname)
+    {
+        foreach (var ch in hostname)
+        {
+            if (!char.IsAsciiDigit(ch) && ch != '.') return false;
+        }
+        return true;
+    }
+
+    /// <summary>Whether a numeric dotted literal is canonical IPv4: four parts, each 1-3 digits, no leading zeros, at most 255.</summary>
+    private static bool IsCanonicalIPv4(string hostname)
+    {
+        var parts = hostname.Split('.');
+        if (parts.Length != 4) return false;
+        foreach (var part in parts)
+        {
+            if (part.Length == 0 || part.Length > 3) return false;
+            if (part.Length > 1 && part[0] == '0') return false;
+            if (!int.TryParse(part, System.Globalization.CultureInfo.InvariantCulture, out var value) || value > 255) return false;
+        }
+        return true;
     }
 
     /// <summary>

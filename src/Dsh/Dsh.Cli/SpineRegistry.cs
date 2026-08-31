@@ -166,10 +166,16 @@ public static class SpineRegistry
         catalog.Register("compaction", new SpinePlugin("compaction", (ctx, _) => new Dsh.Compaction.BasicCompactionProvider(ctx)));
         catalog.Register("context", new SpinePlugin("context", (ctx, _) => new Dsh.Context.LocalContextProvider(ctx)));
         catalog.Register("sessionQuery", new SpinePlugin("sessionQuery", (ctx, _) => new Dsh.SessionQuery.LogSessionQueryProvider(ctx)));
-        catalog.Register("preset", new SpinePlugin("preset", (ctx, _) =>
+        catalog.Register("preset", new SpinePlugin("preset", (ctx, config) =>
         {
             var root = Path.Combine(ctx.Get<string>("dshProfileDir") ?? ".", "presets");
-            var provider = new Dsh.Preset.FilePresetProvider(root);
+            var trust = ConfigString(config, "trust") switch
+            {
+                null or "user" => Dsh.Preset.PresetTrust.User,
+                "system" => Dsh.Preset.PresetTrust.System,
+                var value => throw new InvalidOperationException($"preset trust must be \"user\" or \"system\", got \"{value}\""),
+            };
+            var provider = new Dsh.Preset.FilePresetProvider(root, trust: trust);
             ctx.Set("preset", provider);
             return null;
         }));
@@ -382,7 +388,8 @@ public static class SpineRegistry
                 ctx,
                 new Dsh.Web.Host.WebHostConfig(
                     ConfigString(config, "host") ?? "127.0.0.1",
-                    ConfigInt(config, "port") ?? 3080),
+                    ConfigInt(config, "port") ?? 3080,
+                    TrustedHosts: ConfigStringList(config, "trustedHosts")),
                 configure: builder => builder.Services.AddDshApp(),
                 map: app => app.MapDshApp());
             // The web profile serves from mount time: a bound port fails the boot loud.
@@ -420,6 +427,29 @@ public static class SpineRegistry
         => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is List<object?> list
             ? list.OfType<string>().ToArray()
             : Array.Empty<string>();
+
+    /// <summary>Read a list-of-strings config value, failing loud on any non-string element (the TS zod array).</summary>
+    private static IReadOnlyList<string> ConfigStringList(object? config, string key)
+    {
+        if (config is not Dictionary<string, object?> map || !map.TryGetValue(key, out var value) || value is null)
+        {
+            return Array.Empty<string>();
+        }
+        if (value is not List<object?> list)
+        {
+            throw new InvalidOperationException($"config {key} must be a list of strings");
+        }
+        var result = new string[list.Count];
+        for (var index = 0; index < list.Count; index++)
+        {
+            if (list[index] is not string text)
+            {
+                throw new InvalidOperationException($"config {key} entry {index} must be a string");
+            }
+            result[index] = text;
+        }
+        return result;
+    }
 
     private static IReadOnlyDictionary<string, string> ConfigMap(object? config, string key)
         => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is Dictionary<string, object?> entries

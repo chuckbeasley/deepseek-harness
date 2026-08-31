@@ -254,4 +254,25 @@ public static class PresetTests
             PresetFixture.Remove(root);
         }
     }
+
+    public static void DiscoveryRecordsTheRootTrust()
+    {
+        var root = PresetFixture.CreateRoot();
+        try
+        {
+            PresetFixture.Write(Path.Combine(root, "writer", "agent.cordis.yml"), "- name: 'x'\n");
+            var user = new FilePresetProvider(root);
+            Assert.Equal(PresetTrust.User, Assert.SinglePreset(user.Discover(), "writer").Trust,
+                "the default root trust is user");
+            var system = new FilePresetProvider(root, trust: PresetTrust.System);
+            Assert.Equal(PresetTrust.System, Assert.SinglePreset(system.Discover(), "writer").Trust,
+                "a system root classifies every preset under it as system");
+            Assert.Equal(PresetTrust.System, system.Resolve("writer").Trust,
+                "resolve carries the root trust");
+        }
+        finally
+        {
+            PresetFixture.Remove(root);
+        }
+    }
 }

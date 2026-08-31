@@ -24,6 +24,7 @@ public sealed class FilePresetProvider : IPresetService
     private readonly string _root;
     private readonly IReadOnlyList<object?>? _patches;
     private readonly Action<string> _warn;
+    private readonly PresetTrust _trust;
 
     /// <summary>
     /// Create the provider over one preset root.
@@ -33,7 +34,9 @@ public sealed class FilePresetProvider : IPresetService
     /// read, in order (the Include patch dialect).</param>
     /// <param name="warn">receiver for patch warnings (a skipped patch, a missing target); absent
     /// warnings are discarded.</param>
-    public FilePresetProvider(string root, IReadOnlyList<object?>? patches = null, Action<string>? warn = null)
+    /// <param name="trust">trust recorded on every preset discovered under this root (the TS
+    /// root trust; a <c>system</c> root refuses authoring).</param>
+    public FilePresetProvider(string root, IReadOnlyList<object?>? patches = null, Action<string>? warn = null, PresetTrust trust = PresetTrust.User)
     {
         if (string.IsNullOrWhiteSpace(root))
         {
@@ -42,6 +45,7 @@ public sealed class FilePresetProvider : IPresetService
         _root = Path.GetFullPath(root);
         _patches = patches;
         _warn = warn ?? (_ => { });
+        _trust = trust;
     }
 
     /// <summary>The absolute preset root this provider scans.</summary>
@@ -66,7 +70,7 @@ public sealed class FilePresetProvider : IPresetService
             {
                 broken = CompositionProblem(path);
             }
-            found.Add(new PresetInfo(id, path, broken));
+            found.Add(new PresetInfo(id, path, broken, _trust));
         }
         return found.OrderBy(preset => preset.Id, StringComparer.Ordinal).ToArray();
     }
@@ -85,7 +89,7 @@ public sealed class FilePresetProvider : IPresetService
             throw new InvalidOperationException($"agent-presets: preset \"{id}\" failed to mount: {row.Broken}");
         }
         var rows = Compose(row.CompositionPath);
-        return new ComposedPreset(id, row.CompositionPath, rows);
+        return new ComposedPreset(id, row.CompositionPath, rows, _trust);
     }
 
     /// <summary>
