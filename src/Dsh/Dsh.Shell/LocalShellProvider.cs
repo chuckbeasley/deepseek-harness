@@ -93,7 +93,8 @@ public sealed class LocalShellProvider : Service, IShellService
                 firstCause.Result == Cause.Aborted,
                 spec.TimeoutMs,
                 stdout,
-                stderr);
+                stderr,
+                null);
         }
         catch (OperationCanceledException) when (firstCause.Result != Cause.None)
         {
@@ -105,7 +106,8 @@ public sealed class LocalShellProvider : Service, IShellService
                 firstCause.Result == Cause.Aborted,
                 spec.TimeoutMs,
                 new CollectedOutput(string.Empty, false),
-                new CollectedOutput(string.Empty, false));
+                new CollectedOutput(string.Empty, false),
+                null);
         }
         finally
         {

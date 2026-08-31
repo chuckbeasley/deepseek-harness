@@ -1,3 +1,5 @@
+using Dsh.Sandbox;
+
 namespace Dsh.Shell;
 
 /// <summary>Deployment-varying shell executor config; no tunable is hardcoded.</summary>
@@ -39,7 +41,11 @@ public sealed record ShellExecSpec(
     string? Stdin,
     CancellationToken? CancellationToken);
 
-/// <summary>The outcome of one completed (or killed) foreground run.</summary>
+/// <summary>
+/// The outcome of one completed (or killed) foreground run. <see cref="Sandbox"/> carries the
+/// sandbox execution facts when a sandboxing executor handled the run; the unsandboxed local
+/// provider always leaves it null.
+/// </summary>
 public sealed record ShellRunResult(
     int? ExitCode,
     string? Signal,
@@ -47,7 +53,8 @@ public sealed record ShellRunResult(
     bool Aborted,
     int TimeoutMs,
     Subprocess.CollectedOutput Stdout,
-    Subprocess.CollectedOutput Stderr);
+    Subprocess.CollectedOutput Stderr,
+    ShellSandboxInfo? Sandbox = null);
 
 /// <summary>Service Definition for the shell capability: foreground command runs over the subprocess seam.</summary>
 public interface IShellService
