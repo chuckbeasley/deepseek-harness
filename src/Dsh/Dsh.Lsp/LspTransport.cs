@@ -3,13 +3,13 @@ using System.Text.Json;
 
 namespace Dsh.Lsp;
 
-/// <summary>A JSON-RPC 2.0 message envelope shared by the LSP client and server sides.</summary>
-public sealed record JsonRpcMessage(string? JsonRpc = "2.0", string? Method = null, JsonElement? Params = null, long? Id = null, JsonElement? Result = null, JsonElement? Error = null);
+/// <summary>A JSON-RPC 2.0 message envelope shared by the LSP client and server sides. The version field is named <c>Jsonrpc</c> so camelCase serialization emits the protocol's exact <c>jsonrpc</c> key.</summary>
+public sealed record JsonRpcMessage(string? Jsonrpc = "2.0", string? Method = null, JsonElement? Params = null, long? Id = null, JsonElement? Result = null, JsonElement? Error = null);
 
 /// <summary>
 /// Minimal LSP stdio transport (port of the lsp-stdio framing): Content-Length-prefixed JSON-RPC
-/// messages over a duplex stream pair. The process-spawn host and the language-server tool arrive
-/// with a later wave; this library is the framing and dispatch contract.
+/// messages over a duplex stream pair. In-memory dispatch for tests; the process-spawn host lives in
+/// <see cref="LspConnection"/>.
 /// </summary>
 public sealed class LspTransport
 {
@@ -94,8 +94,12 @@ public sealed class LspTransport
         }
     }
 
-    private static JsonRpcMessage Deserialize(JsonElement root)
+    /// <summary>Parse one JSON-RPC envelope from a JSON element (shared by the transport and the stream decoder).</summary>
+    public static JsonRpcMessage Deserialize(JsonElement root)
     {
+        // A framed non-object (JSON number/null/string) is not a dispatchable message; the connection
+        // ignores it. Return the empty envelope so parsing never throws on untrusted frames.
+        if (root.ValueKind != JsonValueKind.Object) return new JsonRpcMessage();
         var jsonrpc = TryGet(root, "jsonrpc", out var version) ? version.GetString() : null;
         var method = TryGet(root, "method", out var methodValue) ? methodValue.GetString() : null;
         JsonElement? parameters = TryGet(root, "params", out var paramsValue) ? paramsValue.Clone() : null;

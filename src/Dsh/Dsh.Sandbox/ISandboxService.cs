@@ -41,4 +41,26 @@ public interface ISandboxService
     /// denials and runner failures.
     /// </summary>
     ShellSandboxInfo DescribeRun(SandboxExecutionPolicy policy);
+
+    /// <summary>
+    /// Wrap exact subprocess argv under the policy (port of the TS
+    /// <c>SandboxProvider.confine(argv, policy)</c>): the enforcing runner argv plus the run
+    /// facts. <c>null</c> means the policy needs no confinement — the caller runs the argv as-is
+    /// and reports no facts. A provider that cannot enforce a confining mode fails closed with
+    /// <see cref="SandboxErrorCodes.Unavailable"/>: it never passes a confined call through
+    /// unconfined.
+    /// </summary>
+    /// <param name="argv">the exact argv to wrap, without the executable resolution step.</param>
+    /// <param name="policy">the resolved file-effect policy for this call.</param>
+    /// <returns>the wrapped argv with the run facts, or <c>null</c> when unconfined.</returns>
+    /// <exception cref="SandboxError">code <c>SANDBOX_UNAVAILABLE</c> when a confining mode has
+    /// no usable backend on this host.</exception>
+    ConfinedArgv? Confine(IReadOnlyList<string> argv, SandboxExecutionPolicy policy);
 }
+
+/// <summary>One confined execution: the runner argv plus the facts the runner will report.</summary>
+public sealed record ConfinedArgv(
+    /// <summary>The exact argv to spawn (runner plus the wrapped command).</summary>
+    IReadOnlyList<string> Argv,
+    /// <summary>The sandbox facts this execution runs under.</summary>
+    ShellSandboxInfo Info);

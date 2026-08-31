@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FakeLspServer</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The fixture speaks real Content-Length framing through the Dsh.Lsp encoder/decoder. -->
+    <ProjectReference Include="..\..\..\..\src\Dsh\Dsh.Lsp\Dsh.Lsp.csproj" />
+  </ItemGroup>
+
+</Project>

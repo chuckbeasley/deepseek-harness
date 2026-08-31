@@ -64,4 +64,18 @@ public sealed class UnsandboxedSandboxProvider : Service, ISandboxService
         ArgumentNullException.ThrowIfNull(policy);
         return new ShellSandboxInfo(SandboxMode.None, Denied: false);
     }
+
+    /// <inheritdoc />
+    public ConfinedArgv? Confine(IReadOnlyList<string> argv, SandboxExecutionPolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(argv);
+        ArgumentNullException.ThrowIfNull(policy);
+        if (policy.Mode is SandboxMode.ReadOnly or SandboxMode.WorkspaceWrite)
+        {
+            // Fail closed: this provider never confines, and a confined call must not run
+            // unconfined.
+            throw SandboxError.Unavailable(policy.Mode);
+        }
+        return null;
+    }
 }

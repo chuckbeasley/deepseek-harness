@@ -94,8 +94,18 @@ public static class SpineRegistry
             return new Dsh.Authorization.LocalAuthorizationService(ctx, credentials);
         }));
         catalog.Register("sandbox", new SpinePlugin("sandbox", (ctx, config) =>
-            new Dsh.Sandbox.UnsandboxedSandboxProvider(ctx, new Dsh.Sandbox.SandboxConfig(
-                ConfigString(config, "workspaceRoot")))));
+        {
+            var backend = ConfigString(config, "backend") ?? "unsandboxed";
+            return backend switch
+            {
+                "unsandboxed" => new Dsh.Sandbox.UnsandboxedSandboxProvider(ctx, new Dsh.Sandbox.SandboxConfig(
+                    ConfigString(config, "workspaceRoot"))),
+                "landlock" => new Dsh.Sandbox.LandlockSidecarSandboxProvider(ctx, new Dsh.Sandbox.LandlockSidecarConfig(
+                    ConfigString(config, "sidecarPath"),
+                    ConfigString(config, "workspaceRoot"))),
+                _ => throw new InvalidOperationException($"sandbox: unknown backend \"{backend}\" (registered: unsandboxed, landlock)"),
+            };
+        }));
         catalog.Register("goal", new SpinePlugin("goal", (ctx, _) =>
         {
             var service = new Dsh.Goal.SessionGoalService(ctx);

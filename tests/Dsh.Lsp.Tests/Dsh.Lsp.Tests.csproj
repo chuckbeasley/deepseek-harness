@@ -6,10 +6,19 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Dsh.Lsp.Tests</RootNamespace>
+    <!-- Test methods mirror the TS spec names (underscore-separated); CA1707 is naming noise here. -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The fixture is its own project; its sources must not compile into the test runner. -->
+    <Compile Remove="Fixtures\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Dsh\Dsh.Lsp\Dsh.Lsp.csproj" />
+    <!-- The fixture console app lands in the test output so the suites can spawn it via dotnet exec. -->
+    <ProjectReference Include="Fixtures\FakeLspServer\FakeLspServer.csproj" />
   </ItemGroup>
 
 </Project>
