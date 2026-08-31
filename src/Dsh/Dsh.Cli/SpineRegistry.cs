@@ -478,6 +478,27 @@ public static class SpineRegistry
             }
             return host;
         }));
+        catalog.Register("sdkRuntime", new SpinePlugin("sdkRuntime", (ctx, _) =>
+        {
+            // The SDK runtime profile: one JSON-RPC server over console stdio. Stdout is the wire,
+            // so nothing else may write to it; the process exits when the client closes stdin
+            // (EOF) after the shutdown exchange.
+            var transport = new Dsh.Sdk.Protocol.JsonRpcLineTransport(
+                Console.OpenStandardInput(), Console.OpenStandardOutput());
+            var server = new Dsh.Sdk.Server.SdkJsonRpcServer(ctx, transport);
+            transport.Start();
+            var exit = ctx.Get<AppExit>("appExit")
+                ?? throw new InvalidOperationException("dsh: sdkRuntime requires the appExit launcher fact");
+            _ = Task.Run(async () =>
+            {
+                await transport.InputEnded;
+                exit.Exit(0);
+            });
+            // The client's shutdown request already disposes the server's sessions; the ctx
+            // disposal path covers an EOF without shutdown (a dead client).
+            return new SpineDisposables(new CallbackDisposable(() =>
+                server.ShutdownAsync().GetAwaiter().GetResult()));
+        }));
         catalog.Register("headless", new SpinePlugin("headless", (ctx, config) =>
         {
             var run = new HeadlessRun();
@@ -550,6 +571,24 @@ internal sealed class SpineDisposables : IDisposable
     public void Dispose()
     {
         foreach (var disposer in _disposers) disposer.Dispose();
+    }
+}
+
+/// <summary>An <see cref="IDisposable"/> running one callback (the spine rows' adapter for async services).</summary>
+internal sealed class CallbackDisposable : IDisposable
+{
+    private readonly Action _dispose;
+    private int _disposed;
+
+    public CallbackDisposable(Action dispose)
+    {
+        _dispose = dispose ?? throw new ArgumentNullException(nameof(dispose));
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
+        _dispose();
     }
 }
 

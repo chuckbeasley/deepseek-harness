@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Cordis.Core;
 using Dsh.Sdk.Protocol;
 using Dsh.Session;
@@ -66,7 +66,7 @@ public sealed class SdkJsonRpcServer
         _disposers.Add(ctx.On("session/event",
             new Action<Dsh.Session.Session, Dsh.Session.SessionEvent>((session, evt) =>
                 transport.Notify(SdkProtocol.SessionEvent,
-                    JsonSerializer.SerializeToElement(new SessionEventNotification(session.Id.Value, evt), WireJson)))));
+                    JsonSerializer.SerializeToElement(new SessionEventNotification(session.Id.Value, WireEnvelope(evt)), WireJson)))));
         _disposers.Add(ctx.On("agent/status",
             new Action<Dsh.Agent.AgentStatusPayload>(payload =>
                 transport.Notify(SdkProtocol.SessionStatus,
@@ -144,6 +144,23 @@ public sealed class SdkJsonRpcServer
         };
         record.Driver.Send(message, Dsh.Agent.InboxTarget.NextTurn, wakeup: true);
         return JsonSerializer.SerializeToElement(new SessionPromptResult(message.Id.Value), WireJson);
+    }
+
+    /// <summary>
+    /// Project one ported session record to the SDK wire envelope: the discriminator and ordering
+    /// fields on the envelope, every remaining payload field under <c>data</c> (the TS
+    /// <c>SessionEvent</c> shape both SDK clients read).
+    /// </summary>
+    private static WireSessionEvent WireEnvelope(Dsh.Session.SessionEvent evt)
+    {
+        var json = JsonSerializer.SerializeToElement(evt, WireJson);
+        var data = new Dictionary<string, JsonElement>();
+        foreach (var property in json.EnumerateObject())
+        {
+            if (property.Name is "id" or "seq" or "timeMs" or "type" or "$type") continue;
+            data[property.Name] = property.Value.Clone();
+        }
+        return new WireSessionEvent(evt.Type, evt.Seq, evt.TimeMs, JsonSerializer.SerializeToElement(data, WireJson));
     }
 
     /// <summary>Dispose the server-owned sessions, adapter, and subscriptions to quiescence; the surrounding context keeps running.</summary>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- The CLI is the executable that boots the web host (dsh web), so it must be a Web SDK project:
      the Blazor framework assets (_framework/blazor.web.js) only flow into an SDK.Web executable's
      static web assets manifest. -->
@@ -75,6 +75,8 @@
     <ProjectReference Include="..\Dsh.Web.App\Dsh.Web.App.csproj" />
     <ProjectReference Include="..\Dsh.Spike\Dsh.Spike.csproj" />
     <ProjectReference Include="..\Dsh.Tui\Dsh.Tui.csproj" />
+    <ProjectReference Include="..\Dsh.Sdk.Protocol\Dsh.Sdk.Protocol.csproj" />
+    <ProjectReference Include="..\Dsh.Sdk.Server\Dsh.Sdk.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup>

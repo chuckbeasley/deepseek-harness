@@ -1,4 +1,4 @@
-﻿<Solution>
+<Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Cordis/">
     <Project Path="src/Cordis/Cordis.Core/Cordis.Core.csproj" />
@@ -41,6 +41,7 @@
     <Project Path="src/Dsh/Dsh.Interaction/Dsh.Interaction.csproj" />
     <Project Path="src/Dsh/Dsh.Sdk.Protocol/Dsh.Sdk.Protocol.csproj" />
     <Project Path="src/Dsh/Dsh.Sdk.Server/Dsh.Sdk.Server.csproj" />
+    <Project Path="src/Dsh/Dsh.Sdk.Client/Dsh.Sdk.Client.csproj" />
     <Project Path="src/Dsh/Dsh.Ui.Sidebar/Dsh.Ui.Sidebar.csproj" />
     <Project Path="src/Dsh/Dsh.Ui.Approval/Dsh.Ui.Approval.csproj" />
     <Project Path="src/Dsh/Dsh.Ui.Settings/Dsh.Ui.Settings.csproj" />
@@ -101,6 +102,7 @@
     <Project Path="tests/Dsh.Interaction.Tests/Dsh.Interaction.Tests.csproj" />
     <Project Path="tests/Dsh.Sdk.Protocol.Tests/Dsh.Sdk.Protocol.Tests.csproj" />
     <Project Path="tests/Dsh.Sdk.Server.Tests/Dsh.Sdk.Server.Tests.csproj" />
+    <Project Path="tests/Dsh.Sdk.Client.Tests/Dsh.Sdk.Client.Tests.csproj" />
     <Project Path="tests/Dsh.Schedule.Tests/Dsh.Schedule.Tests.csproj" />
     <Project Path="tests/Dsh.Feedback.Tests/Dsh.Feedback.Tests.csproj" />
     <Project Path="tests/Dsh.Storage.Tests/Dsh.Storage.Tests.csproj" />

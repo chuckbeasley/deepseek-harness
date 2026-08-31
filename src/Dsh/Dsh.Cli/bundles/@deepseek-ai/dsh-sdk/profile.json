@@ -1,0 +1,8 @@
+{
+  "name": "dsh-sdk",
+  "dsh": {
+    "bundle": {
+      "patch": "cordis.patch.yml"
+    }
+  }
+}

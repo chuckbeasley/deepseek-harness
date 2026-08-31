@@ -1,4 +1,4 @@
-﻿using Dsh.Sdk.Protocol;
+using Dsh.Sdk.Protocol;
 
 namespace Dsh.Sdk.Protocol.Tests;
 
@@ -43,9 +43,11 @@ public static class SdkProtocolTypesTests
 
     public static void TheNotificationRecords_CarryTheirFields()
     {
-        var sessionEvent = new SessionEventNotification("session-1", new Dsh.Session.TurnStartEvent { Turn = 1 });
+        var sessionEvent = new SessionEventNotification("session-1",
+            new WireSessionEvent("turn/start", 0, 0, System.Text.Json.JsonSerializer.SerializeToElement(new { turn = 1L })));
         Assert.Equal("session-1", sessionEvent.SessionId, "the session id rides along");
         Assert.Equal("turn/start", sessionEvent.Event.Type, "the event envelope rides along");
+        Assert.Equal(1L, sessionEvent.Event.Data.GetProperty("turn").GetInt64(), "the payload rides along");
 
         var status = new SessionStatusNotification("session-1", "running");
         Assert.Equal("running", status.Status, "the lifecycle state rides along");

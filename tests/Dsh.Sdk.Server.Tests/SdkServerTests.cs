@@ -1,4 +1,4 @@
-﻿using System.IO.Pipelines;
+using System.IO.Pipelines;
 using System.Text.Json;
 using Cordis.Core;
 using Dsh.Agent;
@@ -119,6 +119,10 @@ public static class SdkServerTests
                 && n.Params.GetProperty("status").GetString() == "running"), "the running transition was announced");
             Assert.True(notifications.Any(n => n.Method == SdkProtocol.SessionEvent
                 && n.Params.GetProperty("event").GetProperty("type").GetString() == "turn/start"), "the turn lifecycle streams");
+            Assert.True(notifications.Any(n => n.Method == SdkProtocol.SessionEvent
+                && n.Params.GetProperty("event").TryGetProperty("data", out var data)
+                && data.ValueKind == System.Text.Json.JsonValueKind.Object),
+                "the event envelope carries the variant payload under data");
         }
         finally
         {

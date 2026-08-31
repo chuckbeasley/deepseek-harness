@@ -1,4 +1,4 @@
-﻿namespace Dsh.Sdk.Protocol;
+namespace Dsh.Sdk.Protocol;
 
 /// <summary>Wire method names and the wire-stable server identity (the TS constants).</summary>
 public static class SdkProtocol
@@ -76,12 +76,27 @@ public abstract record SdkPromptContentBlock
     public sealed record Image(SdkEncodedImageBlock Value) : SdkPromptContentBlock;
 }
 
+/// <summary>
+/// The wire <c>session.event</c> envelope (the TS <c>SessionEvent</c> shape): the discriminator,
+/// ordering fields, and the variant payload under <c>data</c>. The ported session records keep
+/// their payload inline, so the server projects each record to this envelope on the wire.
+/// </summary>
+public sealed record WireSessionEvent(
+    /// <summary>The event type discriminator (e.g. <c>user/message</c>).</summary>
+    string Type,
+    /// <summary>Monotonic sequence number within the session.</summary>
+    long Seq,
+    /// <summary>Unix epoch milliseconds.</summary>
+    long TimeMs,
+    /// <summary>The variant payload object (the record's fields minus the envelope).</summary>
+    System.Text.Json.JsonElement Data);
+
 /// <summary>Server-to-client notification: one session-log event, streamed as it is recorded.</summary>
 public sealed record SessionEventNotification(
     /// <summary>Session the event belongs to (every session in the runtime, not only SDK-created ones).</summary>
     string SessionId,
     /// <summary>The full session-log event envelope.</summary>
-    Dsh.Session.SessionEvent Event);
+    WireSessionEvent Event);
 
 /// <summary>Server-to-client notification: whole-agent lifecycle state for one session.</summary>
 public sealed record SessionStatusNotification(

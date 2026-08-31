@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Dsh.Sdk.Client</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dsh.Sdk.Protocol\Dsh.Sdk.Protocol.csproj" />
+    <ProjectReference Include="..\Dsh.Llm\Dsh.Llm.csproj" />
+    <InternalsVisibleTo Include="Dsh.Sdk.Client.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -86,6 +86,9 @@ public sealed class JsonRpcLineTransport : IJsonRpcPeer
         }
     }
 
+    /// <summary>Completes when the input reader ends: stream EOF, a read failure, or <see cref="Close"/>.</summary>
+    public Task InputEnded => _reader ?? Task.CompletedTask;
+
     /// <summary>Detach the reader and reject pending requests. Safe before <see cref="Start"/>.</summary>
     public void Close()
     {
