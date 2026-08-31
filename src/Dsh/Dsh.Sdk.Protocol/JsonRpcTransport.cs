@@ -224,7 +224,10 @@ public sealed class JsonRpcLineTransport : IJsonRpcPeer
         var hasMethod = frame.TryGetProperty("method", out var method) && method.ValueKind == JsonValueKind.String;
         if (hasId && hasMethod)
         {
-            await HandleIncomingRequestAsync(id, method.GetString()!, ParamsOf(frame));
+            // Requests dispatch concurrently (the TS event-loop behavior): the reader must keep
+            // reading while a handler runs, or a handler's own outbound request (the ACP
+            // requestPermission bridge) and the notifications behind it could never be processed.
+            _ = Task.Run(() => HandleIncomingRequestAsync(id, method.GetString()!, ParamsOf(frame)));
             return;
         }
         if (hasId)
@@ -253,7 +256,9 @@ public sealed class JsonRpcLineTransport : IJsonRpcPeer
         }
         catch (Exception error)
         {
-            WriteError(id, InternalError, error.Message);
+            // A handler may answer its own wire code (the ACP server answers -32602 for invalid
+            // params); a plain failure stays the transport's -32603.
+            WriteError(id, error is JsonRpcResponseError wire ? wire.Code ?? InternalError : InternalError, error.Message);
         }
     }
 

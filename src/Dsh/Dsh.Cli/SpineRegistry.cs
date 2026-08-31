@@ -499,6 +499,34 @@ public static class SpineRegistry
             return new SpineDisposables(new CallbackDisposable(() =>
                 server.ShutdownAsync().GetAwaiter().GetResult()));
         }));
+        catalog.Register("acpRuntime", new SpinePlugin("acpRuntime", (ctx, config) =>
+        {
+            // The ACP profile: the standard Agent Client Protocol over console stdio. Stdout is
+            // the wire, so nothing else may write to it; the process exits when the client closes
+            // stdin (EOF). The route follows DEEPSEEK_API_KEY like the headless/web rows
+            // (keyless runs use the mock route).
+            var key = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+            var provider = ConfigString(config, "provider")
+                ?? (string.IsNullOrEmpty(key) ? Dsh.Spike.MockLlmProvider.Provider : "deepseek");
+            var model = ConfigString(config, "model")
+                ?? (string.IsNullOrEmpty(key) ? Dsh.Spike.MockLlmProvider.Model : "deepseek-chat");
+            var transport = new Dsh.Sdk.Protocol.JsonRpcLineTransport(
+                Console.OpenStandardInput(), Console.OpenStandardOutput());
+            var server = new Dsh.Acp.AcpServer(ctx, transport, new Dsh.Acp.AcpServerConfig(
+                provider, model, ConfigInt(config, "sessionListPageSize") ?? 100));
+            transport.Start();
+            var exit = ctx.Get<AppExit>("appExit")
+                ?? throw new InvalidOperationException("dsh: acpRuntime requires the appExit launcher fact");
+            _ = Task.Run(async () =>
+            {
+                await transport.InputEnded;
+                exit.Exit(0);
+            });
+            // The client's session/close requests already dispose the server's sessions; the ctx
+            // disposal path covers an EOF without shutdown (a dead client).
+            return new SpineDisposables(new CallbackDisposable(() =>
+                server.ShutdownAsync().GetAwaiter().GetResult()));
+        }));
         catalog.Register("headless", new SpinePlugin("headless", (ctx, config) =>
         {
             var run = new HeadlessRun();

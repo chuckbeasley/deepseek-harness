@@ -206,6 +206,7 @@ public static class ProfileBoot
             ["tui"] = new(new[] { "@deepseek-ai/dsh-base", "@deepseek-ai/dsh-tui" }, "live"),
             ["web"] = new(new[] { "@deepseek-ai/dsh-base", "@deepseek-ai/dsh-web" }, "live"),
             ["sdk"] = new(new[] { "@deepseek-ai/dsh-base", "@deepseek-ai/dsh-sdk" }, "startup"),
+            ["acp"] = new(new[] { "@deepseek-ai/dsh-base", "@deepseek-ai/dsh-acp" }, "startup"),
         };
 
     /// <summary>The empty root entry list every profile tree patches over.</summary>

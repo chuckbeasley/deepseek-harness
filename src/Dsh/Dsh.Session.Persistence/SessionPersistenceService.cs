@@ -152,6 +152,55 @@ public sealed class SessionPersistenceService : Service
                 Append(session.Id, session.Header, new[] { evt })));
     }
 
+    /// <summary>
+    /// Enumerate every stored session header (the ACP session list/resume surface). A zero-byte
+    /// log (a crash mid-write) is skipped; a malformed non-empty log fails loud like a single
+    /// load would.
+    /// </summary>
+    /// <returns>the stored headers in filesystem order.</returns>
+    public IReadOnlyList<SessionHeader> ListHeaders()
+    {
+        var results = new List<SessionHeader>();
+        if (!Directory.Exists(_config.Root)) return results;
+        foreach (var directory in Directory.EnumerateDirectories(_config.Root))
+        {
+            var logPath = Path.Combine(directory, JsonlFormat.LogFileName);
+            if (!File.Exists(logPath)) continue;
+            var firstLine = ReadFirstLine(logPath);
+            if (firstLine is null) continue;
+            results.Add(ParseListedHeader(firstLine, logPath));
+        }
+        return results;
+    }
+
+    private static string? ReadFirstLine(string path)
+    {
+        using var reader = new StreamReader(path, new System.Text.UTF8Encoding(false));
+        return reader.ReadLine();
+    }
+
+    private static SessionHeader ParseListedHeader(string line, string logPath)
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(line);
+        var root = document.RootElement;
+        if (root.ValueKind != System.Text.Json.JsonValueKind.Object
+            || !root.TryGetProperty("type", out var type) || type.GetString() != JsonlFormat.HeaderType
+            || !root.TryGetProperty("version", out var version) || version.ValueKind != System.Text.Json.JsonValueKind.Number
+            || !root.TryGetProperty("id", out var id) || id.ValueKind != System.Text.Json.JsonValueKind.String
+            || !root.TryGetProperty("createdAt", out var createdAt) || createdAt.ValueKind != System.Text.Json.JsonValueKind.Number)
+        {
+            throw new InvalidOperationException($"corrupt session log: first line of {logPath} is not a session header");
+        }
+        var formatVersion = version.GetInt32();
+        var parsedId = new SessionId(id.GetString()!);
+        if (formatVersion != SessionFormat.Version)
+        {
+            throw new SessionFormatUnsupportedException(
+                $"session log \"{parsedId}\" uses format version {formatVersion}, but this build reads format version {SessionFormat.Version}");
+        }
+        return new SessionHeader(formatVersion, parsedId, createdAt.GetInt64());
+    }
+
     /// <summary>Flush every buffered batch to disk (a no-op under <see cref="FlushMode.SyncAppend"/>).</summary>
     public void Flush()
     {
