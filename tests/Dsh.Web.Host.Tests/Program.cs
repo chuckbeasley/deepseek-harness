@@ -17,6 +17,16 @@ public static class Program
         ("host: hub invoke round-trips through the registry", WebHostTests.HubInvoke_RoundTripsThroughTheRegistry),
         ("host: hub invoke settles method-not-found on the wire", WebHostTests.HubInvoke_UnknownEndpoint_SettlesMethodNotFound),
         ("host: stop closes the listener", WebHostTests.Stop_ClosesTheListener),
+        ("http: unary round-trip echoes rpcId and value", GatewayHttpTests.UnaryRoundTrip_EchoesRpcIdAndValue),
+        ("http: unknown endpoint settles invocation-unavailable with HTTP 200", GatewayHttpTests.UnknownEndpoint_SettlesInvocationUnavailable_WithHttp200),
+        ("http: invalid envelope settles bad-request with fallback rpcId", GatewayHttpTests.InvalidEnvelope_SettlesBadRequest_WithFallbackRpcId),
+        ("http: method mismatch settles bad-request", GatewayHttpTests.MethodMismatch_SettlesBadRequest),
+        ("http: non-JSON content type answers 415", GatewayHttpTests.NonJsonContentType_Answers415),
+        ("http: non-POST answers 404", GatewayHttpTests.NonPostMethod_Answers404),
+        ("http: invalid segments answer 404", GatewayHttpTests.InvalidSegment_Answers404),
+        ("mux: events stream sends ready then live emits", GatewayMuxTests.EventsStream_SendsReadyThenLiveEmits),
+        ("mux: unknown endpoint answers an error frame", GatewayMuxTests.UnknownEndpoint_AnswersErrorFrame),
+        ("mux: cancel ends the logical stream", GatewayMuxTests.Cancel_EndsTheLogicalStream),
     };
 
     public static int Main()
@@ -41,3 +51,4 @@ public static class Program
         return failures.Count == 0 ? 0 : 1;
     }
 }
+

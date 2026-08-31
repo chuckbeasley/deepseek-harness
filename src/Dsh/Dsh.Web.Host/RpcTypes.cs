@@ -45,11 +45,14 @@ public static class RpcErrorCodes
     /// <summary>Carrier, dispatch, or unclassified Host failure.</summary>
     public const string Internal = "gateway/internal";
 
-    /// <summary>No method is registered for the requested endpoint.</summary>
-    public const string MethodNotFound = "gateway/method-not-found";
+    /// <summary>No active method exports the requested endpoint.</summary>
+    public const string InvocationUnavailable = "gateway/invocation-unavailable";
 
-    /// <summary>The wire args failed to decode into the method's declared parameters.</summary>
-    public const string InvalidArgs = "gateway/invalid-args";
+    /// <summary>The wire args do not match the method's declared parameters.</summary>
+    public const string ArgumentsInvalid = "gateway/arguments-invalid";
+
+    /// <summary>The method's signature does not accept this call shape (unary vs stream).</summary>
+    public const string SignatureInvalid = "gateway/signature-invalid";
 }
 
 /// <summary>

@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Cordis.Core;
 using Dsh.Web.Host;
 
@@ -44,7 +44,7 @@ public static class RpcRegistryTests
         using var spine = Spine.Create();
         var response = spine.Rpc.InvokeAsync(new RpcRequest("no/such-method", null)).GetAwaiter().GetResult();
         Assert.False(response.Ok, "the call fails");
-        Assert.Equal("gateway/method-not-found", response.Error!.Code);
+        Assert.Equal("gateway/invocation-unavailable", response.Error!.Code);
         Assert.True(response.Error.Message.Contains("no/such-method"), "the endpoint is named");
     }
 
@@ -95,7 +95,7 @@ public static class RpcRegistryTests
         registration.Dispose();
         Assert.Null(spine.Rpc.Get("temp/method"), "the method is withdrawn on dispose");
         var response = spine.Rpc.InvokeAsync(new RpcRequest("temp/method", null)).GetAwaiter().GetResult();
-        Assert.Equal("gateway/method-not-found", response.Error!.Code);
+        Assert.Equal("gateway/invocation-unavailable", response.Error!.Code);
     }
 
     public static void ContextDisposal_WithdrawsEveryMethod()
@@ -106,6 +106,7 @@ public static class RpcRegistryTests
         _ = rpc.Register(new RpcMethod("temp/two", (_, _) => Task.FromResult<JsonElement?>(null)));
         ctx.Dispose();
         var response = rpc.InvokeAsync(new RpcRequest("temp/one", null)).GetAwaiter().GetResult();
-        Assert.Equal("gateway/method-not-found", response.Error!.Code);
+        Assert.Equal("gateway/invocation-unavailable", response.Error!.Code);
     }
 }
+

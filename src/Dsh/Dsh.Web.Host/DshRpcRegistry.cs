@@ -82,8 +82,8 @@ public sealed class DshRpcRegistry : Service
 
     /// <summary>
     /// Dispatch one invocation. Failures settle as coded <see cref="RpcError"/> responses, never
-    /// as carrier exceptions: an unknown endpoint is <c>gateway/method-not-found</c>, a handler
-    /// rejection is <c>gateway/internal</c>, and cancellation is <c>gateway/cancelled</c>.
+    /// as carrier exceptions: an unknown endpoint is <c>gateway/invocation-unavailable</c>, a
+    /// handler rejection is <c>gateway/internal</c>, and cancellation is <c>gateway/cancelled</c>.
     /// </summary>
     /// <param name="request">the invocation.</param>
     /// <param name="cancellationToken">carrier cancellation.</param>
@@ -95,7 +95,7 @@ public sealed class DshRpcRegistry : Service
         lock (_gate) method = _methods.GetValueOrDefault(request.Endpoint);
         if (method is null)
         {
-            return new RpcResponse(null, new RpcError(RpcErrorCodes.MethodNotFound, $"no rpc method is registered for \"{request.Endpoint}\""));
+            return new RpcResponse(null, new RpcError(RpcErrorCodes.InvocationUnavailable, $"no rpc method is registered for \"{request.Endpoint}\""));
         }
         try
         {

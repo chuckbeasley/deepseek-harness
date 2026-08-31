@@ -92,7 +92,7 @@ public static class WebHostTests
                 var response = connection.InvokeAsync<RpcResponse>(
                     "Invoke", "no/such-method", (JsonElement?)null).GetAwaiter().GetResult();
                 Assert.False(response.Ok, "the hub call fails");
-                Assert.Equal("gateway/method-not-found", response.Error!.Code, "the coded failure travels the wire");
+                Assert.Equal("gateway/invocation-unavailable", response.Error!.Code, "the coded failure travels the wire");
             }
             finally
             {
@@ -127,4 +127,5 @@ public static class WebHostTests
         ctx.Dispose();
     }
 }
+
 

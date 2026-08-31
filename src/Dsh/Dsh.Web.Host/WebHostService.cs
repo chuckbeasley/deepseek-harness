@@ -60,6 +60,12 @@ public sealed class WebHostService : Service
         if (registry is not null) builder.Services.AddSingleton(registry);
         _configure(builder);
         var app = builder.Build();
+        app.UseWebSockets();
+        if (registry is not null)
+        {
+            app.MapGateway(registry);
+            app.MapMux(registry, Ctx);
+        }
         app.MapHub<DshRpcHub>(_config.HubPath);
         _map(app);
         await app.StartAsync(cancellationToken).ConfigureAwait(false);
