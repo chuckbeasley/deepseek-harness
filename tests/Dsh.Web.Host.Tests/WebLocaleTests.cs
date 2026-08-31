@@ -96,7 +96,14 @@ public static class WebLocaleTests
         var port = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
         var host = new WebHostService(ctx, new WebHostConfig(Port: port, AuthFence: false),
-            configure: builder => builder.Services.AddDshApp(),
+            configure: builder =>
+            {
+                var slots = new Dsh.Web.App.Slots.SlotRegistry();
+                _ = Dsh.Ui.Sidebar.UiSidebarPlugin.Apply(slots);
+                _ = Dsh.Ui.Sessions.UiSessionsPlugin.Apply(slots);
+                _ = Dsh.Ui.Chat.UiChatPlugin.Apply(slots);
+                builder.Services.AddDshApp(slots);
+            },
             map: app => app.MapDshApp());
         host.StartAsync().GetAwaiter().GetResult();
         origin = host.ListenUrl!;

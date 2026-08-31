@@ -68,12 +68,15 @@ public sealed class WebLocale
         ["sessions"] = "Sessions",
         ["noSessions"] = "No sessions yet. Send a message to start one.",
         ["newSession"] = "new session",
+        ["newSessionAction"] = "New Session",
         ["selectSession"] = "Select a session to view its transcript.",
         ["messagePlaceholder"] = "Message dsh...",
         ["send"] = "Send",
         ["running"] = "running",
         ["queued"] = "queued",
         ["lastError"] = "last error:",
+        ["workspaces"] = "Workspaces",
+        ["noWorkspaces"] = "No workspaces yet.",
     };
 
     private static readonly IReadOnlyDictionary<string, string> ChineseStrings = new Dictionary<string, string>
@@ -81,12 +84,15 @@ public sealed class WebLocale
         ["sessions"] = "会话",
         ["noSessions"] = "暂无会话，发送一条消息即可开始。",
         ["newSession"] = "新会话",
+        ["newSessionAction"] = "新建会话",
         ["selectSession"] = "选择一个会话查看记录。",
         ["messagePlaceholder"] = "给 dsh 发送消息…",
         ["send"] = "发送",
         ["running"] = "运行中",
         ["queued"] = "排队中",
         ["lastError"] = "最近错误：",
+        ["workspaces"] = "工作区",
+        ["noWorkspaces"] = "暂无工作区。",
     };
 
     /// <summary>The English dictionary.</summary>

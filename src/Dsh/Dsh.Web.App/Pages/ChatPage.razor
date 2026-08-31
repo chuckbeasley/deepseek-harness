@@ -5,72 +5,55 @@
 @inject SlotRegistry Slots
 @inject WebLocale Locale
 @inject LocaleScope LocaleScope
+@inject ShellState State
+@inject ShellBus Bus
 @inject IHttpContextAccessor Http
 @inject PersistentComponentState ComponentState
 @implements IDisposable
 
 <div class="dsh-chat">
-    <section class="dsh-session-list">
-        <h3>@Locale.T("sessions")</h3>
-        @if (Store.List().Count == 0)
-        {
-            <p class="dsh-muted">@Locale.T("noSessions")</p>
-        }
-        @foreach (var entry in Store.List())
-        {
-            <button class="dsh-session-item @(entry.Session.Id == _selected?.Session.Id ? "dsh-selected" : "")"
-                    @onclick="() => Select(entry)">
-                <span class="dsh-session-id">@entry.Session.Id.Value</span>
-                <span class="dsh-session-summary">@(entry.Summary ?? Locale.T("newSession"))</span>
-                <span class="dsh-session-state">
-                    @if (entry.Running)
-                    {
-                        <span class="dsh-running">@Locale.T("running")</span>
-                    }
-                    @if (entry.Queued > 0)
-                    {
-                        <span class="dsh-queued">@entry.Queued @Locale.T("queued")</span>
-                    }
-                </span>
-            </button>
-        }
+    <section class="dsh-sessions">
+        <SlotOutlet Slot="sessions" />
     </section>
 
     <section class="dsh-transcript">
-        @if (_selected is null)
+        @if (State.Selected is null)
         {
             <p class="dsh-muted">@Locale.T("selectSession")</p>
         }
         else
         {
-            @if (_selected.Error is { } error)
+            @if (State.Selected.Error is { } error)
             {
                 <div class="dsh-error">@Locale.T("lastError") @error</div>
             }
             <div class="dsh-messages">
-                @foreach (var evt in _selected.Events)
+                @foreach (var evt in State.Selected.Events)
                 {
                     @RenderEvent(evt)
                 }
             </div>
         }
-        <form class="dsh-input-row" @onsubmit="SendAsync" @onsubmit:preventDefault="true">
-            <input @bind="_input" placeholder="@Locale.T("messagePlaceholder")" />
-            <button type="submit" disabled="@_busy">@Locale.T("send")</button>
-        </form>
+        <SlotOutlet Slot="chat.composer" />
     </section>
 </div>
 
 @code {
-    private Dsh.Web.App.Store.WebSessionEntry? _selected;
-    private string _input = "";
     private bool _busy;
-    private IDisposable? _subscription;
+    private IDisposable? _storeSubscription;
+    private Action<string>? _sendHandler;
 
     protected override void OnInitialized()
     {
-        _subscription = Store.Subscribe(StateHasChanged);
-        _selected = Store.List().FirstOrDefault();
+        _storeSubscription = Store.Subscribe(StateHasChanged);
+        if (State.Selected is null)
+        {
+            State.Select(Store.List().FirstOrDefault());
+        }
+        State.Changed += StateHasChanged;
+        Bus.NewSessionRequested += NewSession;
+        _sendHandler = text => _ = SendAsync(text);
+        Bus.SendRequested += _sendHandler;
         ResolveLocale();
     }
 
@@ -101,27 +84,25 @@
 
     public void Dispose()
     {
-        _subscription?.Dispose();
+        _storeSubscription?.Dispose();
+        State.Changed -= StateHasChanged;
+        Bus.NewSessionRequested -= NewSession;
+        if (_sendHandler is not null) Bus.SendRequested -= _sendHandler;
     }
 
-    private void Select(Dsh.Web.App.Store.WebSessionEntry entry)
-    {
-        _selected = entry;
-        StateHasChanged();
-    }
+    /// <summary>The sidebar's New Session action: clear the selection so the next send starts fresh.</summary>
+    private void NewSession() => State.Select(null);
 
-    private async Task SendAsync()
+    private async Task SendAsync(string text)
     {
-        var text = _input.Trim();
         if (text.Length == 0 || _busy) return;
-        _input = "";
         _busy = true;
         try
         {
-            var sessionId = _selected?.Session.Id ?? new Dsh.Session.SessionId($"session-{Guid.NewGuid():N}");
+            var sessionId = State.Selected?.Session.Id ?? new Dsh.Session.SessionId($"session-{Guid.NewGuid():N}");
             var loop = Ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
                 ?? throw new InvalidOperationException("the web chat requires the agentLoop row");
-            if (_selected is null)
+            if (State.Selected is null)
             {
                 var key = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
                 var provider = string.IsNullOrEmpty(key) ? "mock" : "deepseek";
@@ -129,8 +110,7 @@
                 var handle = loop.Create(sessionId, new Dsh.Agent.AgentOptions { Provider = provider, Model = model });
                 var driver = loop.GetLoop(sessionId)
                     ?? throw new InvalidOperationException("the loop published no driver");
-                _selected = Store.Get(sessionId);
-                StateHasChanged();
+                State.Select(Store.Get(sessionId));
                 await RunTurnAsync(driver, text);
             }
             else
@@ -177,6 +157,3 @@
         }
     };
 }
-
-
-

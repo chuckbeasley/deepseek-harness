@@ -12,6 +12,11 @@
     <ProjectReference Include="..\..\src\Cordis\Cordis.Core\Cordis.Core.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Web.Host\Dsh.Web.Host.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Interaction\Dsh.Interaction.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Ui.Sidebar\Dsh.Ui.Sidebar.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Ui.Sessions\Dsh.Ui.Sessions.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Ui.Chat\Dsh.Ui.Chat.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Ui.Workspace\Dsh.Ui.Workspace.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Workspace\Dsh.Workspace.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Agent\Dsh.Agent.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.AgentLoop\Dsh.AgentLoop.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Jobs\Dsh.Jobs.csproj" />
@@ -31,6 +36,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 

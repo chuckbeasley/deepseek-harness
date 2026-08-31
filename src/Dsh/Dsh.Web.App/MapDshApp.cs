@@ -28,16 +28,23 @@ public static class DshWebApp
             .AddInteractiveServerRenderMode();
     }
 
-    /// <summary>Register the shell services: Razor components, the slot registry, the web session store.</summary>
-    public static IServiceCollection AddDshApp(this IServiceCollection services)
+    /// <summary>
+    /// Register the shell services: Razor components, the slot registry, the web session store.
+    /// The slot registry instance is shared with the ctx when one is supplied (the spine's
+    /// webHost row creates it and the ui-* rows register their contributions into it before the
+    /// first request); a fresh one is created otherwise.
+    /// </summary>
+    public static IServiceCollection AddDshApp(this IServiceCollection services, Slots.SlotRegistry? slots = null)
     {
         services.AddRazorComponents()
             .AddInteractiveServerComponents();
         services.AddHttpContextAccessor();
-        services.AddSingleton<Slots.SlotRegistry>();
+        services.AddSingleton(slots ?? new Slots.SlotRegistry());
         services.AddSingleton<Store.WebSessionStore>();
         services.AddScoped<LocaleScope>();
         services.AddScoped(sp => new WebLocale(sp.GetRequiredService<LocaleScope>()));
+        services.AddScoped<ShellState>();
+        services.AddScoped<ShellBus>();
         return services;
     }
 }

@@ -116,6 +116,7 @@ public static class Program
         ("events: an unknown eventId on a known client acks as a no-op", RemoteEventSettlementTests.UnknownEventIdOnAKnownClient_AcksAsANoOp),
         ("events: a user-questions ask answers over the stream", RemoteEventSettlementTests.UserQuestionsAsk_AnswersOverTheStream),
         ("events: a malformed result payload settles bad-request", RemoteEventSettlementTests.MalformedResultPayload_SettlesBadRequest),
+        ("ui: the slot contributions render in the prerendered shell", UiCompositionTests.TheUiContributions_RenderInThePrerenderedShell),
     };
 
     public static int Main()

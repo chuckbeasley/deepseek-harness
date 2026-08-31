@@ -56,6 +56,26 @@ public static class SpineRegistry
             var tools = ctx.Get<Dsh.Tools.ToolRuntime>("tools");
             return tools is null ? null : tools.Register(Dsh.Interaction.AskUserTool.Definition(ctx));
         }));
+        catalog.Register("uiSidebar", new SpinePlugin("uiSidebar", (ctx, _) =>
+        {
+            var slots = ctx.Get<Dsh.Web.App.Slots.SlotRegistry>("slots");
+            return slots is null ? null : Dsh.Ui.Sidebar.UiSidebarPlugin.Apply(slots);
+        }));
+        catalog.Register("uiSessions", new SpinePlugin("uiSessions", (ctx, _) =>
+        {
+            var slots = ctx.Get<Dsh.Web.App.Slots.SlotRegistry>("slots");
+            return slots is null ? null : Dsh.Ui.Sessions.UiSessionsPlugin.Apply(slots);
+        }));
+        catalog.Register("uiChat", new SpinePlugin("uiChat", (ctx, _) =>
+        {
+            var slots = ctx.Get<Dsh.Web.App.Slots.SlotRegistry>("slots");
+            return slots is null ? null : Dsh.Ui.Chat.UiChatPlugin.Apply(slots);
+        }));
+        catalog.Register("uiWorkspace", new SpinePlugin("uiWorkspace", (ctx, _) =>
+        {
+            var slots = ctx.Get<Dsh.Web.App.Slots.SlotRegistry>("slots");
+            return slots is null ? null : Dsh.Ui.Workspace.UiWorkspacePlugin.Apply(slots);
+        }));
         catalog.Register("mock", new SpinePlugin("mock", (ctx, _) =>
             ctx.Llm().RegisterAdapter(new[] { Dsh.Spike.MockLlmProvider.Provider }, new Dsh.Spike.MockLlmProvider())));
         catalog.Register("deepseek", new SpinePlugin("deepseek", (ctx, config) =>
@@ -409,13 +429,17 @@ public static class SpineRegistry
             {
                 rpc.Register(Dsh.Web.Host.RemoteEventSettlement.ResultMethod(settlement));
             }
+            // The shell's slot registry is created here so the ui-* rows register their
+            // contributions into the same instance the shell renders.
+            var slots = new Dsh.Web.App.Slots.SlotRegistry();
+            ctx.Set("slots", slots);
             var host = new Dsh.Web.Host.WebHostService(
                 ctx,
                 new Dsh.Web.Host.WebHostConfig(
                     ConfigString(config, "host") ?? "127.0.0.1",
                     ConfigInt(config, "port") ?? 3080,
                     TrustedHosts: ConfigStringList(config, "trustedHosts")),
-                configure: builder => builder.Services.AddDshApp(),
+                configure: builder => builder.Services.AddDshApp(slots),
                 map: app => app.MapDshApp());
             // The web profile serves from mount time: a bound port fails the boot loud.
             host.StartAsync().GetAwaiter().GetResult();

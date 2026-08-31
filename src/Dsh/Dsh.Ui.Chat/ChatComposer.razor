@@ -1,0 +1,19 @@
+﻿@inject WebLocale Locale
+@inject ShellBus Bus
+
+<form class="dsh-input-row" @onsubmit="Submit" @onsubmit:preventDefault="true">
+    <input @bind="_input" placeholder="@Locale.T("messagePlaceholder")" />
+    <button type="submit">@Locale.T("send")</button>
+</form>
+
+@code {
+    private string _input = "";
+
+    private void Submit()
+    {
+        var text = _input.Trim();
+        if (text.Length == 0) return;
+        _input = "";
+        Bus.RequestSend(text);
+    }
+}

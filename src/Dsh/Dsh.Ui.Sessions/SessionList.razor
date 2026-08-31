@@ -1,0 +1,41 @@
+﻿@inject Dsh.Web.App.Store.WebSessionStore Store
+@inject Dsh.Web.App.ShellState State
+@inject WebLocale Locale
+@implements IDisposable
+
+<section class="dsh-session-list">
+    <h3>@Locale.T("sessions")</h3>
+    @if (Store.List().Count == 0)
+    {
+        <p class="dsh-muted">@Locale.T("noSessions")</p>
+    }
+    @foreach (var entry in Store.List())
+    {
+        <button class="dsh-session-item @(entry.Session.Id == State.Selected?.Session.Id ? "dsh-selected" : "")"
+                @onclick="() => State.Select(entry)">
+            <span class="dsh-session-id">@entry.Session.Id.Value</span>
+            <span class="dsh-session-summary">@(entry.Summary ?? Locale.T("newSession"))</span>
+            <span class="dsh-session-state">
+                @if (entry.Running)
+                {
+                    <span class="dsh-running">@Locale.T("running")</span>
+                }
+                @if (entry.Queued > 0)
+                {
+                    <span class="dsh-queued">@entry.Queued @Locale.T("queued")</span>
+                }
+            </span>
+        </button>
+    }
+</section>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // The page (or the new-session action) may change the selection too; the highlight
+        // follows the shared state either way.
+        State.Changed += StateHasChanged;
+    }
+
+    public void Dispose() => State.Changed -= StateHasChanged;
+}
