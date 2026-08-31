@@ -77,6 +77,17 @@ public sealed class WebLocale
         ["lastError"] = "last error:",
         ["workspaces"] = "Workspaces",
         ["noWorkspaces"] = "No workspaces yet.",
+        ["approvalRequired"] = "Approval required",
+        ["approve"] = "Approve",
+        ["deny"] = "Deny",
+        ["question"] = "Question",
+        ["answer"] = "Answer...",
+        ["submit"] = "Submit",
+        ["settings"] = "Settings",
+        ["settingsDocument"] = "Settings document",
+        ["noSettings"] = "This deployment composes no settings provider.",
+        ["plan"] = "Plan",
+        ["noPlan"] = "No plan yet.",
     };
 
     private static readonly IReadOnlyDictionary<string, string> ChineseStrings = new Dictionary<string, string>
@@ -93,6 +104,17 @@ public sealed class WebLocale
         ["lastError"] = "最近错误：",
         ["workspaces"] = "工作区",
         ["noWorkspaces"] = "暂无工作区。",
+        ["approvalRequired"] = "需要审批",
+        ["approve"] = "批准",
+        ["deny"] = "拒绝",
+        ["question"] = "问题",
+        ["answer"] = "回答…",
+        ["submit"] = "提交",
+        ["settings"] = "设置",
+        ["settingsDocument"] = "设置文档",
+        ["noSettings"] = "此部署未配置设置提供程序。",
+        ["plan"] = "计划",
+        ["noPlan"] = "暂无计划。",
     };
 
     /// <summary>The English dictionary.</summary>

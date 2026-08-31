@@ -72,7 +72,7 @@ public sealed class WebHostService : Service
         builder.Services.AddSingleton(Ctx);
         if (_config.AuthFence)
         {
-            var trustedHosts = _config.TrustedHosts ?? Array.Empty<string>();
+            var trustedHosts = ResolveLanTrust(_config.Host, _config.TrustedHosts ?? Array.Empty<string>());
             foreach (var entry in trustedHosts)
             {
                 // A malformed grant must fail the boot like the TS plugin load, not sit ignored
@@ -115,6 +115,31 @@ public sealed class WebHostService : Service
             await app.DisposeAsync().ConfigureAwait(false);
         }
         await base.StopAsync();
+    }
+
+    /// <summary>
+    /// Resolve one LAN-trust snapshot from the active server bind (port of the TS
+    /// <c>resolveLanTrust</c>): binding the all-interfaces host derives the machine's non-loopback
+    /// IPv4 literals as port-less trusted authorities — DNS rebinding needs an attacker-controlled
+    /// name, while an IP-literal Host is safe on any port and an OS-assigned port is unknowable
+    /// before bind. Explicitly configured entries follow the derived ones, in config order.
+    /// </summary>
+    /// <param name="bindHost">the active webHost bind host.</param>
+    /// <param name="trustedHosts">the explicitly configured trustedHosts entries.</param>
+    /// <returns>the fence authorities: derived LAN literals first, then the configured entries.</returns>
+    public static IReadOnlyList<string> ResolveLanTrust(string bindHost, IReadOnlyList<string> trustedHosts)
+    {
+        ArgumentNullException.ThrowIfNull(trustedHosts);
+        if (bindHost != "0.0.0.0") return trustedHosts;
+        var addresses = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces()
+            .Where(iface => iface.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up)
+            .SelectMany(iface => iface.GetIPProperties().UnicastAddresses)
+            .Where(address => address.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork
+                && !System.Net.IPAddress.IsLoopback(address.Address))
+            .Select(address => address.Address.ToString())
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        return addresses.Concat(trustedHosts).ToArray();
     }
 
     /// <summary>

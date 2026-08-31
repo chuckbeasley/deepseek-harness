@@ -98,6 +98,7 @@ public static class Program
         ("fence: explicit default port entry matches default-port requests", FenceTests.TrustedHost_ExplicitDefaultPort_MatchesDefaultPortRequests),
         ("fence: trusted authority round-trips its own cookie", FenceTests.TrustedHost_CookieRoundTrip_UnderTheDeclaredAuthority),
         ("fence: malformed trustedHosts entries fail the boot", FenceTests.TrustedHosts_MalformedEntry_FailsLoud),
+        ("fence: LAN trust derives for the all-interfaces bind", FenceTests.LanTrust_IsDerivedForTheAllInterfacesBind),
         ("settings: open preset directory system preset settles read-only", SettingsOpenersTests.OpenAgentPresetDirectory_SystemPreset_SettlesReadOnly),
         ("locale: English resolves its keys and unknown keys render as themselves", WebLocaleTests.EnglishResolvesItsOwnKeys_UnknownKeysRenderAsThemselves),
         ("locale: Chinese resolves its own keys", WebLocaleTests.ChineseResolvesItsOwnKeys),

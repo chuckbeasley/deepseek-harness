@@ -40,6 +40,9 @@
     <ProjectReference Include="..\Dsh.Jobs\Dsh.Jobs.csproj" />
     <ProjectReference Include="..\Dsh.Interaction\Dsh.Interaction.csproj" />
     <ProjectReference Include="..\Dsh.Ui.Sidebar\Dsh.Ui.Sidebar.csproj" />
+    <ProjectReference Include="..\Dsh.Ui.Approval\Dsh.Ui.Approval.csproj" />
+    <ProjectReference Include="..\Dsh.Ui.Settings\Dsh.Ui.Settings.csproj" />
+    <ProjectReference Include="..\Dsh.Ui.Plan\Dsh.Ui.Plan.csproj" />
     <ProjectReference Include="..\Dsh.Ui.Sessions\Dsh.Ui.Sessions.csproj" />
     <ProjectReference Include="..\Dsh.Ui.Chat\Dsh.Ui.Chat.csproj" />
     <ProjectReference Include="..\Dsh.Ui.Workspace\Dsh.Ui.Workspace.csproj" />
@@ -79,5 +82,7 @@
   </ItemGroup>
 
 </Project>
+
+
 
 

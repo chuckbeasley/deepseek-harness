@@ -71,6 +71,23 @@ public static class SpineRegistry
             var slots = ctx.Get<Dsh.Web.App.Slots.SlotRegistry>("slots");
             return slots is null ? null : Dsh.Ui.Chat.UiChatPlugin.Apply(slots);
         }));
+        catalog.Register("uiApproval", new SpinePlugin("uiApproval", (ctx, _) =>
+        {
+            var slots = ctx.Get<Dsh.Web.App.Slots.SlotRegistry>("slots");
+            return slots is null ? null : Dsh.Ui.Approval.UiApprovalPlugin.Apply(slots);
+        }));
+        catalog.Register("uiSettings", new SpinePlugin("uiSettings", (ctx, _) =>
+        {
+            var slots = ctx.Get<Dsh.Web.App.Slots.SlotRegistry>("slots");
+            var assemblies = ctx.Get<Dsh.Web.App.PageAssemblyRegistry>("pageAssemblies");
+            return slots is null || assemblies is null ? null : Dsh.Ui.Settings.UiSettingsPlugin.Apply(slots, assemblies);
+        }));
+        catalog.Register("uiPlan", new SpinePlugin("uiPlan", (ctx, _) =>
+        {
+            var slots = ctx.Get<Dsh.Web.App.Slots.SlotRegistry>("slots");
+            var assemblies = ctx.Get<Dsh.Web.App.PageAssemblyRegistry>("pageAssemblies");
+            return slots is null || assemblies is null ? null : Dsh.Ui.Plan.UiPlanPlugin.Apply(slots, assemblies);
+        }));
         catalog.Register("uiWorkspace", new SpinePlugin("uiWorkspace", (ctx, _) =>
         {
             var slots = ctx.Get<Dsh.Web.App.Slots.SlotRegistry>("slots");
@@ -418,7 +435,7 @@ public static class SpineRegistry
                 workspaceFollow,
                 directoryPickerPick, directoryPickerList, directoryPickerCreate);
         }));
-        catalog.Register("webHost", new SpinePlugin("webHost", (ctx, config) =>
+        catalog.Register("webCore", new SpinePlugin("webCore", (ctx, _) =>
         {
             // The remote waterfall settlement: the $events stream registers pending proposals and
             // the $events/result unary settles them (the interaction surface over the web).
@@ -429,18 +446,30 @@ public static class SpineRegistry
             {
                 rpc.Register(Dsh.Web.Host.RemoteEventSettlement.ResultMethod(settlement));
             }
-            // The shell's slot registry is created here so the ui-* rows register their
-            // contributions into the same instance the shell renders.
+            // The shell's slot registry and page assembly registry are created here so the ui-*
+            // rows register their contributions into the same instances the shell renders and the
+            // webHost row maps. The webHost row must run AFTER the ui-* rows: the endpoint-level
+            // route table needs every page assembly at map time (the SSR router matches through
+            // the endpoint's route data), so the bundle orders webCore first, the ui-* rows next,
+            // and webHost last.
             var slots = new Dsh.Web.App.Slots.SlotRegistry();
             ctx.Set("slots", slots);
+            var pageAssemblies = new Dsh.Web.App.PageAssemblyRegistry();
+            ctx.Set("pageAssemblies", pageAssemblies);
+            return null;
+        }));
+        catalog.Register("webHost", new SpinePlugin("webHost", (ctx, config) =>
+        {
+            var slots = ctx.Get<Dsh.Web.App.Slots.SlotRegistry>("slots");
+            var pageAssemblies = ctx.Get<Dsh.Web.App.PageAssemblyRegistry>("pageAssemblies");
             var host = new Dsh.Web.Host.WebHostService(
                 ctx,
                 new Dsh.Web.Host.WebHostConfig(
                     ConfigString(config, "host") ?? "127.0.0.1",
                     ConfigInt(config, "port") ?? 3080,
                     TrustedHosts: ConfigStringList(config, "trustedHosts")),
-                configure: builder => builder.Services.AddDshApp(slots),
-                map: app => app.MapDshApp());
+                configure: builder => builder.Services.AddDshApp(slots, pageAssemblies),
+                map: app => app.MapDshApp(pageAssemblies?.List()));
             // The web profile serves from mount time: a bound port fails the boot loud.
             host.StartAsync().GetAwaiter().GetResult();
             if (host.Fence is not null && host.ListenUrl is not null)
@@ -560,3 +589,4 @@ internal static class SpineContextExtensions
     public static Dsh.Tools.ToolRuntime Tools(this Cordis.Core.Context ctx)
         => ctx.Get<Dsh.Tools.ToolRuntime>("tools") ?? throw new InvalidOperationException("spine row requires the \"tools\" service");
 }
+

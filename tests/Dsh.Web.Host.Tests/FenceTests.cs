@@ -411,6 +411,23 @@ public static class FenceTests
         }
     }
 
+    public static void LanTrust_IsDerivedForTheAllInterfacesBind()
+    {
+        var derived = WebHostService.ResolveLanTrust("0.0.0.0", new[] { "harness.example" });
+        Assert.True(derived.Count >= 1, "the all-interfaces bind derives the machine's LAN literals");
+        Assert.Equal("harness.example", derived[^1], "the configured entries follow the derived ones");
+        foreach (var entry in derived.Take(derived.Count - 1))
+        {
+            Assert.True(System.Net.IPAddress.TryParse(entry, out var address)
+                && address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork,
+                $"derived entry \"{entry}\" must be an IPv4 literal");
+            Assert.True(!System.Net.IPAddress.IsLoopback(address), $"derived entry \"{entry}\" must not be loopback");
+        }
+        var loopback = WebHostService.ResolveLanTrust("127.0.0.1", new[] { "harness.example" });
+        Assert.Equal(1, loopback.Count, "a loopback bind derives nothing");
+        Assert.Equal("harness.example", loopback[0], "the configured entry passes through");
+    }
+
     private static (Context Ctx, WebHostService Host, HttpClient Client) BootTrusted(IReadOnlyList<string> trustedHosts, out string origin)
     {
         var ctx = new Context();

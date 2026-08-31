@@ -16,6 +16,9 @@
     <ProjectReference Include="..\..\src\Dsh\Dsh.Ui.Sessions\Dsh.Ui.Sessions.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Ui.Chat\Dsh.Ui.Chat.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Ui.Workspace\Dsh.Ui.Workspace.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Ui.Approval\Dsh.Ui.Approval.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Ui.Settings\Dsh.Ui.Settings.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Ui.Plan\Dsh.Ui.Plan.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Workspace\Dsh.Workspace.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Agent\Dsh.Agent.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.AgentLoop\Dsh.AgentLoop.csproj" />
@@ -36,6 +39,7 @@
   </ItemGroup>
 
 </Project>
+
 
 
 

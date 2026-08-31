@@ -1,0 +1,136 @@
+﻿@inject Cordis.Core.Context Ctx
+@inject WebLocale Locale
+@implements IDisposable
+
+@if (_approval is not null)
+{
+    <div class="dsh-approval-overlay">
+        <div class="dsh-approval-dialog">
+            <h3>@Locale.T("approvalRequired")</h3>
+            <p class="dsh-approval-tool">@_approval.Request.ToolName</p>
+            @if (_approval.Request.Reason is { } reason)
+            {
+                <p class="dsh-approval-reason">@reason</p>
+            }
+            <button class="dsh-approve" @onclick="() => DecideApproval(true)">@Locale.T("approve")</button>
+            <button class="dsh-deny" @onclick="() => DecideApproval(false)">@Locale.T("deny")</button>
+        </div>
+    </div>
+}
+
+@if (_question is not null)
+{
+    <div class="dsh-approval-overlay">
+        <div class="dsh-approval-dialog">
+            <h3>@Locale.T("question")</h3>
+            <p class="dsh-approval-tool">@_question.Request.Questions[0].Question</p>
+            <input @bind="_answerText" placeholder="@Locale.T("answer")" />
+            <button class="dsh-approve" @onclick="AnswerQuestion">@Locale.T("submit")</button>
+        </div>
+    </div>
+}
+
+@code {
+    private sealed class PendingApproval
+    {
+        public required Dsh.Interaction.ApprovalRequest Request { get; init; }
+        public required TaskCompletionSource<Dsh.Interaction.ApprovalOutcome> Completion { get; init; }
+    }
+
+    private sealed class PendingQuestion
+    {
+        public required Dsh.Interaction.UserQuestionRequest Request { get; init; }
+        public required TaskCompletionSource<Dsh.Interaction.UserQuestionAnswer> Completion { get; init; }
+    }
+
+    private PendingApproval? _approval;
+    private PendingQuestion? _question;
+    private string _answerText = "";
+    private readonly List<IDisposable> _subscriptions = new();
+
+    protected override void OnInitialized()
+    {
+        // Answer the approval seam in-process: an ask while this shell is live shows the dialog
+        // and waits for the operator (the $events bridge answers remote clients; this answers the
+        // shell's own circuit).
+        _subscriptions.Add(Ctx.On("approval/request",
+            new Func<Dsh.Interaction.ApprovalRequest, Func<Task<Dsh.Interaction.ApprovalOutcome>>, Task<Dsh.Interaction.ApprovalOutcome>>(async (request, next) =>
+            {
+                var tcs = new TaskCompletionSource<Dsh.Interaction.ApprovalOutcome>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _approval = new PendingApproval { Request = request, Completion = tcs };
+                StateHasChanged();
+                try
+                {
+                    return await tcs.Task;
+                }
+                finally
+                {
+                    _approval = null;
+                    StateHasChanged();
+                }
+            })));
+        // The ask_user_question tool's questions land here: one text answer per question.
+        _subscriptions.Add(Ctx.On("user-questions/ask",
+            new Func<Dsh.Interaction.UserQuestionRequest, Func<Task<Dsh.Interaction.UserQuestionAnswer>>, Task<Dsh.Interaction.UserQuestionAnswer>>(async (request, next) =>
+            {
+                var tcs = new TaskCompletionSource<Dsh.Interaction.UserQuestionAnswer>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _question = new PendingQuestion { Request = request, Completion = tcs };
+                _answerText = "";
+                StateHasChanged();
+                try
+                {
+                    return await tcs.Task;
+                }
+                finally
+                {
+                    _question = null;
+                    StateHasChanged();
+                }
+            })));
+        // Route tool approvals through the seam while this shell is live: a tool call asks the
+        // dialog instead of running unapproved. The TUI keeps its own dialog on its own profile;
+        // the headless profile composes no approval UI, so its loop stays unapproved.
+        _subscriptions.Add(Ctx.On("tools/pre-execute",
+            new Func<Dsh.Tools.ToolRunContext, Func<Task<Dsh.Tools.PreToolDecision>>, Task<Dsh.Tools.PreToolDecision>>(async (exec, next) =>
+            {
+                var approval = Ctx.Get<Dsh.Interaction.ApprovalService>("approval");
+                if (approval is null || exec.Session is null) return await next();
+                var agent = Ctx.Get<Dsh.Agent.AgentRegistry>("agents")?.Get(exec.Session.Id);
+                if (agent is null) return await next();
+                var outcome = await approval.AskAsync(new Dsh.Interaction.ApprovalRequest(
+                    agent, exec.Name, exec.CallId.Value, CancellationToken: exec.CancellationToken));
+                return outcome == Dsh.Interaction.ApprovalOutcome.AllowedOnce
+                    ? new Dsh.Tools.AllowDecision()
+                    : new Dsh.Tools.DenyDecision("the operator denied the tool call");
+            })));
+    }
+
+    public void Dispose()
+    {
+        foreach (var subscription in _subscriptions) subscription.Dispose();
+        _subscriptions.Clear();
+    }
+
+    private void DecideApproval(bool allow)
+    {
+        var pending = _approval;
+        if (pending is null) return;
+        _approval = null;
+        pending.Completion.TrySetResult(allow ? Dsh.Interaction.ApprovalOutcome.AllowedOnce : Dsh.Interaction.ApprovalOutcome.Rejected);
+        StateHasChanged();
+    }
+
+    private void AnswerQuestion()
+    {
+        var pending = _question;
+        if (pending is null) return;
+        var first = pending.Request.Questions[0];
+        _question = null;
+        var text = _answerText.Trim();
+        pending.Completion.TrySetResult(new Dsh.Interaction.UserQuestionAnswer(new[]
+        {
+            new Dsh.Interaction.UserQuestionAnswerItem(first.Id, Array.Empty<string>(), text.Length == 0 ? null : text),
+        }));
+        StateHasChanged();
+    }
+}

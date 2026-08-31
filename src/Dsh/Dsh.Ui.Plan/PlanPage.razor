@@ -1,0 +1,48 @@
+﻿@page "/plan"
+@rendermode InteractiveServer
+@inject Cordis.Core.Context Ctx
+@inject WebLocale Locale
+@inject ShellState State
+@inject Dsh.Web.App.Store.WebSessionStore Store
+@implements IDisposable
+
+<div class="dsh-page">
+    <h1>@Locale.T("plan")</h1>
+    @if (State.Selected is null)
+    {
+        <p class="dsh-muted">@Locale.T("selectSession")</p>
+    }
+    else
+    {
+        var plan = Ctx.Get<Dsh.Plan.IPlanService>("plan")?.Current(State.Selected.Session);
+        if (plan is null || plan.Items.Count == 0)
+        {
+            <p class="dsh-muted">@Locale.T("noPlan")</p>
+        }
+        else
+        {
+            <ul class="dsh-plan-items">
+                @foreach (var item in plan.Items)
+                {
+                    <li class="dsh-plan-item">@item.Content</li>
+                }
+            </ul>
+        }
+    }
+</div>
+
+@code {
+    private IDisposable? _storeSubscription;
+
+    protected override void OnInitialized()
+    {
+        _storeSubscription = Store.Subscribe(StateHasChanged);
+        State.Changed += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        _storeSubscription?.Dispose();
+        State.Changed -= StateHasChanged;
+    }
+}

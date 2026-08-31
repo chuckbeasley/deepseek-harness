@@ -40,6 +40,9 @@
     <Project Path="src/Dsh/Dsh.Rpc.Generator/Dsh.Rpc.Generator.csproj" />
     <Project Path="src/Dsh/Dsh.Interaction/Dsh.Interaction.csproj" />
     <Project Path="src/Dsh/Dsh.Ui.Sidebar/Dsh.Ui.Sidebar.csproj" />
+    <Project Path="src/Dsh/Dsh.Ui.Approval/Dsh.Ui.Approval.csproj" />
+    <Project Path="src/Dsh/Dsh.Ui.Settings/Dsh.Ui.Settings.csproj" />
+    <Project Path="src/Dsh/Dsh.Ui.Plan/Dsh.Ui.Plan.csproj" />
     <Project Path="src/Dsh/Dsh.Ui.Sessions/Dsh.Ui.Sessions.csproj" />
     <Project Path="src/Dsh/Dsh.Ui.Chat/Dsh.Ui.Chat.csproj" />
     <Project Path="src/Dsh/Dsh.Ui.Workspace/Dsh.Ui.Workspace.csproj" />
@@ -116,6 +119,8 @@
     <Project Path="tests/Dsh.Todo.Tests/Dsh.Todo.Tests.csproj" />
   </Folder>
 </Solution>
+
+
 
 
 

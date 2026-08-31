@@ -11,9 +11,14 @@ namespace Dsh.Web.App;
 /// </summary>
 public static class DshWebApp
 {
-    /// <summary>Mount the shell onto the host application.</summary>
+    /// <summary>
+    /// Mount the shell onto the host application. The endpoint-level route table must know every
+    /// ui-* page assembly at map time (the SSR router matches through the endpoint's route data),
+    /// so the caller passes the assemblies the ui-* rows registered before this row ran.
+    /// </summary>
     /// <param name="app">the host application (after the gateway hub is mapped).</param>
-    public static void MapDshApp(this WebApplication app)
+    /// <param name="additionalAssemblies">the ui-* page assemblies to route, in registration order.</param>
+    public static void MapDshApp(this WebApplication app, IReadOnlyList<System.Reflection.Assembly>? additionalAssemblies = null)
     {
         app.UseStaticFiles();
         app.UseAntiforgery();
@@ -24,8 +29,12 @@ public static class DshWebApp
             http.Items[WebLocale.ItemsKey] = WebLocale.Negotiate(http.Request.Headers.AcceptLanguage);
             await next();
         });
-        app.MapRazorComponents<App>()
+        var builder = app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
+        if (additionalAssemblies is { Count: > 0 })
+        {
+            builder.AddAdditionalAssemblies(additionalAssemblies.ToArray());
+        }
     }
 
     /// <summary>
@@ -34,12 +43,13 @@ public static class DshWebApp
     /// webHost row creates it and the ui-* rows register their contributions into it before the
     /// first request); a fresh one is created otherwise.
     /// </summary>
-    public static IServiceCollection AddDshApp(this IServiceCollection services, Slots.SlotRegistry? slots = null)
+    public static IServiceCollection AddDshApp(this IServiceCollection services, Slots.SlotRegistry? slots = null, PageAssemblyRegistry? pageAssemblies = null)
     {
         services.AddRazorComponents()
             .AddInteractiveServerComponents();
         services.AddHttpContextAccessor();
         services.AddSingleton(slots ?? new Slots.SlotRegistry());
+        services.AddSingleton(pageAssemblies ?? new PageAssemblyRegistry());
         services.AddSingleton<Store.WebSessionStore>();
         services.AddScoped<LocaleScope>();
         services.AddScoped(sp => new WebLocale(sp.GetRequiredService<LocaleScope>()));

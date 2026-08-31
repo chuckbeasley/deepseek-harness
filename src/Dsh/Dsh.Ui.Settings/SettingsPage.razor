@@ -1,0 +1,29 @@
+﻿@page "/settings"
+@rendermode InteractiveServer
+@inject Cordis.Core.Context Ctx
+@inject WebLocale Locale
+
+<div class="dsh-page">
+    <h1>@Locale.T("settings")</h1>
+    @if (Provider is null)
+    {
+        <p class="dsh-muted">@Locale.T("noSettings")</p>
+    }
+    else
+    {
+        <p class="dsh-settings-path">@Locale.T("settingsDocument") @(Provider.DocumentPath ?? "-")</p>
+        <ul class="dsh-settings-namespaces">
+            @foreach (var ns in Provider.Describe(new Dsh.Settings.SettingsDescribeOptions(RedactSecrets: true)))
+            {
+                <li class="dsh-settings-namespace">
+                    <span class="dsh-settings-ns">@ns.Ns</span>
+                    <span class="dsh-settings-facts">r@ns.Revision</span>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private Dsh.Settings.SettingsProvider? Provider => Ctx.Get<Dsh.Settings.SettingsProvider>("settings");
+}
