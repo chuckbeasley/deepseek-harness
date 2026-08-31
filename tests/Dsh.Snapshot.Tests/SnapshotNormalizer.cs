@@ -93,7 +93,18 @@ public static class SnapshotNormalizer
     /// <summary>Replace the run cwd and any stray UUID with stable tokens (legacy identity mode).</summary>
     private static string ScrubString(string value, NormalizeContext ctx, bool preserveIdentity)
     {
-        var output = ReplaceCwd(value, ctx.Cwd, CwdToken).Replace("/private" + CwdToken, CwdToken);
+        var output = ReplaceCwd(value, ctx.Cwd, CwdToken);
+        // The display paths use forward slashes (the TS canonical surface) while the header cwd
+        // keeps the native separators, so the slash-normalized spelling is replaced too.
+        if (ctx.Cwd.Contains('\\')) output = ReplaceCwd(output, ctx.Cwd.Replace('\\', '/'), CwdToken);
+        // Model-visible text embeds the cwd JSON-escaped (the policy sentence serializes the
+        // workspace root), so the escaped spelling is replaced as well.
+        var escapedCwd = System.Text.Json.JsonSerializer.Serialize(ctx.Cwd);
+        if (escapedCwd.Length >= 2 && escapedCwd != $"\"{ctx.Cwd}\"")
+        {
+            output = ReplaceCwd(output, escapedCwd.Substring(1, escapedCwd.Length - 2), CwdToken);
+        }
+        output = output.Replace("/private" + CwdToken, CwdToken);
         output = CwdRootedPathRegex.Replace(output, match => match.Value.Replace('\\', '/'));
         output = PathTagRegex.Replace(output, match => match.Groups[1].Value + match.Groups[2].Value.Replace('\\', '/') + match.Groups[3].Value);
         if (!preserveIdentity)

@@ -86,7 +86,7 @@ public static class ReplayInstall
         }
 
         var provider = config.Provider ?? "deepseek-official";
-        var registration = llm.RegisterAdapter(new[] { provider }, new ReplayAdapter(Replay));
+        var registration = llm.RegisterAdapter(new[] { provider }, new ReplayAdapter(Replay, config.Models));
         return new ReplayHandle(registration, () =>
         {
             var problems = new List<string>();

@@ -99,11 +99,19 @@ public sealed class ToolRuntime : Service
             var content = tool.Render is null
                 ? new ContentBlock[] { new TextBlock(value.GetRawText()) }
                 : tool.Render(exec.Arguments, value);
-            return new ToolExecutionSuccess(value, content);
+            System.Text.Json.JsonElement? meta;
+            if (tool.MetaOf is not null) meta = tool.MetaOf(value);
+            else if (tool.PersistMeta) meta = value;
+            else meta = null;
+            return new ToolExecutionSuccess(value, content, meta);
         }
         catch (Exception error)
         {
-            return new ToolExecutionFailure(new ToolFailure(error.Message), new ContentBlock[] { new TextBlock($"Error: {error.Message}") });
+            return new ToolExecutionFailure(new ToolFailure(
+                error.Message,
+                Name: (error as IToolErrorInfo)?.Name,
+                Code: (error as IToolErrorInfo)?.Code),
+                new ContentBlock[] { new TextBlock($"Error: {error.Message}") });
         }
     }
 

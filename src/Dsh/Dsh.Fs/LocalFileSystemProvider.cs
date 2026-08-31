@@ -2,8 +2,11 @@ using Cordis.Core;
 
 namespace Dsh.Fs;
 
-/// <summary>Configuration for the local filesystem backend: the single workspace root all paths resolve inside.</summary>
-public sealed record FsProviderConfig(string Root);
+/// <summary>
+/// Configuration for the local filesystem backend: the single workspace root all paths resolve
+/// inside, plus the overwrite diff-basis byte bound (the TS fs-local <c>diffBasisMaxBytes</c>).
+/// </summary>
+public sealed record FsProviderConfig(string Root, int DiffBasisMaxBytes = 10 * 1024 * 1024);
 
 /// <summary>
 /// Host-filesystem provider for ctx.fs (wave-1 port of packages/fs/fs-local). All paths resolve
@@ -15,8 +18,7 @@ public sealed record FsProviderConfig(string Root);
 ///
 /// Deviations from fs-local: the target key is the lexical normalized absolute path (no realpath
 /// identity); the version token derives from .NET metadata (length + last-write + creation
-/// ticks) instead of dev:ino:mtimeNs; list order is ordinal rather than locale; the write
-/// outcome's <c>before</c> diff basis is always <c>null</c> (diff/edit deferred); cancellation
+/// ticks) instead of dev:ino:mtimeNs; list order is ordinal rather than locale; cancellation
 /// surfaces as FS_ABORTED like the TS seam.
 /// </summary>
 public sealed class LocalFileSystemProvider : Service, IFileSystemService
@@ -26,6 +28,8 @@ public sealed class LocalFileSystemProvider : Service, IFileSystemService
     private static readonly UTF8Encoding StrictUtf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
     private readonly string _root;
+
+    private readonly int _diffBasisMaxBytes;
 
     /// <summary>Register the provider as ctx.fs over <paramref name="config"/>.Root; the root directory is created when missing.</summary>
     public LocalFileSystemProvider(Context ctx, FsProviderConfig config)
@@ -37,11 +41,15 @@ public sealed class LocalFileSystemProvider : Service, IFileSystemService
             throw new ArgumentException("workspace root must be a non-empty path", nameof(config));
         }
         _root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(config.Root));
+        _diffBasisMaxBytes = config.DiffBasisMaxBytes > 0 ? config.DiffBasisMaxBytes : throw new ArgumentException("diffBasisMaxBytes must be a positive integer", nameof(config));
         Directory.CreateDirectory(_root);
     }
 
     /// <summary>The normalized workspace root every resolved target lives inside.</summary>
     public string WorkspaceRoot => _root;
+
+    /// <summary>The exclusive byte bound for the overwrite diff basis (<c>null</c> above it).</summary>
+    public int DiffBasisMaxBytes => _diffBasisMaxBytes;
 
     // --- resolve(request): spec steps ---
 
@@ -149,6 +157,42 @@ public sealed class LocalFileSystemProvider : Service, IFileSystemService
         }
     }
 
+    /// <summary>
+    /// Best-effort overwrite diff basis (port of fs-local <c>readTextForDiff</c>): the
+    /// LF-normalized file text, or <c>null</c> for a file at/above <paramref name="maxBytes"/>,
+    /// binary, invalid UTF-8, or unreadable — the write still succeeds and presentation falls
+    /// back to a whole-file diff.
+    /// </summary>
+    private async Task<string?> ReadDiffBasisAsync(string key, int maxBytes, CancellationToken ct)
+    {
+        byte[] raw;
+        try
+        {
+            ThrowIfAborted(ct, "read");
+            raw = await File.ReadAllBytesAsync(key, ct).ConfigureAwait(false);
+            ThrowIfAborted(ct, "read");
+        }
+        catch (OperationCanceledException)
+        {
+            throw new FsError("read aborted", FsErrorCodes.Aborted);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+        if (raw.Length >= maxBytes || raw.AsSpan().IndexOf((byte)0) >= 0) return null;
+        string text;
+        try
+        {
+            text = StrictUtf8.GetString(raw);
+        }
+        catch (DecoderFallbackException)
+        {
+            return null;
+        }
+        return NormalizeLineEndings(text);
+    }
+
     /// <inheritdoc />
     public async Task<byte[]> ReadBytesAsync(FsReadBytesSpec spec, CancellationToken ct = default)
     {
@@ -235,6 +279,9 @@ public sealed class LocalFileSystemProvider : Service, IFileSystemService
         var key = spec.Target.TargetKey;
         var display = spec.Target.DisplayPath;
         var existing = Probe(key, display);
+        var before = existing is not null && Encoding.UTF8.GetByteCount(spec.Content) < DiffBasisMaxBytes
+            ? await ReadDiffBasisAsync(key, DiffBasisMaxBytes, ct).ConfigureAwait(false)
+            : null;
 
         if (spec.Intent is FsReplaceIfVersionIntent replace)
         {
@@ -300,7 +347,7 @@ public sealed class LocalFileSystemProvider : Service, IFileSystemService
         return new FsWriteOutcome(
             existing is null ? "create" : "update",
             after.Version,
-            Before: null,
+            Before: before,
             After: NormalizeLineEndings(spec.Content));
     }
 

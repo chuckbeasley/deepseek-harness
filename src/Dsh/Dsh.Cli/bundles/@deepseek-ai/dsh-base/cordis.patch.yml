@@ -33,7 +33,7 @@
     - id: todo
       name: todo
       config:
-        allowParallelInProgress: false
+        allowParallelInProgress: true
 
     - id: subprocess
       name: subprocess

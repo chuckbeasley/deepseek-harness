@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Dsh.Tools;
 
 namespace Dsh.Fs;
 
@@ -175,7 +176,7 @@ public static class FsErrorCodes
 /// <see cref="Code"/> from <see cref="FsErrorCodes"/>. Providers and tools raise the same codes
 /// instead of inventing message strings.
 /// </summary>
-public sealed class FsError : Exception
+public sealed class FsError : Exception, IToolErrorInfo
 {
     public FsError(string message, string code, Exception? innerException = null)
         : base(message, innerException)
@@ -185,4 +186,7 @@ public sealed class FsError : Exception
 
     /// <summary>Stable machine code (see <see cref="FsErrorCodes"/>).</summary>
     public string Code { get; }
+
+    /// <summary>Stable error name surfaced on tool results (port of the TS error <c>name</c>).</summary>
+    public string Name => "FsError";
 }

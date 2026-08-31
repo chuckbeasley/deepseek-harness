@@ -70,7 +70,7 @@ public static class ToolCallScheduler
             Error = result is ToolExecutionFailure failure
                 ? new ToolErrorInfo(failure.Error.Name ?? "Error", failure.Error.Code ?? "UNKNOWN")
                 : null,
-            Meta = result is ToolExecutionSuccess success ? success.Value : null,
+            Meta = result is ToolExecutionSuccess success ? success.Meta : null,
             SurfaceOp = SurfaceOp.Append,
             SourceEventSeqs = new long[] { callSeq },
         });

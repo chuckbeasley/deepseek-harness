@@ -85,6 +85,14 @@ public static class SnapshotDriver
         startInfo.Environment["DSH_HOME"] = home;
         startInfo.Environment["DSH_SNAPSHOT_FILE"] = fixtureFile;
         startInfo.Environment["DSH_TELEMETRY_DISABLED"] = "1";
+        // The recorded fixtures run POSIX shell commands; on Windows route bash through the
+        // Git-bash sh when present so the recorded behavior reproduces.
+        if (OperatingSystem.IsWindows())
+        {
+            var gitSh = new[] { @"C:\Program Files\Git\bin\sh.exe", @"C:\Program Files (x86)\Git\bin\sh.exe" }
+                .FirstOrDefault(File.Exists);
+            if (gitSh is not null) startInfo.Environment["DSH_SHELL_PATH"] = gitSh;
+        }
         if (provider is not null) startInfo.Environment["DSH_SNAPSHOT_PROVIDER"] = provider;
         if (model is not null) startInfo.Environment["DSH_SNAPSHOT_MODEL"] = model;
         if (extraEnv is not null)

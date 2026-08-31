@@ -52,14 +52,15 @@ public sealed class PolicyBaselinePlugin : ILoaderPlugin
     {
         // The permission preset comes from $DSH_PERMISSION_MODE when set (the TS headless
         // contract); the sandbox mode and approval policy derive from the preset exactly like the
-        // TS presets table (danger-full-access disables approval; the other presets ask).
+        // TS presets table (danger-full-access disables approval; the other presets ask). The
+        // config values only fall back for a preset outside the three known modes.
         var preset = Environment.GetEnvironmentVariable("DSH_PERMISSION_MODE") is { Length: > 0 } envPreset
             ? envPreset
             : SpineRegistry.ConfigString(config, "preset") ?? PolicyBaseline.DefaultPreset;
-        var mode = SpineRegistry.ConfigString(config, "sandboxMode")
-            ?? (preset is "workspace-write" or "read-only" or "danger-full-access" ? preset : PolicyBaseline.DefaultSandboxMode);
-        var policy = SpineRegistry.ConfigString(config, "approvalPolicy")
-            ?? (preset == "danger-full-access" ? "never" : "ask");
+        var mode = preset is "workspace-write" or "read-only" or "danger-full-access"
+            ? preset
+            : SpineRegistry.ConfigString(config, "sandboxMode") ?? PolicyBaseline.DefaultSandboxMode;
+        var policy = preset == "danger-full-access" ? "never" : "ask";
         Dsh.Interaction.InteractionEventTypes.Register();
         Dsh.Sandbox.SandboxEventTypes.Register();
         var subscription = ctx.On("session/created", (Delegate)(Action<Dsh.Session.Session>)(session =>
@@ -102,10 +103,10 @@ public sealed class PolicyContextPlugin : ILoaderPlugin
         var preset = Environment.GetEnvironmentVariable("DSH_PERMISSION_MODE") is { Length: > 0 } envPreset
             ? envPreset
             : SpineRegistry.ConfigString(config, "preset") ?? PolicyBaseline.DefaultPreset;
-        var mode = SpineRegistry.ConfigString(config, "sandboxMode")
-            ?? (preset is "workspace-write" or "read-only" or "danger-full-access" ? preset : PolicyBaseline.DefaultSandboxMode);
-        var policy = SpineRegistry.ConfigString(config, "approvalPolicy")
-            ?? (preset == "danger-full-access" ? "never" : "ask");
+        var mode = preset is "workspace-write" or "read-only" or "danger-full-access"
+            ? preset
+            : SpineRegistry.ConfigString(config, "sandboxMode") ?? PolicyBaseline.DefaultSandboxMode;
+        var policy = preset == "danger-full-access" ? "never" : "ask";
         var workspaceRoot = SpineRegistry.ConfigString(config, "workspaceRoot") ?? Environment.CurrentDirectory;
         var sandboxText = PolicyBaseline.SandboxPolicyText(mode, workspaceRoot);
         var approvalText = PolicyBaseline.ApprovalPolicyText(policy);

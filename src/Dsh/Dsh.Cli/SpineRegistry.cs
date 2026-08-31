@@ -129,6 +129,7 @@ public static class SpineRegistry
                 OverrideFile = string.IsNullOrEmpty(overrideFile) ? null : overrideFile,
                 ChildFiles = childFiles,
                 Provider = Dsh.Llm.Replay.SnapshotEnv.Provider,
+                Models = ParseModelMetadata(Environment.GetEnvironmentVariable("DSH_SNAPSHOT_MODEL_META")),
             });
             // The end-of-run consumption check turns a fixture underrun into a crisp exit-1
             // diagnostic; the CLI owns process lifetime, so dispose runs on ctx disposal.
@@ -170,7 +171,13 @@ public static class SpineRegistry
         catalog.Register("fs", new SpinePlugin("fs", (ctx, config) =>
         {
             var root = ConfigString(config, "root") ?? Environment.CurrentDirectory;
-            var service = new Dsh.Fs.LocalFileSystemProvider(ctx, new Dsh.Fs.FsProviderConfig(root));
+            var diffBasis = ConfigInt(config, "diffBasisMaxBytes");
+            if (diffBasis is null)
+            {
+                var envDiffBasis = Environment.GetEnvironmentVariable("DSH_FS_DIFF_BASIS_MAX_BYTES");
+                diffBasis = envDiffBasis is { Length: > 0 } && int.TryParse(envDiffBasis, out var parsed) ? parsed : null;
+            }
+            var service = new Dsh.Fs.LocalFileSystemProvider(ctx, new Dsh.Fs.FsProviderConfig(root, diffBasis ?? 10 * 1024 * 1024));
             var read = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Read(service));
             var write = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Write(service));
             return new SpineDisposables(write, read, service);
@@ -179,7 +186,7 @@ public static class SpineRegistry
         {
             var service = new Dsh.Shell.LocalShellProvider(ctx, new Dsh.Shell.ShellConfig
             {
-                ShellPath = ConfigString(config, "shellPath") ?? (OperatingSystem.IsWindows() ? "cmd.exe" : "sh"),
+                ShellPath = ConfigString(config, "shellPath") ?? Environment.GetEnvironmentVariable("DSH_SHELL_PATH") ?? (OperatingSystem.IsWindows() ? "cmd.exe" : "sh"),
                 TimeoutMs = ConfigInt(config, "timeoutMs") ?? 120000,
                 StdoutMaxBytes = ConfigInt(config, "stdoutMaxBytes") ?? 256 * 1024,
             });
@@ -623,6 +630,25 @@ public static class SpineRegistry
         => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is string text
             ? text
             : null;
+
+    /// <summary>
+    /// Parse the snapshot-run model-metadata env (a JSON map of model id to
+    /// {contextWindow, defaultMaxTokens, defaultReasoningEffort, reasoningEfforts}) into the
+    /// replay provider's capability table; absent or empty means no adapter defaults.
+    /// </summary>
+    private static IReadOnlyDictionary<string, Dsh.Llm.LlmModelMetadata>? ParseModelMetadata(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return null;
+        try
+        {
+            var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            return System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, Dsh.Llm.LlmModelMetadata>>(json, options);
+        }
+        catch (Exception error)
+        {
+            throw new InvalidOperationException($"DSH_SNAPSHOT_MODEL_META is not valid model metadata: {error.Message}");
+        }
+    }
 
     private static bool? ConfigBool(object? config, string key)
         => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is bool boolean

@@ -18,6 +18,11 @@ public static class Program
         {
             return CorpusTests.RunCorpus(line => Console.WriteLine(line));
         }
+        if (args.Length > 1 && args[0] == "diff")
+        {
+            CorpusTests.DiffScenario(args[1], line => Console.WriteLine(line));
+            return 0;
+        }
         var passed = 0;
         var failures = new List<string>();
         foreach (var (name, run) in Suites)

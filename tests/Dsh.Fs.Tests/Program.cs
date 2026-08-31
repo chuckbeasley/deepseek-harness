@@ -31,6 +31,7 @@ public static class Program
         ("empty content writes an empty file", FileSystemToolTests.EmptyContentWritesEmptyFile),
         ("fs_read truncates an over-long line", FileSystemToolTests.ReadTruncatesLongLine),
         ("fs_read byte cap truncates the window", FileSystemToolTests.ReadByteCapTruncatesWindow),
+        ("hunk diffs match the jsdiff reference outputs", HunkDiffsTests.MatchesJsdiffReferenceOutputs),
     };
 
     public static async Task<int> Main()

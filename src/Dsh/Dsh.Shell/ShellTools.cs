@@ -61,7 +61,8 @@ public static class ShellTools
                 var result = shell.Run(spec);
                 return Task.FromResult(ToResultJson(result));
             },
-            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderValue(value)) });
+            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderValue(value)) },
+            PersistMeta: false);
     }
 
     private sealed record BashToolArgs(string Command, string Description, string? Workdir, int? TimeoutMs);

@@ -66,7 +66,8 @@ public static class TodoTool
                 context.Session?.Append(new TodoWriteEvent { Todos = result.Todos });
                 return Task.FromResult(JsonSerializer.SerializeToElement(result));
             },
-            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderText(value)) });
+            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderText(value)) },
+            PersistMeta: false);
     }
 
     private static IReadOnlyList<TodoItem> ParseTodos(JsonElement args)

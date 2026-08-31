@@ -56,7 +56,8 @@ public static class FileSystemTools
         [property: JsonPropertyName("path")] string Path,
         [property: JsonPropertyName("operation")] string Operation,
         [property: JsonPropertyName("before")] string? Before,
-        [property: JsonPropertyName("after")] string After);
+        [property: JsonPropertyName("after")] string After,
+        [property: JsonPropertyName("requestedPath")] string? RequestedPath = null);
 
     /// <summary>The windowed result <see cref="BuildWindow"/> produces from a file's decoded text.</summary>
     public sealed record FsWindowResult(IReadOnlyList<FsFileTextLine> Lines, int TotalLines, bool TruncatedByBytes);
@@ -130,12 +131,33 @@ public static class FileSystemTools
                 {
                     throw RemediateFsError(error);
                 }
-                return JsonSerializer.SerializeToElement(new FsWriteResult(spec.Target.DisplayPath, outcome.Operation, outcome.Before, outcome.After));
+                return JsonSerializer.SerializeToElement(new FsWriteResult(spec.Target.DisplayPath, outcome.Operation, outcome.Before, outcome.After, input.FilePath));
             },
             Render: (_, value) =>
             {
                 var result = JsonSerializer.Deserialize<FsWriteResult>(value)!;
                 return new ContentBlock[] { new TextBlock(FormatWriteOutput(result.Path, result.Operation)) };
+            },
+            // The TS write tool's durable meta is the {diffs} presentation payload: empty for a
+            // create or an undiffable overwrite (before null), one {path, oldText, newText} entry
+            // per replaced hunk otherwise (computeHunkDiffs over the LF-normalized basis).
+            MetaOf: value =>
+            {
+                var result = JsonSerializer.Deserialize<FsWriteResult>(value)!;
+                var diffs = new JsonArray();
+                if (result.Operation != "create" && result.Before is not null)
+                {
+                    foreach (var diff in HunkDiffs.Compute(result.RequestedPath ?? result.Path, result.Before, result.After))
+                    {
+                        diffs.Add(new JsonObject
+                        {
+                            ["path"] = diff.Path,
+                            ["oldText"] = diff.OldText,
+                            ["newText"] = diff.NewText,
+                        });
+                    }
+                }
+                return JsonSerializer.SerializeToElement(new JsonObject { ["diffs"] = diffs });
             });
     }
 

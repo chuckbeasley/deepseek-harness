@@ -32,6 +32,9 @@ public sealed record ReplayConfig
     /// <summary>The provider route to register the replay adapter under (defaults to <c>deepseek-official</c>).</summary>
     public string? Provider { get; init; }
 
+    /// <summary>Per-model capability metadata (contextWindow/defaultMaxTokens/reasoning effort) the replay adapter resolves requests against.</summary>
+    public IReadOnlyDictionary<string, LlmModelMetadata>? Models { get; init; }
+
     /// <summary>Optional per-chunk pacing delay in milliseconds (a realism knob only).</summary>
     public int PaceMs { get; init; }
 }

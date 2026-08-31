@@ -365,9 +365,15 @@ public sealed class LoopAgent
             throw new InvalidOperationException(
                 $"agent \"{_agent.Id}\" has no provider/model: set AgentOptions.Provider and AgentOptions.Model or supply both via the agent/request waterfall");
         }
+        // Exact-model adapter defaults: the proposal may omit maxTokens/reasoningEffort and the
+        // adapter's model metadata materializes them (port of the TS prepareCall resolution). The
+        // resolved config is what the header and the dispatch carry.
+        var metadata = _runtime.Llm.ResolveModelMetadata(config.Provider, config.Model);
+        var resolved = ResolveCallConfig(config, metadata);
         var header = new EpochHeader
         {
-            Config = config,
+            Config = resolved.Config,
+            AdapterDefaults = resolved.Defaults is { ReasoningEffort: false, MaxTokens: false } ? null : resolved.Defaults,
             System = system.Length == 0 ? null : system,
             Tools = tools.Count > 0 ? tools : null,
         };
@@ -394,22 +400,74 @@ public sealed class LoopAgent
         {
             session.Append(new RequestHeaderEvent { Header = header, Reason = RequestHeaderReason.Series });
         }
-        var requestContext = new RequestContextEvent { Provider = config.Provider, Model = config.Model };
+        var requestContext = new RequestContextEvent
+        {
+            Provider = resolved.Config.Provider,
+            Model = resolved.Config.Model,
+            ContextWindow = metadata?.ContextWindow,
+        };
         var previous = LastContext();
-        if (previous is null || previous.Provider != requestContext.Provider || previous.Model != requestContext.Model)
+        if (previous is null
+            || previous.Provider != requestContext.Provider
+            || previous.Model != requestContext.Model
+            || previous.ContextWindow != requestContext.ContextWindow)
         {
             session.Append(requestContext);
         }
         ct.ThrowIfCancellationRequested();
         var request = new GenerateOptions(
-            config.Provider, config.Model, session.DeriveMessages(),
+            resolved.Config.Provider, resolved.Config.Model, session.DeriveMessages(),
             System: header.System, Tools: header.Tools,
-            Temperature: config.Temperature, MaxTokens: config.MaxTokens,
+            Temperature: resolved.Config.Temperature, MaxTokens: resolved.Config.MaxTokens,
             CancellationToken: ct)
         {
             SessionId = session.Id.Value,
         };
         return (request, header);
+    }
+
+    /// <summary>
+    /// Apply exact-model adapter defaults to a proposed config (port of the TS
+    /// <c>resolveCallWithInfo</c>): a missing maxTokens takes the model's default; a missing
+    /// reasoning effort takes the model's default effort when the model supports reasoning.
+    /// Adapter-defaulted fields are flagged so later proposals can strip them again.
+    /// </summary>
+    private static (LlmCallConfig Config, LlmCallConfigAdapterDefaults Defaults) ResolveCallConfig(
+        LlmCallConfig config, LlmModelMetadata? info)
+    {
+        if (info is null) return (config, new LlmCallConfigAdapterDefaults());
+        var defaulted = config.MaxTokens is null && info.DefaultMaxTokens is not null
+            ? config with { MaxTokens = info.DefaultMaxTokens }
+            : config;
+        var requested = defaulted.ReasoningEffort;
+        var resolved = defaulted;
+        if (info.DefaultReasoningEffort is null && info.ReasoningEfforts is null)
+        {
+            if (requested is not null)
+            {
+                throw new LlmError(
+                    $"provider \"{config.Provider}\" model \"{config.Model}\" does not support reasoning effort \"{requested.Value}\"",
+                    "UNSUPPORTED_REASONING_EFFORT");
+            }
+        }
+        else
+        {
+            var effective = requested ?? info.DefaultReasoningEffort;
+            if (effective is not null)
+            {
+                if (info.ReasoningEfforts is not null && !info.ReasoningEfforts.Contains(effective))
+                {
+                    throw new LlmError(
+                        $"provider \"{config.Provider}\" model \"{config.Model}\" does not support reasoning effort \"{effective}\"",
+                        "UNSUPPORTED_REASONING_EFFORT");
+                }
+                if (requested != effective) resolved = defaulted with { ReasoningEffort = new ReasoningEffortId(effective) };
+            }
+        }
+        var defaults = new LlmCallConfigAdapterDefaults(
+            ReasoningEffort: config.ReasoningEffort is null && resolved.ReasoningEffort is not null,
+            MaxTokens: config.MaxTokens is null && resolved.MaxTokens is not null);
+        return (resolved, defaults);
     }
 
     /// <summary>The last durable request header snapshot, or null when the log has none.</summary>

@@ -28,7 +28,10 @@ public abstract record ToolExecutionResult
 }
 
 /// <summary>Successful canonical tool execution.</summary>
-public sealed record ToolExecutionSuccess(JsonElement Value, IReadOnlyList<ContentBlock> Blocks) : ToolExecutionResult
+public sealed record ToolExecutionSuccess(
+    JsonElement Value,
+    IReadOnlyList<ContentBlock> Blocks,
+    JsonElement? Meta = null) : ToolExecutionResult
 {
     public override bool IsError => false;
 
@@ -45,6 +48,18 @@ public sealed record ToolExecutionFailure(ToolFailure Error, IReadOnlyList<Conte
 
 /// <summary>Canonical failure detail.</summary>
 public sealed record ToolFailure(string Message, string? Name = null, string? Code = null);
+
+/// <summary>
+/// Stable, machine-routable error identity carried by exceptions raised by tool providers
+/// (port of the TS convention of <c>name</c>/<c>code</c> on typed errors). The execution
+/// pipeline preserves it on <see cref="ToolFailure"/>.
+/// </summary>
+public interface IToolErrorInfo
+{
+    string Name { get; }
+
+    string Code { get; }
+}
 
 /// <summary>Pre-dispatch decision: allow runs the call; deny materializes an error result.</summary>
 public abstract record PreToolDecision

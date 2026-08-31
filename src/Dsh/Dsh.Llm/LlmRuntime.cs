@@ -56,6 +56,15 @@ public sealed class LlmRuntime : Service
     public IReadOnlyList<string> ListProviders() => _adapters.Keys.ToArray();
 
     /// <summary>
+    /// Exact-model capability metadata from the provider's adapter, or <c>null</c> when the
+    /// adapter exposes none (the request-config resolution then passes the proposal through).
+    /// </summary>
+    public LlmModelMetadata? ResolveModelMetadata(string provider, string model)
+        => _adapters.TryGetValue(provider, out var adapter) && adapter is IAdapterModelMetadata metadata
+            ? metadata.ResolveModel(model)
+            : null;
+
+    /// <summary>
     /// Stream one model call as raw chunks. The <c>llm/stream</c> waterfall wraps the resolved
     /// adapter; a listener that never calls <c>next()</c> short-circuits the chain.
     /// </summary>

@@ -101,6 +101,10 @@ public static class CorpusTests
             PrepareWorkspace(cwd, scenario.WorkspaceSetup);
             var env = new Dictionary<string, string>(scenario.Environment);
             if (scenario.Permission is not null) env["DSH_PERMISSION_MODE"] = scenario.Permission;
+            var metaJson = ModelMetadataEnvJson(dir, model.Model);
+            if (metaJson is not null) env["DSH_SNAPSHOT_MODEL_META"] = metaJson;
+            var diffBasis = DiffBasisEnv(dir);
+            if (diffBasis is not null) env["DSH_FS_DIFF_BASIS_MAX_BYTES"] = diffBasis;
             var result = SnapshotDriver.RunHeadless(home, cwd, task, fixtureFile,
                 provider: model.Provider, model: model.Model, extraEnv: env);
             var actualLog = SnapshotDriver.HarvestSessionLog(home);
@@ -164,6 +168,82 @@ public static class CorpusTests
                 reasons.Add($"unknown tool {JsonSerializer.Serialize(unknownTool)}");
             }
             return new ScenarioOutcome(reasons);
+        }
+        finally
+        {
+            var root = Path.GetDirectoryName(home);
+            if (root is not null)
+            {
+                try { Directory.Delete(root, recursive: true); } catch { /* best-effort */ }
+            }
+        }
+    }
+
+    /// <summary>Run one scenario and print the full expected/actual comparison (the diff mode).</summary>
+    public static void DiffScenario(string name, Action<string> report)
+    {
+        var scenariosDir = Path.Combine(SnapshotDriver.RepoRoot(), "snapshots", "session");
+        var dir = Path.Combine(scenariosDir, name);
+        if (!Directory.Exists(dir))
+        {
+            report($"no such scenario: {name}");
+            return;
+        }
+        var manifest = ParseManifest(name, File.ReadAllText(Path.Combine(dir, "snapshot.yml")));
+        if (manifest is null)
+        {
+            report($"{name}: not a headless scenario");
+            return;
+        }
+        var fixtureFile = Path.Combine(dir, "session.jsonl");
+        var fixture = File.ReadAllText(fixtureFile);
+        var task = TaskFromSession(fixture) ?? manifest.InputTask;
+        if (task is null)
+        {
+            report($"{name}: no task");
+            return;
+        }
+        var model = ModelFromSession(fixture);
+        var expectedExit = (TurnReasonKind(fixture) == "completed" || (TurnReasonKind(fixture) is null && manifest.InputTask is not null)) ? 0 : 1;
+        var (home, cwd) = SnapshotDriver.CreateRunDirs();
+        try
+        {
+            SnapshotDriver.SeedWorkspace(cwd, Path.Combine(dir, "workspace"));
+            PrepareWorkspace(cwd, manifest.WorkspaceSetup);
+            var env = new Dictionary<string, string>(manifest.Environment);
+            if (manifest.Permission is not null) env["DSH_PERMISSION_MODE"] = manifest.Permission;
+            var metaJson = ModelMetadataEnvJson(dir, model.Model);
+            if (metaJson is not null) env["DSH_SNAPSHOT_MODEL_META"] = metaJson;
+            var diffBasis = DiffBasisEnv(dir);
+            if (diffBasis is not null) env["DSH_FS_DIFF_BASIS_MAX_BYTES"] = diffBasis;
+            var result = SnapshotDriver.RunHeadless(home, cwd, task, fixtureFile,
+                provider: model.Provider, model: model.Model, extraEnv: env);
+            var actualLog = SnapshotDriver.HarvestSessionLog(home) ?? "";
+            var expectedStdout = FinalTextFromSession(fixture) + "\n";
+            report($"stdout: expected {JsonSerializer.Serialize(expectedStdout)} got {JsonSerializer.Serialize(result.Stdout)} equal={result.Stdout == expectedStdout}");
+            report($"stderr: expected {JsonSerializer.Serialize(StderrFromSession(fixture))} got {JsonSerializer.Serialize(result.Stderr)} equal={result.Stderr == StderrFromSession(fixture)}");
+            report($"exit: expected {expectedExit} got {result.ExitCode}");
+            var ctx = new NormalizeContext(CwdOf(actualLog) ?? "", Array.Empty<string>());
+            var fixtureCtx = new NormalizeContext(CwdOf(fixture) ?? "", Array.Empty<string>());
+            var actualNormalized = SnapshotNormalizer.NormalizeSessionSnapshots(new[] { actualLog }, ctx);
+            var fixtureNormalized = SnapshotNormalizer.NormalizeSessionSnapshots(new[] { fixture }, fixtureCtx);
+            var expectedLines = fixtureNormalized[0].Split('\n').Where(line => line.Length > 0).ToArray();
+            var actualLines = actualNormalized[0].Split('\n').Where(line => line.Length > 0).ToArray();
+            report($"log lines: expected {expectedLines.Length} got {actualLines.Length}");
+            var count = Math.Min(expectedLines.Length, actualLines.Length);
+            for (var index = 0; index < count; index++)
+            {
+                if (expectedLines[index] == actualLines[index]) continue;
+                report($"--- line {index} ---");
+                report($"EXP {expectedLines[index]}");
+                report($"GOT {actualLines[index]}");
+            }
+            if (expectedLines.Length != actualLines.Length)
+            {
+                report($"--- length mismatch at line {count} ---");
+                if (expectedLines.Length > count) report($"EXP {expectedLines[count]}");
+                if (actualLines.Length > count) report($"GOT {actualLines[count]}");
+            }
         }
         finally
         {
@@ -469,6 +549,77 @@ public static class CorpusTests
     {
         var match = Regex.Match(input, pattern);
         return match.Success ? match.Groups[1].Value.Trim() : null;
+    }
+
+    /// <summary>
+    /// The replay provider's per-model capability metadata declared in the scenario's
+    /// <c>cordis.snapshot.yml</c> (the llm-replay <c>providers[].models[]</c> blocks) for the
+    /// recorded model, as the DSH_SNAPSHOT_MODEL_META env JSON; null when the scenario declares
+    /// none.
+    /// </summary>
+    private static string? ModelMetadataEnvJson(string dir, string model)
+    {
+        var path = Path.Combine(dir, "cordis.snapshot.yml");
+        if (!File.Exists(path)) return null;
+        var blocks = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
+        string? current = null;
+        foreach (var line in File.ReadAllLines(path))
+        {
+            var idMatch = Regex.Match(line, @"^\s*-\s+id:\s*([A-Za-z0-9_.-]+)");
+            if (idMatch.Success)
+            {
+                current = idMatch.Groups[1].Value;
+                blocks.TryAdd(current, new Dictionary<string, string>(StringComparer.Ordinal));
+                continue;
+            }
+            if (current is null) continue;
+            var scalar = Regex.Match(line, @"^\s+(contextWindow|defaultMaxTokens|defaultReasoningEffort):\s*(.+)$");
+            if (scalar.Success)
+            {
+                blocks[current][scalar.Groups[1].Value] = scalar.Groups[2].Value.Trim();
+                continue;
+            }
+            var efforts = Regex.Match(line, @"^\s+reasoningEfforts:\s*\[([^\]]*)\]");
+            if (efforts.Success)
+            {
+                blocks[current]["reasoningEfforts"] = string.Join(",", efforts.Groups[1].Value
+                    .Split(',').Select(item => item.Trim().Trim('\'')).Where(item => item.Length > 0));
+            }
+        }
+        if (!blocks.TryGetValue(model, out var fields) || fields.Count == 0) return null;
+        var meta = new System.Text.Json.Nodes.JsonObject();
+        if (fields.TryGetValue("contextWindow", out var window) && long.TryParse(window, out var windowValue))
+        {
+            meta["contextWindow"] = windowValue;
+        }
+        if (fields.TryGetValue("defaultMaxTokens", out var tokens) && int.TryParse(tokens, out var tokensValue))
+        {
+            meta["defaultMaxTokens"] = tokensValue;
+        }
+        if (fields.TryGetValue("defaultReasoningEffort", out var effort))
+        {
+            meta["defaultReasoningEffort"] = effort;
+        }
+        if (fields.TryGetValue("reasoningEfforts", out var effortList))
+        {
+            meta["reasoningEfforts"] = new System.Text.Json.Nodes.JsonArray(
+                effortList.Split(',').Select(item => (System.Text.Json.Nodes.JsonNode?)System.Text.Json.Nodes.JsonValue.Create(item)).ToArray());
+        }
+        var root = new System.Text.Json.Nodes.JsonObject { [model] = meta };
+        return root.ToJsonString();
+    }
+
+    /// <summary>The fs-sandbox <c>diffBasisMaxBytes</c> the scenario's cordis patch declares (its own fs-sandbox seam is deferred in the port).</summary>
+    private static string? DiffBasisEnv(string dir)
+    {
+        var path = Path.Combine(dir, "cordis.snapshot.yml");
+        if (!File.Exists(path)) return null;
+        foreach (var line in File.ReadAllLines(path))
+        {
+            var match = Regex.Match(line, @"^\s+diffBasisMaxBytes:\s*(\d+)");
+            if (match.Success) return match.Groups[1].Value;
+        }
+        return null;
     }
 
     private static void PrepareWorkspace(string cwd, string? setup)
