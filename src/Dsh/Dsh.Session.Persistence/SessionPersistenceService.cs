@@ -74,11 +74,7 @@ public sealed class SessionPersistenceService : Service
             {
                 throw new JsonException($"corrupt session log \"{path}\": blank line at line {index + 1}");
             }
-            var evt = JsonSerializer.Deserialize<SessionEvent>(line, SessionEventTypes.CreateSerializerOptions());
-            if (evt is null)
-            {
-                throw new JsonException($"corrupt session log \"{path}\": unparsable event at line {index + 1}");
-            }
+            var evt = SessionLogFormat.ParseEventLine(line);
             events.Add(evt);
         }
         return new StoredSession(header, events);
@@ -198,7 +194,14 @@ public sealed class SessionPersistenceService : Service
             throw new SessionFormatUnsupportedException(
                 $"session log \"{parsedId}\" uses format version {formatVersion}, but this build reads format version {SessionFormat.Version}");
         }
-        return new SessionHeader(formatVersion, parsedId, createdAt.GetInt64());
+        return new SessionHeader(
+            formatVersion,
+            parsedId,
+            createdAt.GetInt64(),
+            root.TryGetProperty("cwd", out var cwd) && cwd.ValueKind == JsonValueKind.String ? cwd.GetString()! : "",
+            root.TryGetProperty("delegationDepth", out var depth) && depth.ValueKind == JsonValueKind.Number ? depth.GetInt32() : 0,
+            root.TryGetProperty("parentSession", out var parent) && parent.ValueKind == JsonValueKind.String ? parent.GetString() : null,
+            root.TryGetProperty("seedLength", out var seed) && seed.ValueKind == JsonValueKind.Number ? seed.GetInt32() : null);
     }
 
     /// <summary>Flush every buffered batch to disk (a no-op under <see cref="FlushMode.SyncAppend"/>).</summary>
@@ -272,7 +275,7 @@ public sealed class SessionPersistenceService : Service
             }
             foreach (var evt in events)
             {
-                writer.WriteLine(JsonSerializer.Serialize<SessionEvent>(evt, SessionEventTypes.CreateSerializerOptions()));
+                writer.WriteLine(SessionLogFormat.EventLine(evt));
             }
             writer.Flush();
             stream.Flush(flushToDisk: true);

@@ -74,6 +74,10 @@ public static class JsonlFormat
             writer.WriteNumber("version", header.Version);
             writer.WriteString("id", header.Id.Value);
             writer.WriteNumber("createdAt", header.CreatedAtMs);
+            writer.WriteString("cwd", header.Cwd);
+            if (header.ParentSessionId is not null) writer.WriteString("parentSession", header.ParentSessionId);
+            if (header.SeedLength is not null) writer.WriteNumber("seedLength", header.SeedLength.Value);
+            writer.WriteNumber("delegationDepth", header.DelegationDepth);
             writer.WriteEndObject();
         }
         return Encoding.UTF8.GetString(buffer.ToArray());
@@ -113,6 +117,13 @@ public static class JsonlFormat
             throw new JsonException(
                 $"corrupt session log: header id \"{parsedId}\" does not match requested id \"{expectedId}\"");
         }
-        return new SessionHeader(formatVersion, parsedId, createdAt.GetInt64());
+        return new SessionHeader(
+            formatVersion,
+            parsedId,
+            createdAt.GetInt64(),
+            root.TryGetProperty("cwd", out var cwd) && cwd.ValueKind == JsonValueKind.String ? cwd.GetString()! : "",
+            root.TryGetProperty("delegationDepth", out var depth) && depth.ValueKind == JsonValueKind.Number ? depth.GetInt32() : 0,
+            root.TryGetProperty("parentSession", out var parent) && parent.ValueKind == JsonValueKind.String ? parent.GetString() : null,
+            root.TryGetProperty("seedLength", out var seed) && seed.ValueKind == JsonValueKind.Number ? seed.GetInt32() : null);
     }
 }

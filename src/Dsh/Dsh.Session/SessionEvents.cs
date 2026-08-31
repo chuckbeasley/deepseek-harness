@@ -33,7 +33,7 @@ public sealed record AbortedReason(TurnEndCancelCause Cause) : TurnEndReason;
 public sealed record BlockedReason : TurnEndReason;
 
 /// <summary>The turn failed with a structured failure.</summary>
-public sealed record ErrorReason(LlmFailure Failure) : TurnEndReason;
+public sealed record ErrorReason([property: JsonPropertyName("error")] LlmFailure Failure) : TurnEndReason;
 
 /// <summary>At least one step reached its output-token ceiling.</summary>
 public sealed record MaxTokensReason : TurnEndReason;
@@ -211,6 +211,8 @@ public sealed record AssistantMessageEvent : SessionEvent
 
     public TokenUsage? Usage { get; init; }
 
+    /// <summary>Whether the stream was interrupted before a terminal finish (absent when false).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool Interrupted { get; init; }
 
     public required SurfaceOp SurfaceOp { get; init; }
@@ -263,6 +265,8 @@ public sealed record RequestHeaderEvent : SessionEvent
 
     public required RequestHeaderReason Reason { get; init; }
 
+    /// <summary>Whether this header began an explicitly distinct message series (absent when false).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool StartsSeries { get; init; }
 
     public override string Type => "request/header";

@@ -72,33 +72,33 @@ public sealed record ToolSource : MessageSource
 public abstract record Message
 {
     /// <summary>Stable identity preserved across every representation boundary.</summary>
-    [JsonPropertyOrder(0)]
+    [JsonPropertyOrder(3)]
     public required MessageId Id { get; init; }
 
     /// <summary>Provider-neutral conversation role.</summary>
-    [JsonPropertyOrder(1)]
+    [JsonPropertyOrder(2)]
     public abstract string Role { get; }
 
     /// <summary>Exact model-facing blocks.</summary>
-    [JsonPropertyOrder(2)]
+    [JsonPropertyOrder(0)]
     public required IReadOnlyList<ContentBlock> Content { get; init; }
 
     /// <summary>Required source fields supplied by the producer.</summary>
-    [JsonPropertyOrder(3)]
+    [JsonPropertyOrder(1)]
     public required MessageSource Source { get; init; }
 }
 
 /// <summary>A user-role specialization of the one shared message representation.</summary>
 public sealed record UserMessage : Message
 {
-    [JsonPropertyOrder(1)]
+    [JsonPropertyOrder(2)]
     public override string Role => "user";
 }
 
 /// <summary>A model-produced assistant specialization of the shared message representation.</summary>
 public sealed record AssistantMessage : Message
 {
-    [JsonPropertyOrder(1)]
+    [JsonPropertyOrder(2)]
     public override string Role => "assistant";
 }
 
@@ -108,7 +108,7 @@ public sealed record AssistantMessage : Message
 /// </summary>
 public sealed record ToolResultMessage : Message
 {
-    [JsonPropertyOrder(1)]
+    [JsonPropertyOrder(2)]
     public override string Role => "user";
 
     /// <summary>The single tool-result block (convenience view of <see cref="Message.Content"/>).</summary>

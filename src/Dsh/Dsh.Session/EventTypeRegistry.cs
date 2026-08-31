@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Dsh.Session;
@@ -42,9 +43,49 @@ public static class SessionEventTypes
     /// </summary>
     public static JsonSerializerOptions CreateSerializerOptions()
     {
+        return new JsonSerializerOptions
+        {
+            TypeInfoResolver = CreateResolver(),
+            // The TS wire/storage spelling: camelCase payloads with canonical empty optionals
+            // absent (the session log is the durable cross-implementation surface).
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+    }
+
+    /// <summary>
+    /// JSON options for one event's <c>data</c> payload: the same polymorphic handling and
+    /// spelling, with the storage envelope members (<c>Id</c>/<c>Seq</c>/<c>TimeMs</c>/<c>Type</c>
+    /// and the record-level surface fields) excluded.
+    /// </summary>
+    public static JsonSerializerOptions CreatePayloadOptions()
+    {
+        var resolver = CreateResolver();
+        resolver.Modifiers.Add(typeInfo =>
+        {
+            if (!typeof(SessionEvent).IsAssignableFrom(typeInfo.Type)) return;
+            // Property names are the effective (camelCase) JSON names under the naming policy.
+            for (var index = typeInfo.Properties.Count - 1; index >= 0; index--)
+            {
+                if (typeInfo.Properties[index].Name is "id" or "seq" or "timeMs" or "type" or "surfaceOp" or "sourceEventSeqs")
+                {
+                    typeInfo.Properties.RemoveAt(index);
+                }
+            }
+        });
+        return new JsonSerializerOptions
+        {
+            TypeInfoResolver = resolver,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        };
+    }
+
+    private static DefaultJsonTypeInfoResolver CreateResolver()
+    {
         KeyValuePair<string, Type>[] extra;
         lock (Gate) extra = Extra.ToArray();
-        var resolver = new DefaultJsonTypeInfoResolver
+        return new DefaultJsonTypeInfoResolver
         {
             Modifiers =
             {
@@ -58,6 +99,5 @@ public static class SessionEventTypes
                 },
             },
         };
-        return new JsonSerializerOptions { TypeInfoResolver = resolver };
     }
 }

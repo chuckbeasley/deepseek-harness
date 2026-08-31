@@ -157,5 +157,5 @@ internal static class TestEvents
         };
 
     /// <summary>Canonical JSON of one event — the lossless storage-boundary comparison.</summary>
-    public static string Canonical(SessionEvent evt) => JsonSerializer.Serialize<SessionEvent>(evt);
+    public static string Canonical(SessionEvent evt) => SessionLogFormat.EventLine(evt);
 }

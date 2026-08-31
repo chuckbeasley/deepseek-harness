@@ -30,6 +30,15 @@ public sealed record AgentOptions
 
     /// <summary>Maximum output tokens for each conversation-model request.</summary>
     public int? MaxTokens { get; init; }
+
+    /// <summary>The session's workspace directory; <c>null</c> defaults to the process cwd.</summary>
+    public string? Cwd { get; init; }
+
+    /// <summary>The session's subagent delegation depth (0 for a top-level session).</summary>
+    public int DelegationDepth { get; init; }
+
+    /// <summary>The parent session id for a subagent child session.</summary>
+    public string? ParentSessionId { get; init; }
 }
 
 /// <summary>

@@ -35,26 +35,32 @@ public static class EndToEndTests
                 .Select(line => JsonDocument.Parse(line).RootElement)
                 .ToList();
             var chunks = lines
-                .Where(root => root.TryGetProperty("$type", out var type) && type.GetString() == "assistant/chunk")
-                .Select(root => root.GetProperty("Chunk"))
+                .Where(root => root.TryGetProperty("type", out var type) && type.GetString() == "assistant/chunk")
+                .Select(root => root.GetProperty("data").GetProperty("chunk"))
                 .ToList();
             Assert.True(chunks.Count > 0, "the replayed stream persists assistant/chunk rows");
             var usage = chunks
                 .Select(chunk => chunk.TryGetProperty("usage", out var value) ? value : default)
                 .FirstOrDefault(value => value.ValueKind == JsonValueKind.Object);
             Assert.True(usage.ValueKind == JsonValueKind.Object, "a usage chunk was replayed");
-            Assert.Equal(2882, usage.GetProperty("InputTokens").GetInt32(), "recorded input tokens replay");
-            Assert.Equal(75, usage.GetProperty("OutputTokens").GetInt32(), "recorded output tokens replay");
+            Assert.Equal(2882, usage.GetProperty("inputTokens").GetInt32(), "recorded input tokens replay");
+            Assert.Equal(75, usage.GetProperty("outputTokens").GetInt32(), "recorded output tokens replay");
             var reasoning = lines
-                .Where(root => root.TryGetProperty("$type", out var type) && type.GetString() == "assistant/chunk")
-                .Select(root => root.GetProperty("Chunk"))
-                .SelectMany(chunk => chunk.TryGetProperty("Block", out var block)
+                .Where(root => root.TryGetProperty("type", out var type) && type.GetString() == "assistant/chunk")
+                .Select(root => root.GetProperty("data").GetProperty("chunk"))
+                .SelectMany(chunk => chunk.TryGetProperty("block", out var block)
                     && block.TryGetProperty("type", out var blockType) && blockType.GetString() == "reasoning"
-                    ? new[] { block.GetProperty("Text").GetString() ?? "" }
+                    ? new[] { block.GetProperty("text").GetString() ?? "" }
                     : Array.Empty<string>())
                 .FirstOrDefault();
             Assert.True(reasoning is not null && reasoning.StartsWith("The user wants me to read", StringComparison.Ordinal),
                 "the recorded reasoning text replays");
+            // The persisted header carries the run cwd (the TS header shape).
+            var header = lines[0];
+            Assert.Equal("session-headless", header.GetProperty("id").GetString(), "headless session id");
+            Assert.Equal(0, header.GetProperty("delegationDepth").GetInt32(), "top-level delegation depth");
+            Assert.True(header.TryGetProperty("cwd", out var headerCwd) && headerCwd.GetString() is { Length: > 0 },
+                "the header carries the workspace cwd");
             // The fixture must be fully consumed by the end of the run: no underrun diagnostic.
             Assert.DoesNotContain("fixture not fully consumed", result.Stderr, "no fixture underrun");
         }

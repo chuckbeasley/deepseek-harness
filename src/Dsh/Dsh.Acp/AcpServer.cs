@@ -150,7 +150,7 @@ public sealed class AcpServer
         ValidateWorkspaceParams(wire.Cwd, wire.AdditionalDirectories);
         ValidateMcpServers(wire.McpServers);
         var sessionId = "session-" + Guid.NewGuid().ToString("N");
-        var record = AcpSession.Create(_ctx, _loop, sessionId, SessionOptions(),
+        var record = AcpSession.Create(_ctx, _loop, sessionId, SessionOptions(wire.Cwd),
             new AcpModelControl(_config.Provider, _config.Model), Notifier(sessionId));
         _sessions[sessionId] = record;
         try
@@ -188,7 +188,7 @@ public sealed class AcpServer
         var sessions = _ctx.Get<SessionStore>("sessions")
             ?? throw new InvalidOperationException("acp requires the sessions row");
         sessions.Remove(new SessionId(wire.SessionId));
-        var record = AcpSession.Resume(_ctx, _loop, wire.SessionId, SessionOptions(),
+        var record = AcpSession.Resume(_ctx, _loop, wire.SessionId, SessionOptions(wire.Cwd),
             new AcpModelControl(_config.Provider, _config.Model), Notifier(wire.SessionId));
         _sessions[wire.SessionId] = record;
         try
@@ -378,10 +378,10 @@ public sealed class AcpServer
         return record is not null && record.OwnsSession(session) ? record : null;
     }
 
-    private AgentOptions? SessionOptions()
-        => _config.Provider is null && _config.Model is null
+    private AgentOptions? SessionOptions(string? cwd = null)
+        => _config.Provider is null && _config.Model is null && cwd is null
             ? null
-            : new AgentOptions { Provider = _config.Provider, Model = _config.Model };
+            : new AgentOptions { Provider = _config.Provider, Model = _config.Model, Cwd = cwd };
 
     private Func<SessionUpdate, Task> Notifier(string sessionId)
         => update =>

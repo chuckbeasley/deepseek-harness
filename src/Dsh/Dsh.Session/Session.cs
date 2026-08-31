@@ -20,7 +20,14 @@ public static class SessionFormat
 }
 
 /// <summary>Immutable validated storage metadata, kept outside the conversation event log.</summary>
-public sealed record SessionHeader(int Version, SessionId Id, long CreatedAtMs);
+public sealed record SessionHeader(
+    int Version,
+    SessionId Id,
+    long CreatedAtMs,
+    string Cwd,
+    int DelegationDepth,
+    string? ParentSessionId = null,
+    int? SeedLength = null);
 
 /// <summary>
 /// An event-sourced session: an append-only log of <see cref="SessionEvent"/>s.
@@ -34,10 +41,11 @@ public sealed class Session
     private IReadOnlyList<SessionEvent>? _eventsSnapshot;
     private readonly SessionStore? _store;
 
-    internal Session(SessionId id, SessionStore? store)
+    internal Session(SessionId id, SessionStore? store, string cwd, int delegationDepth = 0, string? parentSessionId = null)
     {
         _store = store;
-        Header = new SessionHeader(SessionFormat.Version, id, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+        Header = new SessionHeader(
+            SessionFormat.Version, id, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), cwd, delegationDepth, parentSessionId);
     }
 
     /// <summary>Detached creation metadata (format version, identity, creation time).</summary>

@@ -54,7 +54,7 @@ public sealed class AgentLoop : Service
     public AgentHandle Create(SessionId id, AgentOptions? options = null, string source = "startup")
     {
         var runtime = LoopRuntime.Resolve(Ctx);
-        var session = runtime.Sessions.Create(id);
+        var session = runtime.Sessions.Create(id, options?.Cwd, options?.DelegationDepth ?? 0, options?.ParentSessionId);
         return Publish(runtime, id, options, session, source);
     }
 
@@ -74,7 +74,7 @@ public sealed class AgentLoop : Service
             ?? throw new InvalidOperationException("cannot resume: session persistence is not configured (load a dsh-session-persistence backend)");
         var stored = persistence.Load(id)
             ?? throw new InvalidOperationException($"cannot resume: session \"{id}\" has no stored log");
-        var session = runtime.Sessions.Create(id);
+        var session = runtime.Sessions.Create(id, options?.Cwd, options?.DelegationDepth ?? 0, options?.ParentSessionId);
         session.Restore(stored.Events);
         return Publish(runtime, id, options, session, source);
     }
