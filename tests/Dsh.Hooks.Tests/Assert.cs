@@ -21,11 +21,51 @@ public static class Assert
 
     public static void Null(object? value, string message) => True(value is null, message);
 
+    public static void NotNull(object? value, string message) => True(value is not null, message);
+
+    public static void Contains(string expectedSubstring, string actual, string message)
+    {
+        if (actual.IndexOf(expectedSubstring, StringComparison.Ordinal) < 0)
+        {
+            throw new AssertionException($"{message} (\"{actual}\" does not contain \"{expectedSubstring}\")");
+        }
+    }
+
     public static void Equal<T>(T expected, T actual, string message)
     {
         if (!EqualityComparer<T>.Default.Equals(expected, actual))
         {
             throw new AssertionException($"{message} (expected \"{expected}\", got \"{actual}\")");
+        }
+    }
+
+    public static TException ThrowsAny<TException>(Action action, string message) where TException : Exception
+    {
+        try
+        {
+            action();
+        }
+        catch (TException error)
+        {
+            return error;
+        }
+        catch (Exception error)
+        {
+            throw new AssertionException($"{message} (threw {error.GetType().Name} instead: {error.Message})");
+        }
+        throw new AssertionException($"{message} (nothing was thrown)");
+    }
+
+    public static void WaitUntil(Func<bool> condition, int timeoutMs = 15000)
+    {
+        var deadline = Environment.TickCount64 + timeoutMs;
+        while (!condition())
+        {
+            if (Environment.TickCount64 > deadline)
+            {
+                throw new AssertionException("condition not met within timeout");
+            }
+            Thread.Sleep(10);
         }
     }
 }

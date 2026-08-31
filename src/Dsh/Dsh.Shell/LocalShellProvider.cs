@@ -52,7 +52,8 @@ public sealed class LocalShellProvider : Service, IShellService
             request.TimeoutMs ?? _config.TimeoutMs,
             _config.StdoutMaxBytes,
             request.Stdin,
-            request.CancellationToken);
+            request.CancellationToken,
+            request.Env);
     }
 
     /// <inheritdoc />
@@ -81,7 +82,8 @@ public sealed class LocalShellProvider : Service, IShellService
                     new CollectOutput(new SubprocessCollect(spec.StdoutMaxBytes, spec.StdoutMaxBytes * 4)),
                     new CollectOutput(new SubprocessCollect(_config.StderrMaxBytes, _config.StderrMaxBytes * 4))),
                 GraceMs: 5000,
-                CancellationToken: firstCause.Token);
+                CancellationToken: firstCause.Token,
+                Env: spec.Env);
             var handle = subprocess.Spawn(spawn);
             var outcome = handle.Done.GetAwaiter().GetResult();
             var stdout = ReadAll(handle.Collected.Stdout);

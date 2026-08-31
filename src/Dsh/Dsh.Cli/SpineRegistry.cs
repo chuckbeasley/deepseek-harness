@@ -527,6 +527,27 @@ public static class SpineRegistry
             return new SpineDisposables(new CallbackDisposable(() =>
                 server.ShutdownAsync().GetAwaiter().GetResult()));
         }));
+        catalog.Register("hooksClaudeCode", new SpinePlugin("hooksClaudeCode", (ctx, config) =>
+        {
+            var path = ConfigString(config, "configPath")
+                ?? throw new InvalidOperationException("hooksClaudeCode requires a \"configPath\" pointing at a hooks.json");
+            return new Dsh.Hooks.ClaudeCodeBridge(ctx, new Dsh.Hooks.ClaudeCodeBridgeConfig(
+                Path.GetFullPath(path),
+                ConfigString(config, "pluginRoot"),
+                ConfigString(config, "projectDir"),
+                ConfigInt(config, "defaultTimeoutMs") ?? Dsh.Hooks.HookRunner.DefaultHookTimeoutMs,
+                ConfigInt(config, "stderrSummaryMaxChars") ?? Dsh.Hooks.HookLog.DefaultStderrSummaryMaxChars));
+        }));
+        catalog.Register("hooksCodex", new SpinePlugin("hooksCodex", (ctx, config) =>
+        {
+            var path = ConfigString(config, "configPath")
+                ?? throw new InvalidOperationException("hooksCodex requires a \"configPath\" pointing at a hooks.json");
+            return new Dsh.Hooks.CodexBridge(ctx, new Dsh.Hooks.CodexBridgeConfig(
+                Path.GetFullPath(path),
+                ConfigString(config, "model"),
+                ConfigInt(config, "defaultTimeoutMs") ?? Dsh.Hooks.HookRunner.DefaultHookTimeoutMs,
+                ConfigInt(config, "stderrSummaryMaxChars") ?? Dsh.Hooks.HookLog.DefaultStderrSummaryMaxChars));
+        }));
         catalog.Register("headless", new SpinePlugin("headless", (ctx, config) =>
         {
             var run = new HeadlessRun();

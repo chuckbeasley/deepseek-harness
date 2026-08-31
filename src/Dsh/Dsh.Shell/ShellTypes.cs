@@ -30,7 +30,9 @@ public sealed record ShellExecRequest(
     string? Workdir = null,
     int? TimeoutMs = null,
     string? Stdin = null,
-    CancellationToken? CancellationToken = null);
+    CancellationToken? CancellationToken = null,
+    /// <summary>Extra child environment entries merged after the ambient scrub (the hook bridges' dialect env).</summary>
+    IReadOnlyDictionary<string, string>? Env = null);
 
 /// <summary>A resolved execution spec (defaults filled and capped by <see cref="IShellService.Resolve"/>).</summary>
 public sealed record ShellExecSpec(
@@ -39,7 +41,9 @@ public sealed record ShellExecSpec(
     int TimeoutMs,
     int StdoutMaxBytes,
     string? Stdin,
-    CancellationToken? CancellationToken);
+    CancellationToken? CancellationToken,
+    /// <summary>Extra child environment entries merged after the ambient scrub.</summary>
+    IReadOnlyDictionary<string, string>? Env = null);
 
 /// <summary>
 /// The outcome of one completed (or killed) foreground run. <see cref="Sandbox"/> carries the
