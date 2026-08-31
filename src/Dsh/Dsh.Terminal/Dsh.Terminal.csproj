@@ -13,4 +13,8 @@
     <ProjectReference Include="..\Dsh.Tools\Dsh.Tools.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Dsh.Terminal.Tests" />
+  </ItemGroup>
+
 </Project>

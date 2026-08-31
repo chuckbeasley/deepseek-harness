@@ -23,6 +23,8 @@ public enum TerminalWaitReason
 {
     SessionExit,
     Timeout,
+    StdinRead,
+    InferredIdle,
 }
 
 /// <summary>Request to create one terminal session.</summary>

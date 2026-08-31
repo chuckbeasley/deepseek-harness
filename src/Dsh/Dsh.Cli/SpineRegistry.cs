@@ -157,12 +157,25 @@ public static class SpineRegistry
         }));
         catalog.Register("guard", new SpinePlugin("guard", (ctx, _) =>
             new SpineDisposables(new Dsh.Guard.ToolTimeoutPolicy(ctx), new Dsh.Guard.RepeatToolReminderGuard(ctx))));
-        catalog.Register("terminal", new SpinePlugin("terminal", (ctx, _) =>
+        catalog.Register("terminal", new SpinePlugin("terminal", (ctx, config) =>
         {
-            var service = new Dsh.Terminal.LocalTerminalProvider(ctx);
+            var backend = ConfigString(config, "backend") ?? "local";
+            Dsh.Terminal.ITerminalService service = backend switch
+            {
+                "local" => new Dsh.Terminal.LocalTerminalProvider(ctx),
+                "conpty" => new Dsh.Terminal.ConPtyTerminalProvider(ctx, new Dsh.Terminal.ConPtyConfig(
+                    ConfigString(config, "shellPath"),
+                    ConfigInt(config, "cols") ?? 160,
+                    ConfigInt(config, "rows") ?? 40,
+                    ConfigInt(config, "timeoutMs") ?? 30000,
+                    ConfigInt(config, "idleSilenceMs") ?? 3000,
+                    ConfigInt(config, "scrollbackLines") ?? 500,
+                    ConfigString(config, "cwd"))),
+                _ => throw new InvalidOperationException($"terminal: unknown backend \"{backend}\" (registered: local, conpty)"),
+            };
             var tools = Dsh.Terminal.TerminalTools.Definitions(ctx);
             var disposers = tools.Select(ctx.Tools().Register).ToArray();
-            return new SpineDisposables(disposers.Append(service).ToArray());
+            return new SpineDisposables(disposers.Append((IDisposable)service).ToArray());
         }));
         catalog.Register("subagent", new SpinePlugin("subagent", (ctx, _) => new Dsh.Subagent.InProcessSubagentProvider(ctx)));
         catalog.Register("sdkSubagent", new SpinePlugin("sdkSubagent", (ctx, config) =>
