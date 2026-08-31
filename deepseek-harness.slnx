@@ -101,6 +101,7 @@
     <Project Path="tests/Dsh.Terminal.Tests/Dsh.Terminal.Tests.csproj" />
     <Project Path="tests/Dsh.Hooks.Tests/Dsh.Hooks.Tests.csproj" />
     <Project Path="tests/Dsh.Lsp.Tests/Dsh.Lsp.Tests.csproj" />
+    <Project Path="tests/Dsh.Lsp.Tests/Fixtures/FakeLspServer/FakeLspServer.csproj" />
     <Project Path="tests/Dsh.Subagent.Tests/Dsh.Subagent.Tests.csproj" />
     <Project Path="tests/Dsh.Todo.Tests/Dsh.Todo.Tests.csproj" />
   </Folder>
