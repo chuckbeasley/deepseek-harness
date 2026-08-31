@@ -117,7 +117,7 @@ public sealed class BlockAssembler
     public Message Message(MessageSource? source = null)
         => new AssistantMessage
         {
-            Id = new MessageId(Guid.NewGuid().ToString("N")),
+            Id = new MessageId(Guid.NewGuid().ToString("D")),
             Content = Blocks(),
             Source = source ?? new PluginSource { Plugin = "dsh-llm/assembler" },
         };

@@ -475,7 +475,7 @@ public static class SpineRegistry
                     ?? throw new InvalidOperationException($"session \"{id}\" has no live loop");
                 var message = new Dsh.Llm.UserMessage
                 {
-                    Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("N")),
+                    Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("D")),
                     Content = new Dsh.Llm.ContentBlock[] { new Dsh.Llm.TextBlock(text) },
                     Source = new Dsh.Llm.UserSource(),
                 };

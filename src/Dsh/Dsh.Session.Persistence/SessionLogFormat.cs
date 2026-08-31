@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Dsh.Session;
 
 namespace Dsh.Session.Persistence;
@@ -63,7 +64,55 @@ public static class SessionLogFormat
             JsonSerializer.Serialize(writer, user.Message, user.Message.GetType(), SessionEventTypes.CreatePayloadOptions());
             return;
         }
+        if (evt is AssistantChunkEvent chunkEvent)
+        {
+            // The recorded fixtures serialize the finish chunk's failure with {message, code}
+            // (the TS stream shape), unlike the turn-end reason's {code, message}.
+            var payload = JsonSerializer.SerializeToNode(evt, evt.GetType(), SessionEventTypes.CreatePayloadOptions()) as JsonObject;
+            var chunk = payload?["chunk"] as JsonObject;
+            if (chunk?["type"]?.GetValue<string>() == "finish"
+                && chunk["reason"] is JsonObject reason
+                && reason["kind"]?.GetValue<string>() == "error"
+                && reason["failure"] is JsonObject failure)
+            {
+                Reorder(failure, new[] { "message", "code" });
+            }
+            payload!.WriteTo(writer);
+            return;
+        }
+        if (evt is AssistantMessageEvent or ToolResultEvent)
+        {
+            // The recorded fixtures serialize the assistant and tool messages with their own
+            // key orders (the TS construction order), so the nested message is reordered after
+            // the payload serialization.
+            var payload = JsonSerializer.SerializeToNode(evt, evt.GetType(), SessionEventTypes.CreatePayloadOptions()) as JsonObject;
+            var message = payload?["message"] as JsonObject;
+            if (message is not null)
+            {
+                Reorder(message, evt is AssistantMessageEvent
+                    ? new[] { "role", "content", "source", "id" }
+                    : new[] { "source", "content", "role", "id" });
+            }
+            payload!.WriteTo(writer);
+            return;
+        }
         JsonSerializer.Serialize(writer, evt, evt.GetType(), SessionEventTypes.CreatePayloadOptions());
+    }
+
+    /// <summary>Reorder one JSON object's keys into the given sequence (unknown keys follow in place).</summary>
+    private static void Reorder(JsonObject message, string[] order)
+    {
+        var pairs = message.ToArray();
+        foreach (var pair in pairs) message.Remove(pair.Key);
+        foreach (var key in order)
+        {
+            var pair = pairs.FirstOrDefault(candidate => candidate.Key == key);
+            if (pair.Key is not null) message[pair.Key] = pair.Value;
+        }
+        foreach (var pair in pairs)
+        {
+            if (!message.ContainsKey(pair.Key)) message[pair.Key] = pair.Value;
+        }
     }
 
     private static string SurfaceOpName(SurfaceOp surface) => surface switch

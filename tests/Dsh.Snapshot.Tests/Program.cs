@@ -12,8 +12,12 @@ public static class Program
         ("e2e: the headless profile replays the recorded stream", EndToEndTests.TheHeadlessProfile_ReplaysTheRecordedStream),
     };
 
-    public static int Main()
+    public static int Main(string[] args)
     {
+        if (args.Length > 0 && args[0] == "corpus")
+        {
+            return CorpusTests.RunCorpus(line => Console.WriteLine(line));
+        }
         var passed = 0;
         var failures = new List<string>();
         foreach (var (name, run) in Suites)

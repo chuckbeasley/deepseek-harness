@@ -122,7 +122,7 @@ public sealed record ToolResultMessage : Message
     public static ToolResultMessage Create(ToolCallId callId, IReadOnlyList<ContentBlock> content, bool isError = false)
         => new()
         {
-            Id = new MessageId(Guid.NewGuid().ToString("N")),
+            Id = new MessageId(Guid.NewGuid().ToString("D")),
             Content = new ContentBlock[] { new ToolResultBlock(callId, content, isError) },
             Source = new ToolSource { CallId = callId },
         };
@@ -135,7 +135,7 @@ public static class Messages
     public static UserMessage CreateUserMessage(IReadOnlyList<ContentBlock> content, MessageSource? source = null)
         => new()
         {
-            Id = new MessageId(Guid.NewGuid().ToString("N")),
+            Id = new MessageId(Guid.NewGuid().ToString("D")),
             Content = content,
             Source = source ?? new UserSource(),
         };
@@ -144,7 +144,7 @@ public static class Messages
     public static AssistantMessage CreateAssistantMessage(string provider, string model, IReadOnlyList<ContentBlock> content)
         => new()
         {
-            Id = new MessageId(Guid.NewGuid().ToString("N")),
+            Id = new MessageId(Guid.NewGuid().ToString("D")),
             Content = content,
             Source = new ModelSource { Provider = provider, Model = model },
         };

@@ -138,7 +138,7 @@ public sealed class SdkJsonRpcServer
         AssertLiveAgent(record, wire.SessionId);
         var message = new Dsh.Llm.UserMessage
         {
-            Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("N")),
+            Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("D")),
             Content = content.ToArray(),
             Source = new Dsh.Llm.UserSource(),
         };

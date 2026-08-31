@@ -173,7 +173,7 @@ public sealed class AcpSession
             var content = AcpContent.AdmitPrompt(prompt);
             var message = new UserMessage
             {
-                Id = new MessageId(Guid.NewGuid().ToString("N")),
+                Id = new MessageId(Guid.NewGuid().ToString("D")),
                 Content = content,
                 Source = new UserSource(),
             };

@@ -199,7 +199,7 @@ public static class TuiApp
             input.Text = string.Empty;
             var message = new UserMessage
             {
-                Id = new MessageId(Guid.NewGuid().ToString("N")),
+                Id = new MessageId(Guid.NewGuid().ToString("D")),
                 Content = new ContentBlock[] { new TextBlock(text) },
                 Source = new UserSource(),
             };

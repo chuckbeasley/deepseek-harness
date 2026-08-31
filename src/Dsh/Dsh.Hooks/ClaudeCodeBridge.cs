@@ -227,7 +227,7 @@ public sealed class ClaudeCodeBridge : IDisposable
         if (merged.AdditionalContext.Count == 0) return null;
         return new UserMessage
         {
-            Id = new MessageId(Guid.NewGuid().ToString("N")),
+            Id = new MessageId(Guid.NewGuid().ToString("D")),
             Content = merged.AdditionalContext.Select(text => (ContentBlock)new TextBlock(text)).ToArray(),
             Source = new PluginSource { Plugin = PluginName },
         };
@@ -235,7 +235,7 @@ public sealed class ClaudeCodeBridge : IDisposable
 
     private UserMessage PluginMessage(string text) => new()
     {
-        Id = new MessageId(Guid.NewGuid().ToString("N")),
+        Id = new MessageId(Guid.NewGuid().ToString("D")),
         Content = new ContentBlock[] { new TextBlock(text) },
         Source = new PluginSource { Plugin = PluginName },
     };

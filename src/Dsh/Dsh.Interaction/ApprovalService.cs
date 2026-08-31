@@ -56,7 +56,7 @@ public sealed class ApprovalService : Service
                 + "must be turn-enclosed (a bare event between turns is crash-tail garbage on reload). "
                 + "Ask from inside the turn that needs the decision.");
         }
-        var id = Guid.NewGuid().ToString("N");
+        var id = Guid.NewGuid().ToString("D");
         session.Append(new ApprovalAskedEvent
         {
             Id = id,
