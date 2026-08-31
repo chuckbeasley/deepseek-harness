@@ -16,6 +16,9 @@
     <ProjectReference Include="..\..\src\Dsh\Dsh.Llm\Dsh.Llm.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Tools\Dsh.Tools.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.SystemPrompt\Dsh.SystemPrompt.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Settings\Dsh.Settings.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Credentials\Dsh.Credentials.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Workspace\Dsh.Workspace.csproj" />
     <ProjectReference Include="..\..\src\Dsh\Dsh.Spike\Dsh.Spike.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.11" />
   </ItemGroup>

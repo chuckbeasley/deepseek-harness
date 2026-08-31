@@ -176,6 +176,10 @@ public sealed class DshRpcRegistry : Service
         {
             return new RpcResponse(null, new RpcError("session/not-found", error.Message));
         }
+        catch (RpcDomainError error)
+        {
+            return new RpcResponse(null, new RpcError(error.Code, error.Message, error.Details));
+        }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             return new RpcResponse(null, new RpcError(RpcErrorCodes.Cancelled, "the rpc call was cancelled"));

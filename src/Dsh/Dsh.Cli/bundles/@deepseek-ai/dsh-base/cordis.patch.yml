@@ -53,6 +53,9 @@
     - id: credentials
       name: credentials
 
+    - id: settings
+      name: settings
+
     - id: authorization
       name: authorization
 

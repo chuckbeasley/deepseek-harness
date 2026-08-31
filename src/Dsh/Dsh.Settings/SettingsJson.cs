@@ -169,3 +169,14 @@ internal static class SettingsJson
         return $"a {value.GetType().Name}";
     }
 }
+
+/// <summary>
+/// Public JSON-value conversion for wire layers: one parsed JsonElement becomes the seam's
+/// JSON-value representation (plain dictionaries, lists, and CLR scalars) that
+/// <see cref="SettingsProvider.UpdateAsync"/>/<see cref="SettingsProvider.ReplaceAsync"/> accept.
+/// </summary>
+public static class SettingsWireValues
+{
+    /// <summary>Convert one parsed JsonElement into the settings seam's JSON-value representation.</summary>
+    public static object? FromJsonElement(JsonElement element) => SettingsJson.FromElement(element);
+}

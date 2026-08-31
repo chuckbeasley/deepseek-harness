@@ -88,6 +88,14 @@ public static class SpineRegistry
             return new SpineDisposables(searchTool, fetchTool, fetchRegistration, web);
         }));
         catalog.Register("credentials", new SpinePlugin("credentials", (ctx, _) => new Dsh.Credentials.LocalCredentialsProvider(ctx)));
+        catalog.Register("settings", new SpinePlugin("settings", (ctx, config) =>
+        {
+            // The port is JSON-only (the TS provider also accepts YAML), so the default document
+            // is settings.json under the harness home instead of settings.yaml.
+            var dshHome = Environment.GetEnvironmentVariable("DSH_HOME")
+                ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dsh");
+            return new Dsh.Settings.FileSettingsProvider(ctx, ConfigString(config, "path") ?? Path.Combine(dshHome, "settings.json"));
+        }));
         catalog.Register("authorization", new SpinePlugin("authorization", (ctx, _) =>
         {
             var credentials = ctx.Get<Dsh.Credentials.ICredentialsService>("credentials")
@@ -290,6 +298,15 @@ public static class SpineRegistry
             }));
             var page = registry.Register(Dsh.Web.Host.SessionRemotes.Page(ctx, sessions));
             var follow = registry.RegisterStream(Dsh.Web.Host.SessionRemotes.Follow(ctx, sessions));
+            // Settings, credentials, and workspace namespaces resolve their providers at invoke
+            // time (the TS controllers keep the namespaces registered when a provider is absent).
+            var settingsDescribe = registry.Register(Dsh.Web.Host.SettingsRemotes.Describe(ctx));
+            var settingsUpdate = registry.Register(Dsh.Web.Host.SettingsRemotes.Update(ctx));
+            var settingsReplace = registry.Register(Dsh.Web.Host.SettingsRemotes.Replace(ctx));
+            var credentialsDescribe = registry.Register(Dsh.Web.Host.CredentialsRemotes.Describe(ctx));
+            var credentialsSet = registry.Register(Dsh.Web.Host.CredentialsRemotes.Set(ctx));
+            var credentialsUnset = registry.Register(Dsh.Web.Host.CredentialsRemotes.Unset(ctx));
+            var workspaceCreate = registry.Register(Dsh.Web.Host.WorkspaceRemotes.Create(ctx));
             var prompt = registry.Register(new Dsh.Web.Host.RpcMethod("session/prompt", async (args, ct) =>
             {
                 var id = args is System.Text.Json.JsonElement element
@@ -322,7 +339,11 @@ public static class SpineRegistry
                 var answer = last?.Message.Content.OfType<Dsh.Llm.TextBlock>().Select(block => block.Text).FirstOrDefault() ?? "";
                 return System.Text.Json.JsonSerializer.SerializeToElement(new { sessionId = id, text = answer });
             }));
-            return new SpineDisposables(follow, page, prompt, create, list);
+            return new SpineDisposables(
+                follow, page, prompt, create, list,
+                settingsDescribe, settingsUpdate, settingsReplace,
+                credentialsDescribe, credentialsSet, credentialsUnset,
+                workspaceCreate);
         }));
         catalog.Register("webHost", new SpinePlugin("webHost", (ctx, config) =>
         {

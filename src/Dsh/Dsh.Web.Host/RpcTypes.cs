@@ -67,3 +67,25 @@ public sealed class RpcBadRequestException : Exception
     {
     }
 }
+
+/// <summary>
+/// A domain-coded failure thrown by a handler. The gateway transports <see cref="Code"/> and
+/// <see cref="Details"/> verbatim: the TS <c>RemoteErrorCode</c> union is open, so the C# gateway
+/// never validates the code.
+/// </summary>
+public sealed class RpcDomainError : Exception
+{
+    /// <summary>Create the coded failure with optional structured details.</summary>
+    public RpcDomainError(string code, string message, JsonElement? details = null)
+        : base(message)
+    {
+        Code = code;
+        Details = details;
+    }
+
+    /// <summary>Stable machine code, transported verbatim to the caller.</summary>
+    public string Code { get; }
+
+    /// <summary>Optional structured details (namespace ids, expected/actual revisions, ...).</summary>
+    public JsonElement? Details { get; }
+}

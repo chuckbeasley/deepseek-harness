@@ -11,6 +11,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
     <ProjectReference Include="..\Dsh.Session\Dsh.Session.csproj" />
+    <ProjectReference Include="..\Dsh.Settings\Dsh.Settings.csproj" />
+    <ProjectReference Include="..\Dsh.Credentials\Dsh.Credentials.csproj" />
+    <ProjectReference Include="..\Dsh.Workspace\Dsh.Workspace.csproj" />
   </ItemGroup>
 
 </Project>

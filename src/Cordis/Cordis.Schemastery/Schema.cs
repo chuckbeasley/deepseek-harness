@@ -422,6 +422,99 @@ public sealed class Schema
     /// <inheritdoc/>
     public override string ToString() => ToString(false);
 
+    /// <summary>
+    /// Serialize this schema as the wire envelope the TS <c>toJSON()</c> produces:
+    /// <c>{ uid, refs }</c> with every reachable node once under its uid and child references
+    /// riding as uid numbers, so shared and recursive nodes survive the round trip. Callables
+    /// (callback, builder) never serialize.
+    /// </summary>
+    public JsonElement ToJson()
+    {
+        var refs = new Dictionary<string, object?>();
+        Collect(this, refs, new HashSet<Schema>(ReferenceEqualityComparer.Instance));
+        return JsonSerializer.SerializeToElement(new Dictionary<string, object?>
+        {
+            ["uid"] = Uid,
+            ["refs"] = refs,
+        });
+    }
+
+    private static void Collect(Schema schema, Dictionary<string, object?> refs, HashSet<Schema> visited)
+    {
+        if (!visited.Add(schema)) return;
+        refs[schema.Uid.ToString(CultureInfo.InvariantCulture)] = NodeJson(schema);
+        if (schema.PropertySchemas is not null)
+        {
+            foreach (var child in schema.PropertySchemas.Values) Collect(child, refs, visited);
+        }
+        if (schema.List is not null)
+        {
+            foreach (var child in schema.List) Collect(child, refs, visited);
+        }
+        if (schema.Inner is not null) Collect(schema.Inner, refs, visited);
+        if (schema.SKey is not null) Collect(schema.SKey, refs, visited);
+    }
+
+    private static Dictionary<string, object?> NodeJson(Schema schema)
+    {
+        var node = new Dictionary<string, object?>
+        {
+            ["uid"] = schema.Uid,
+            ["type"] = schema.Type,
+            ["meta"] = MetaJson(schema.Meta),
+        };
+        if (schema.PropertySchemas is not null)
+        {
+            node["dict"] = schema.PropertySchemas.ToDictionary(
+                pair => pair.Key, pair => (object)pair.Value.Uid, StringComparer.Ordinal);
+        }
+        if (schema.List is not null)
+        {
+            node["list"] = schema.List.Select(child => (object)child.Uid).ToList();
+        }
+        if (schema.Inner is not null) node["inner"] = schema.Inner.Uid;
+        if (schema.SKey is not null) node["sKey"] = schema.SKey.Uid;
+        if (schema.Value is not null) node["value"] = schema.Value;
+        if (schema.Preserve) node["preserve"] = true;
+        return node;
+    }
+
+    private static Dictionary<string, object?> MetaJson(Meta meta)
+    {
+        var result = new Dictionary<string, object?>();
+        if (meta.Default is not null) result["default"] = meta.Default;
+        if (meta.Required) result["required"] = true;
+        if (meta.Disabled) result["disabled"] = true;
+        if (meta.Collapse) result["collapse"] = true;
+        if (meta.Hidden) result["hidden"] = true;
+        if (meta.Loose) result["loose"] = true;
+        if (meta.Role is not null) result["role"] = meta.Role;
+        if (meta.Extra is not null) result["extra"] = meta.Extra;
+        if (meta.Link is not null) result["link"] = meta.Link;
+        if (meta.Description is not null) result["description"] = meta.Description;
+        if (meta.Comment is not null) result["comment"] = meta.Comment;
+        if (meta.Pattern is { } pattern)
+        {
+            result["pattern"] = pattern.Flags.Length == 0
+                ? new Dictionary<string, object?> { ["source"] = pattern.Source }
+                : new Dictionary<string, object?> { ["source"] = pattern.Source, ["flags"] = pattern.Flags };
+        }
+        if (meta.Max is double maxValue) result["max"] = maxValue;
+        if (meta.Min is double minValue) result["min"] = minValue;
+        if (meta.Step is double stepValue) result["step"] = stepValue;
+        if (meta.Badges is { Count: > 0 } badges)
+        {
+            result["badges"] = badges
+                .Select(badge => (object)new Dictionary<string, object?>
+                {
+                    ["text"] = badge.Text,
+                    ["type"] = badge.Type,
+                })
+                .ToList();
+        }
+        return result;
+    }
+
     private Schema Clone()
     {
         return new Schema
