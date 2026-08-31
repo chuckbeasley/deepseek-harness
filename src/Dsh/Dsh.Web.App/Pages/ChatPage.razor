@@ -1,0 +1,137 @@
+﻿@page "/"
+@inject Cordis.Core.Context Ctx
+@inject Dsh.Web.App.Store.WebSessionStore Store
+@inject SlotRegistry Slots
+@implements IDisposable
+
+<div class="dsh-chat">
+    <section class="dsh-session-list">
+        <h3>Sessions</h3>
+        @if (Store.List().Count == 0)
+        {
+            <p class="dsh-muted">No sessions yet. Send a message to start one.</p>
+        }
+        @foreach (var entry in Store.List())
+        {
+            <button class="dsh-session-item @(entry.Session.Id == _selected?.Session.Id ? "dsh-selected" : "")"
+                    @onclick="() => Select(entry)">
+                <span class="dsh-session-id">@entry.Session.Id.Value</span>
+                <span class="dsh-session-summary">@(entry.Summary ?? "new session")</span>
+            </button>
+        }
+    </section>
+
+    <section class="dsh-transcript">
+        @if (_selected is null)
+        {
+            <p class="dsh-muted">Select a session to view its transcript.</p>
+        }
+        else
+        {
+            <div class="dsh-messages">
+                @foreach (var evt in _selected.Events)
+                {
+                    @RenderEvent(evt)
+                }
+            </div>
+        }
+        <form class="dsh-input-row" @onsubmit="SendAsync" @onsubmit:preventDefault="true">
+            <input @bind="_input" placeholder="Message dsh..." />
+            <button type="submit" disabled="@_busy">Send</button>
+        </form>
+    </section>
+</div>
+
+@code {
+    private Dsh.Web.App.Store.WebSessionEntry? _selected;
+    private string _input = "";
+    private bool _busy;
+    private IDisposable? _subscription;
+
+    protected override void OnInitialized()
+    {
+        _subscription = Store.Subscribe(StateHasChanged);
+        _selected = Store.List().FirstOrDefault();
+    }
+
+    public void Dispose()
+    {
+        _subscription?.Dispose();
+    }
+
+    private void Select(Dsh.Web.App.Store.WebSessionEntry entry)
+    {
+        _selected = entry;
+        StateHasChanged();
+    }
+
+    private async Task SendAsync()
+    {
+        var text = _input.Trim();
+        if (text.Length == 0 || _busy) return;
+        _input = "";
+        _busy = true;
+        try
+        {
+            var sessionId = _selected?.Session.Id ?? new Dsh.Session.SessionId($"session-{Guid.NewGuid():N}");
+            var loop = Ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
+                ?? throw new InvalidOperationException("the web chat requires the agentLoop row");
+            if (_selected is null)
+            {
+                var key = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+                var provider = string.IsNullOrEmpty(key) ? "mock" : "deepseek";
+                var model = string.IsNullOrEmpty(key) ? "mock-todo" : "deepseek-chat";
+                var handle = loop.Create(sessionId, new Dsh.Agent.AgentOptions { Provider = provider, Model = model });
+                var driver = loop.GetLoop(sessionId)
+                    ?? throw new InvalidOperationException("the loop published no driver");
+                _selected = Store.Get(sessionId);
+                StateHasChanged();
+                await RunTurnAsync(driver, text);
+            }
+            else
+            {
+                var driver = loop.GetLoop(sessionId)
+                    ?? throw new InvalidOperationException("the session has no live loop");
+                await RunTurnAsync(driver, text);
+            }
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static async Task RunTurnAsync(Dsh.AgentLoop.LoopAgent driver, string text)
+    {
+        var message = new Dsh.Llm.UserMessage
+        {
+            Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("N")),
+            Content = new Dsh.Llm.ContentBlock[] { new Dsh.Llm.TextBlock(text) },
+            Source = new Dsh.Llm.UserSource(),
+        };
+        driver.Send(message, Dsh.Agent.InboxTarget.NextTurn, wakeup: true);
+        await driver.WhenIdleAsync();
+    }
+
+    private static RenderFragment RenderEvent(Dsh.Session.SessionEvent evt) => __builder =>
+    {
+        switch (evt)
+        {
+            case Dsh.Session.UserMessageEvent user:
+                <div class="dsh-bubble dsh-user">@(string.Concat(user.Message.Content.OfType<Dsh.Llm.TextBlock>().Select(block => block.Text)))</div>
+                break;
+            case Dsh.Session.AssistantMessageEvent assistant:
+                <div class="dsh-bubble dsh-assistant">@(string.Concat(assistant.Message.Content.OfType<Dsh.Llm.TextBlock>().Select(block => block.Text)))</div>
+                break;
+            case Dsh.Session.AssistantChunkEvent chunk when chunk.Chunk is Dsh.Llm.TextDelta delta:
+                <div class="dsh-bubble dsh-assistant">@delta.Text</div>
+                break;
+            case Dsh.Session.ToolCallEvent tool:
+                <div class="dsh-bubble dsh-tool">tool @tool.Name</div>
+                break;
+        }
+    };
+}
+
+
+

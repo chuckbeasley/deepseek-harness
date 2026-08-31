@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
 namespace Dsh.Web.Host;
 
@@ -50,4 +50,17 @@ public static class RpcErrorCodes
 
     /// <summary>The wire args failed to decode into the method's declared parameters.</summary>
     public const string InvalidArgs = "gateway/invalid-args";
+}
+
+/// <summary>
+/// Owner-side validation refusal: thrown by a handler when the wire args are malformed or the
+/// request is semantically invalid; the registry maps it to <c>gateway/bad-request</c>.
+/// </summary>
+public sealed class RpcBadRequestException : Exception
+{
+    /// <summary>Create the refusal with a safe message (never echoes secret or raw wire data).</summary>
+    public RpcBadRequestException(string message)
+        : base(message)
+    {
+    }
 }

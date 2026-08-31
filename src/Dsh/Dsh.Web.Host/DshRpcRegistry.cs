@@ -102,6 +102,10 @@ public sealed class DshRpcRegistry : Service
             var result = await method.Invoke(request.Args, cancellationToken).ConfigureAwait(false);
             return new RpcResponse(result, null);
         }
+        catch (RpcBadRequestException error)
+        {
+            return new RpcResponse(null, new RpcError(RpcErrorCodes.BadRequest, error.Message));
+        }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             return new RpcResponse(null, new RpcError(RpcErrorCodes.Cancelled, "the rpc call was cancelled"));

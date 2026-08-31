@@ -1,0 +1,10 @@
+# dsh-web bundle: the Phase-5 Blazor shell served by the gateway host.
+- insert:
+    - id: rpc
+      name: rpc
+
+    - id: webHost
+      name: webHost
+      config:
+        host: 127.0.0.1
+        port: 3080

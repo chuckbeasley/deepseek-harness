@@ -51,6 +51,7 @@ public sealed class WebHostService : Service
     public override async ValueTask StartAsync(CancellationToken cancellationToken = default)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = Array.Empty<string>() });
+        builder.WebHost.UseUrls($"http://{_config.Host}:{_config.Port}");
         builder.Logging.ClearProviders();
         builder.Logging.AddProvider(new CordisLoggerProvider(Ctx));
         builder.Services.AddSignalR();

@@ -51,6 +51,7 @@
     <ProjectReference Include="..\Dsh.Hooks\Dsh.Hooks.csproj" />
     <ProjectReference Include="..\Dsh.Lsp\Dsh.Lsp.csproj" />
     <ProjectReference Include="..\Dsh.Subagent\Dsh.Subagent.csproj" />
+    <ProjectReference Include="..\Dsh.Web.App\Dsh.Web.App.csproj" />
     <ProjectReference Include="..\Dsh.Spike\Dsh.Spike.csproj" />
     <ProjectReference Include="..\Dsh.Tui\Dsh.Tui.csproj" />
   </ItemGroup>

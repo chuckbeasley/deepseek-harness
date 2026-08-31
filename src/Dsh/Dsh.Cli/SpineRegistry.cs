@@ -1,5 +1,6 @@
 using Cordis.Core;
 using Cordis.Plugin.Loader;
+using Dsh.Web.App;
 
 namespace Dsh.Cli;
 
@@ -254,6 +255,82 @@ public static class SpineRegistry
                 ?? throw new InvalidOperationException("dsh: tui requires the appExit launcher fact");
             exit.Exit(code);
             return null;
+        }));
+        catalog.Register("rpc", new SpinePlugin("rpc", (ctx, _) =>
+        {
+            var registry = new Dsh.Web.Host.DshRpcRegistry(ctx);
+            var sessions = ctx.Get<Dsh.Session.SessionStore>("sessions")
+                ?? throw new InvalidOperationException("rpc requires the \"sessions\" row");
+            var loop = ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
+                ?? throw new InvalidOperationException("rpc requires the \"agentLoop\" row");
+            var key = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
+            var provider = string.IsNullOrEmpty(key) ? "mock" : "deepseek";
+            var model = string.IsNullOrEmpty(key) ? "mock-todo" : "deepseek-chat";
+            var list = registry.Register(new Dsh.Web.Host.RpcMethod("session/list", (_, _) =>
+            {
+                var entries = sessions.List().Select(session => new
+                {
+                    id = session.Id.Value,
+                    summary = session.Events.OfType<Dsh.Session.AssistantMessageEvent>()
+                        .LastOrDefault()
+                        ?.Message.Content.OfType<Dsh.Llm.TextBlock>().Select(block => block.Text).FirstOrDefault() ?? "",
+                });
+                return Task.FromResult<System.Text.Json.JsonElement?>(System.Text.Json.JsonSerializer.SerializeToElement(entries));
+            }));
+            var create = registry.Register(new Dsh.Web.Host.RpcMethod("session/create", (_, _) =>
+            {
+                // The loop owns the session identity: Create publishes the session itself.
+                var id = new Dsh.Session.SessionId($"session-{Guid.NewGuid():N}");
+                _ = loop.Create(id, new Dsh.Agent.AgentOptions { Provider = provider, Model = model });
+                return Task.FromResult<System.Text.Json.JsonElement?>(
+                    System.Text.Json.JsonSerializer.SerializeToElement(new { id = id.Value }));
+            }));
+            var prompt = registry.Register(new Dsh.Web.Host.RpcMethod("session/prompt", async (args, ct) =>
+            {
+                var id = args is System.Text.Json.JsonElement element
+                    && element.TryGetProperty("sessionId", out var sessionId)
+                    && sessionId.ValueKind == System.Text.Json.JsonValueKind.String
+                        ? sessionId.GetString()
+                        : null;
+                var text = args is System.Text.Json.JsonElement argsElement
+                    && argsElement.TryGetProperty("text", out var textValue)
+                    && textValue.ValueKind == System.Text.Json.JsonValueKind.String
+                        ? textValue.GetString()
+                        : null;
+                if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(text))
+                {
+                    throw new Dsh.Web.Host.RpcBadRequestException("session/prompt requires sessionId and text");
+                }
+                var session = sessions.Get(new Dsh.Session.SessionId(id))
+                    ?? throw new InvalidOperationException($"session \"{id}\" is not live");
+                var driver = loop.GetLoop(session.Id)
+                    ?? throw new InvalidOperationException($"session \"{id}\" has no live loop");
+                var message = new Dsh.Llm.UserMessage
+                {
+                    Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("N")),
+                    Content = new Dsh.Llm.ContentBlock[] { new Dsh.Llm.TextBlock(text) },
+                    Source = new Dsh.Llm.UserSource(),
+                };
+                driver.Send(message, Dsh.Agent.InboxTarget.NextTurn, wakeup: true);
+                await driver.WhenIdleAsync();
+                var last = session.Events.OfType<Dsh.Session.AssistantMessageEvent>().LastOrDefault();
+                var answer = last?.Message.Content.OfType<Dsh.Llm.TextBlock>().Select(block => block.Text).FirstOrDefault() ?? "";
+                return System.Text.Json.JsonSerializer.SerializeToElement(new { id, text = answer });
+            }));
+            return new SpineDisposables(prompt, create, list);
+        }));
+        catalog.Register("webHost", new SpinePlugin("webHost", (ctx, config) =>
+        {
+            var host = new Dsh.Web.Host.WebHostService(
+                ctx,
+                new Dsh.Web.Host.WebHostConfig(
+                    ConfigString(config, "host") ?? "127.0.0.1",
+                    ConfigInt(config, "port") ?? 3080),
+                configure: builder => builder.Services.AddDshApp(),
+                map: app => app.MapDshApp());
+            // The web profile serves from mount time: a bound port fails the boot loud.
+            host.StartAsync().GetAwaiter().GetResult();
+            return host;
         }));
         catalog.Register("headless", new SpinePlugin("headless", (ctx, config) =>
         {

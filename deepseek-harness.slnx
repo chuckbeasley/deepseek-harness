@@ -35,6 +35,8 @@
     <Project Path="src/Dsh/Dsh.SystemPrompt/Dsh.SystemPrompt.csproj" />
     <Project Path="src/Dsh/Dsh.Tui/Dsh.Tui.csproj" />
     <Project Path="src/Dsh/Dsh.Web/Dsh.Web.csproj" />
+    <Project Path="src/Dsh/Dsh.Web.Host/Dsh.Web.Host.csproj" />
+    <Project Path="src/Dsh/Dsh.Web.App/Dsh.Web.App.csproj" />
     <Project Path="src/Dsh/Dsh.Goal/Dsh.Goal.csproj" />
     <Project Path="src/Dsh/Dsh.Schedule/Dsh.Schedule.csproj" />
     <Project Path="src/Dsh/Dsh.Feedback/Dsh.Feedback.csproj" />
@@ -83,6 +85,7 @@
     <Project Path="tests/Dsh.SystemPrompt.Tests/Dsh.SystemPrompt.Tests.csproj" />
     <Project Path="tests/Dsh.Tui.Tests/Dsh.Tui.Tests.csproj" />
     <Project Path="tests/Dsh.Web.Tests/Dsh.Web.Tests.csproj" />
+    <Project Path="tests/Dsh.Web.Host.Tests/Dsh.Web.Host.Tests.csproj" />
     <Project Path="tests/Dsh.Goal.Tests/Dsh.Goal.Tests.csproj" />
     <Project Path="tests/Dsh.Schedule.Tests/Dsh.Schedule.Tests.csproj" />
     <Project Path="tests/Dsh.Feedback.Tests/Dsh.Feedback.Tests.csproj" />
