@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Dsh.Rpc.Generator;
 
 namespace Dsh.Web.Host;
 
@@ -21,6 +22,7 @@ public sealed record RpcResponse(
 }
 
 /// <summary>One Remote failure: the stable carrier code and a human message; details carry codec output.</summary>
+[RpcCodec]
 public sealed record RpcError(
     /// <summary>Stable machine code (the TS <c>RemoteErrorCode</c> union).</summary>
     string Code,

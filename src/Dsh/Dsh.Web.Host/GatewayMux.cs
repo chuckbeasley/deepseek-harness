@@ -160,12 +160,12 @@ public static class GatewayMux
         {
             try
             {
-                await writer.SendAsync(new { type = "error", streamId, error = new
+                await writer.SendAsync(new
                 {
-                    code = RpcErrorCodes.Internal,
-                    message = error.Message,
-                    details = new { },
-                } }, CancellationToken.None);
+                    type = "error",
+                    streamId,
+                    error = RpcErrorCodec.Encode(new RpcError(RpcErrorCodes.Internal, error.Message)),
+                }, CancellationToken.None);
             }
             catch (Exception)
             {

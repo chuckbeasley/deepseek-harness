@@ -1,4 +1,4 @@
-<Solution>
+﻿<Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Cordis/">
     <Project Path="src/Cordis/Cordis.Core/Cordis.Core.csproj" />
@@ -37,6 +37,7 @@
     <Project Path="src/Dsh/Dsh.Web/Dsh.Web.csproj" />
     <Project Path="src/Dsh/Dsh.Web.Host/Dsh.Web.Host.csproj" />
     <Project Path="src/Dsh/Dsh.Web.App/Dsh.Web.App.csproj" />
+    <Project Path="src/Dsh/Dsh.Rpc.Generator/Dsh.Rpc.Generator.csproj" />
     <Project Path="src/Dsh/Dsh.Goal/Dsh.Goal.csproj" />
     <Project Path="src/Dsh/Dsh.Schedule/Dsh.Schedule.csproj" />
     <Project Path="src/Dsh/Dsh.Feedback/Dsh.Feedback.csproj" />
@@ -109,3 +110,4 @@
     <Project Path="tests/Dsh.Todo.Tests/Dsh.Todo.Tests.csproj" />
   </Folder>
 </Solution>
+

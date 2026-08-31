@@ -18,6 +18,8 @@
     <ProjectReference Include="..\Dsh.Jobs\Dsh.Jobs.csproj" />
     <ProjectReference Include="..\Dsh.Preset\Dsh.Preset.csproj" />
     <ProjectReference Include="..\Dsh.Session.Projection\Dsh.Session.Projection.csproj" />
+    <!-- The typed-codec source generator (analyzer-only: its assembly never ships). -->
+    <ProjectReference Include="..\Dsh.Rpc.Generator\Dsh.Rpc.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

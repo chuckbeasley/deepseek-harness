@@ -120,20 +120,7 @@ public static class GatewayHttp
             {
                 writer.WriteBoolean("ok", false);
                 writer.WritePropertyName("error");
-                writer.WriteStartObject();
-                writer.WriteString("code", response.Error!.Code);
-                writer.WriteString("message", response.Error.Message);
-                writer.WritePropertyName("details");
-                if (response.Error.Details is JsonElement details)
-                {
-                    details.WriteTo(writer);
-                }
-                else
-                {
-                    writer.WriteStartObject();
-                    writer.WriteEndObject();
-                }
-                writer.WriteEndObject();
+                RpcErrorCodec.Encode(response.Error!).WriteTo(writer);
             }
             writer.WriteEndObject();
             writer.WriteEndObject();

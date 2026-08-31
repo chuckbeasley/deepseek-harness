@@ -104,6 +104,10 @@ public static class Program
         ("locale: negotiation picks the first supported language", WebLocaleTests.NegotiatePicksTheFirstSupportedLanguage),
         ("locale: an unknown locale id falls back to English", WebLocaleTests.ForUnknownLanguageFallsBackToEnglish),
         ("locale: the shell prerenders in the negotiated locale", WebLocaleTests.ShellPrerendersInTheNegotiatedLocale),
+        ("codec: generated encode produces the error vocabulary shape", RpcCodecTests.Encode_ProducesTheErrorVocabularyShape),
+        ("codec: generated encode carries structured details", RpcCodecTests.Encode_CarriesStructuredDetails),
+        ("codec: generated decode round-trips the encode", RpcCodecTests.TryDecode_RoundTripsEncode),
+        ("codec: generated decode refuses malformed elements", RpcCodecTests.TryDecode_RejectsMalformedElements),
     };
 
     public static int Main()
