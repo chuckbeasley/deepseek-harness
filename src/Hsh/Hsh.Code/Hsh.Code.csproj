@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Harness.Code</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hsh.Llm\Hsh.Llm.csproj" />
+    <ProjectReference Include="..\Hsh.Session\Hsh.Session.csproj" />
+    <ProjectReference Include="..\Hsh.Tools\Hsh.Tools.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jint" Version="4.16.1" />
+  </ItemGroup>
+
+</Project>

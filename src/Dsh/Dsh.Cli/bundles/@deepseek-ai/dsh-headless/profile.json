@@ -1,9 +1,0 @@
-{
-  "name": "dsh-headless",
-  "dsh": {
-    "bundle": {
-      "patch": "cordis.patch.yml"
-    }
-  }
-}
-

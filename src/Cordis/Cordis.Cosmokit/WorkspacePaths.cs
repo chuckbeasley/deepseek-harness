@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace Harness.Cordis.Cosmokit;
 
-/// <summary>Workspace path and display helpers (port of <c>@deepseek-ai/dsh-util-workspace-path</c>).</summary>
+/// <summary>Workspace path and display helpers (port of <c>@deepseek-ai/hsh-util-workspace-path</c>).</summary>
 public static class WorkspacePaths
 {
     /// <summary>

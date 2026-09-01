@@ -2,7 +2,7 @@ namespace Harness.Cordis.Cosmokit;
 
 /// <summary>
 /// Internal abort reason carrying a capability-owned code and elapsed deadline,
-/// mirroring the <c>TimeoutReason</c> from <c>@deepseek-ai/dsh-timeout</c>.
+/// mirroring the <c>TimeoutReason</c> from <c>@deepseek-ai/hsh-timeout</c>.
 /// </summary>
 public sealed class TimeoutReason : Exception
 {
@@ -23,7 +23,7 @@ public sealed class TimeoutReason : Exception
 
 /// <summary>
 /// A deadline signal plus the cleanup that clears its timer, mirroring the
-/// <c>deadline</c> helper from <c>@deepseek-ai/dsh-timeout</c>. The token only
+/// <c>deadline</c> helper from <c>@deepseek-ai/hsh-timeout</c>. The token only
 /// notifies; the caller owns the mechanism that stops its work.
 /// </summary>
 public sealed class Deadline : IDisposable
@@ -89,7 +89,7 @@ public sealed class Deadline : IDisposable
     }
 }
 
-/// <summary>Shared timeout arithmetic and classification (port of <c>@deepseek-ai/dsh-timeout</c>).</summary>
+/// <summary>Shared timeout arithmetic and classification (port of <c>@deepseek-ai/hsh-timeout</c>).</summary>
 public static class Timeout
 {
     /// <summary>

@@ -1,0 +1,164 @@
+# hsh-base bundle: the shared spine services every profile composes.
+- insert:
+    - id: sessions
+      name: sessions
+
+    - id: sessionProjections
+      name: sessionProjections
+
+    - id: llm
+      name: llm
+
+    - id: tools
+      name: tools
+
+    - id: systemPrompt
+      name: systemPrompt
+
+    - id: agents
+      name: agents
+
+    - id: agentLoop
+      name: agentLoop
+
+    - id: sessionPersistence
+      name: sessionPersistence
+
+    - id: mock
+      name: mock
+
+    - id: deepseek
+      name: deepseek
+
+    - id: todo
+      name: todo
+      config:
+        allowParallelInProgress: true
+
+    - id: runCode
+      name: runCode
+
+    - id: cordis
+      name: cordis
+
+    - id: subprocess
+      name: subprocess
+
+    - id: attachment
+      name: attachment
+
+    - id: fs
+      name: fs
+
+    - id: shell
+      name: shell
+
+    - id: identity
+      name: identity
+
+    - id: plan
+      name: plan
+
+    - id: web
+      name: web
+
+    - id: credentials
+      name: credentials
+
+    - id: settings
+      name: settings
+
+    - id: authorization
+      name: authorization
+
+    - id: sandbox
+      name: sandbox
+
+    - id: goal
+      name: goal
+
+    - id: schedule
+      name: schedule
+
+    - id: feedback
+      name: feedback
+
+    - id: storage
+      name: storage
+
+    - id: workspaceRegistry
+      name: workspaceRegistry
+
+    - id: workspace
+      name: workspace
+
+    - id: spill
+      name: spill
+
+    - id: compaction
+      name: compaction
+
+    - id: context
+      name: context
+
+    - id: sessionQuery
+      name: sessionQuery
+
+    - id: preset
+      name: preset
+
+    - id: guard
+      name: guard
+
+    - id: llmRetry
+      name: llmRetry
+
+    - id: userQuestions
+      name: userQuestions
+
+    - id: toolAskUser
+      name: toolAskUser
+
+    - id: skill
+      name: skill
+
+    - id: workspaceInstructions
+      name: workspaceInstructions
+
+    - id: terminal
+      name: terminal
+
+    - id: subagent
+      name: subagent
+
+    - id: subagentTool
+      name: subagentTool
+      config:
+        provider: subagent
+
+    - id: ralph
+      name: ralph
+
+    - id: lsp
+      name: lsp
+
+    - id: jobs
+      name: jobs
+
+    - id: subagentDiagnostic
+      name: subagentDiagnostic
+
+    - id: subagentAcp
+      name: subagentAcp
+
+    - id: workflow
+      name: workflow
+
+    - id: webhook
+      name: webhook
+
+    - id: hooksClaudeCode
+      name: hooksClaudeCode
+
+    - id: hooksCodex
+      name: hooksCodex

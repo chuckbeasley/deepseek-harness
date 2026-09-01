@@ -15,8 +15,8 @@ The .NET gate ladder, in the order CI runs it:
 2. **Console runners** — the console-based suites run as plain executables.
    This is the current test path because some suites are console-based:
    - `dotnet run --project tests/Cordis.Tests/Cordis.Tests.csproj -c Release --no-build`
-   - `dotnet run --project tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj -c Release --no-build`
-   - `dotnet run --project src/Dsh/Dsh.Spike/Dsh.Spike.csproj -c Release --no-build` (headless smoke)
+   - `dotnet run --project tests/Hsh.Spike.Tests/Hsh.Spike.Tests.csproj -c Release --no-build`
+   - `dotnet run --project src/Hsh/Hsh.Spike/Hsh.Spike.csproj -c Release --no-build` (headless smoke)
 3. **xUnit** — the framework test path:
    `dotnet test tests/Cordis.Core.Tests/Cordis.Core.Tests.csproj -c Release --no-build`
 4. **Coverage** — a coverage gate (Coverlet plus a CI threshold) is a
@@ -37,8 +37,8 @@ dotnet restore deepseek-harness.slnx
 dotnet build deepseek-harness.slnx -c Release
 dotnet test tests/Cordis.Core.Tests/Cordis.Core.Tests.csproj -c Release --no-build
 dotnet run --project tests/Cordis.Tests/Cordis.Tests.csproj -c Release --no-build
-dotnet run --project tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj -c Release --no-build
-dotnet run --project src/Dsh/Dsh.Spike/Dsh.Spike.csproj -c Release --no-build
+dotnet run --project tests/Hsh.Spike.Tests/Hsh.Spike.Tests.csproj -c Release --no-build
+dotnet run --project src/Hsh/Hsh.Spike/Hsh.Spike.csproj -c Release --no-build
 ```
 
 ## Sandbox caveat
@@ -50,7 +50,7 @@ through pipes. Restore works and `csc` runs with inherited stdio, so the
 sandbox path compiles each project directly with `csc` and runs the
 zero-dependency console suites through the build-and-test scripts:
 
-- `build-and-test.ps1` — slice (`Dsh.Spike` smoke + `Dsh.Spike.Tests`)
+- `build-and-test.ps1` — slice (`Hsh.Spike` smoke + `Hsh.Spike.Tests`)
 - `build-and-test-cordis.ps1` — `Cordis.Cosmokit` + `Cordis.Schemastery` + `Cordis.Tests`
 - `build-and-test-cordis-core.ps1` — `Cordis.Core` + the console twin runner
 

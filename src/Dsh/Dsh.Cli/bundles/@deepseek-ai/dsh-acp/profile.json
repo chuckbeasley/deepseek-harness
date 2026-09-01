@@ -1,8 +1,0 @@
-{
-  "name": "dsh-acp",
-  "dsh": {
-    "bundle": {
-      "patch": "cordis.patch.yml"
-    }
-  }
-}

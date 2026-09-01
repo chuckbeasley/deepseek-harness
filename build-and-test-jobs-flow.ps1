@@ -5,7 +5,7 @@
 # through pipes. Restore itself works, and the compiler runs fine when spawned with inherited
 # stdio, so this script compiles each project directly with csc and runs the zero-dependency
 # console assertion suites. On an unrestricted host, `dotnet build` / `dotnet run --project
-# tests\Dsh.Jobs.Tests` (and the workflow peer) work normally.
+# tests\Hsh.Jobs.Tests` (and the workflow peer) work normally.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sdkDir = Get-ChildItem (Join-Path $env:ProgramFiles 'dotnet\sdk') -Directory | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
@@ -33,33 +33,33 @@ function Invoke-Csc {
 }
 
 $core = Get-ChildItem (Join-Path $root 'src\Cordis\Cordis.Core') -Filter '*.cs' | ForEach-Object FullName
-$llm = Get-ChildItem (Join-Path $root 'src\Dsh\Dsh.Llm') -Filter '*.cs' | ForEach-Object FullName
-$session = Get-ChildItem (Join-Path $root 'src\Dsh\Dsh.Session') -Filter '*.cs' | ForEach-Object FullName
-$tools = Get-ChildItem (Join-Path $root 'src\Dsh\Dsh.Tools') -Filter '*.cs' | ForEach-Object FullName
-$jobs = Get-ChildItem (Join-Path $root 'src\Dsh\Dsh.Jobs') -Filter '*.cs' | ForEach-Object FullName
-$workflow = Get-ChildItem (Join-Path $root 'src\Dsh\Dsh.Workflow') -Filter '*.cs' | ForEach-Object FullName
-$jobsTests = Get-ChildItem (Join-Path $root 'tests\Dsh.Jobs.Tests') -Filter '*.cs' | ForEach-Object FullName
-$workflowTests = Get-ChildItem (Join-Path $root 'tests\Dsh.Workflow.Tests') -Filter '*.cs' | ForEach-Object FullName
+$llm = Get-ChildItem (Join-Path $root 'src\Hsh\Hsh.Llm') -Filter '*.cs' | ForEach-Object FullName
+$session = Get-ChildItem (Join-Path $root 'src\Hsh\Hsh.Session') -Filter '*.cs' | ForEach-Object FullName
+$tools = Get-ChildItem (Join-Path $root 'src\Hsh\Hsh.Tools') -Filter '*.cs' | ForEach-Object FullName
+$jobs = Get-ChildItem (Join-Path $root 'src\Hsh\Hsh.Jobs') -Filter '*.cs' | ForEach-Object FullName
+$workflow = Get-ChildItem (Join-Path $root 'src\Hsh\Hsh.Workflow') -Filter '*.cs' | ForEach-Object FullName
+$jobsTests = Get-ChildItem (Join-Path $root 'tests\Hsh.Jobs.Tests') -Filter '*.cs' | ForEach-Object FullName
+$workflowTests = Get-ChildItem (Join-Path $root 'tests\Hsh.Workflow.Tests') -Filter '*.cs' | ForEach-Object FullName
 
-# Compile in dependency order: Cordis.Core -> Dsh.Llm -> Dsh.Session -> Dsh.Tools ->
-# Dsh.Jobs / Dsh.Workflow -> both test apps.
+# Compile in dependency order: Cordis.Core -> Hsh.Llm -> Hsh.Session -> Hsh.Tools ->
+# Hsh.Jobs / Hsh.Workflow -> both test apps.
 $coreDll = Join-Path $bin 'Cordis.Core.dll'
-$llmDll = Join-Path $bin 'Dsh.Llm.dll'
-$sessionDll = Join-Path $bin 'Dsh.Session.dll'
-$toolsDll = Join-Path $bin 'Dsh.Tools.dll'
-$jobsDll = Join-Path $bin 'Dsh.Jobs.dll'
-$workflowDll = Join-Path $bin 'Dsh.Workflow.dll'
-$jobsTestsDll = Join-Path $bin 'Dsh.Jobs.Tests.dll'
-$workflowTestsDll = Join-Path $bin 'Dsh.Workflow.Tests.dll'
+$llmDll = Join-Path $bin 'Hsh.Llm.dll'
+$sessionDll = Join-Path $bin 'Hsh.Session.dll'
+$toolsDll = Join-Path $bin 'Hsh.Tools.dll'
+$jobsDll = Join-Path $bin 'Hsh.Jobs.dll'
+$workflowDll = Join-Path $bin 'Hsh.Workflow.dll'
+$jobsTestsDll = Join-Path $bin 'Hsh.Jobs.Tests.dll'
+$workflowTestsDll = Join-Path $bin 'Hsh.Workflow.Tests.dll'
 
 Invoke-Csc -ExtraArgs @('-target:library', "-out:$coreDll") -Sources $core -Label 'Cordis.Core'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$llmDll", "-r:$coreDll") -Sources $llm -Label 'Dsh.Llm'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$sessionDll", "-r:$coreDll", "-r:$llmDll") -Sources $session -Label 'Dsh.Session'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$toolsDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll") -Sources $tools -Label 'Dsh.Tools'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$jobsDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll") -Sources $jobs -Label 'Dsh.Jobs'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$workflowDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll") -Sources $workflow -Label 'Dsh.Workflow'
-Invoke-Csc -ExtraArgs @('-target:exe', "-out:$jobsTestsDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll", "-r:$jobsDll") -Sources $jobsTests -Label 'Dsh.Jobs.Tests'
-Invoke-Csc -ExtraArgs @('-target:exe', "-out:$workflowTestsDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll", "-r:$workflowDll") -Sources $workflowTests -Label 'Dsh.Workflow.Tests'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$llmDll", "-r:$coreDll") -Sources $llm -Label 'Hsh.Llm'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$sessionDll", "-r:$coreDll", "-r:$llmDll") -Sources $session -Label 'Hsh.Session'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$toolsDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll") -Sources $tools -Label 'Hsh.Tools'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$jobsDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll") -Sources $jobs -Label 'Hsh.Jobs'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$workflowDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll") -Sources $workflow -Label 'Hsh.Workflow'
+Invoke-Csc -ExtraArgs @('-target:exe', "-out:$jobsTestsDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll", "-r:$jobsDll") -Sources $jobsTests -Label 'Hsh.Jobs.Tests'
+Invoke-Csc -ExtraArgs @('-target:exe', "-out:$workflowTestsDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll", "-r:$workflowDll") -Sources $workflowTests -Label 'Hsh.Workflow.Tests'
 
 $runtime = $pack.Name
 $runtimeConfig = @{
@@ -70,14 +70,14 @@ $runtimeConfig = @{
         configProperties = @{ 'System.Reflection.Metadata.MetadataUpdater.IsSupported' = $false }
     }
 }
-$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Dsh.Jobs.Tests.runtimeconfig.json') -Encoding utf8
-$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Dsh.Workflow.Tests.runtimeconfig.json') -Encoding utf8
+$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Hsh.Jobs.Tests.runtimeconfig.json') -Encoding utf8
+$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Hsh.Workflow.Tests.runtimeconfig.json') -Encoding utf8
 
-Write-Host '== Running Dsh.Jobs.Tests =='
+Write-Host '== Running Hsh.Jobs.Tests =='
 & dotnet $jobsTestsDll
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host ''
-Write-Host '== Running Dsh.Workflow.Tests =='
+Write-Host '== Running Hsh.Workflow.Tests =='
 & dotnet $workflowTestsDll
 exit $LASTEXITCODE

@@ -1,0 +1,8 @@
+# hsh-acp bundle: the ACP runtime profile — the base spine, the approval gate, and one
+# Agent Client Protocol server over console stdio (stdout is the wire).
+- insert:
+    - id: approval
+      name: approval
+
+    - id: acpRuntime
+      name: acpRuntime

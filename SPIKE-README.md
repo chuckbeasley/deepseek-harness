@@ -32,10 +32,10 @@ No solution file is created here; a separate integration agent owns the
   `Branded<B>` / `brandString` equivalent).
 - `Cordis.Cosmokit` misc: `Misc`, `Deep` (clone/deepEqual), `Binary`, `Time`,
   `Strings`, `Arrays` (ports of cosmokit modules); `HomePaths`,
-  `WorkspacePaths` (ports of `dsh-home-paths` / `dsh-util-workspace-path`);
-  `TimeoutReason`/`Deadline`/`Timeout` (port of `dsh-timeout`);
+  `WorkspacePaths` (ports of `hsh-home-paths` / `hsh-util-workspace-path`);
+  `TimeoutReason`/`Deadline`/`Timeout` (port of `hsh-timeout`);
   `ItemRetainer<T>`/`TextRetainer` + notice helpers (port of
-  `dsh-output-retention`).
+  `hsh-output-retention`).
 
 ## Build and test
 

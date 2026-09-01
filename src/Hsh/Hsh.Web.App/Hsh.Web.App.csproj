@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Harness.Web.App</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
+    <ProjectReference Include="..\Hsh.Web.Host\Hsh.Web.Host.csproj" />
+    <ProjectReference Include="..\Hsh.Session\Hsh.Session.csproj" />
+    <ProjectReference Include="..\Hsh.Agent\Hsh.Agent.csproj" />
+    <ProjectReference Include="..\Hsh.AgentLoop\Hsh.AgentLoop.csproj" />
+    <ProjectReference Include="..\Hsh.Llm\Hsh.Llm.csproj" />
+  </ItemGroup>
+
+</Project>

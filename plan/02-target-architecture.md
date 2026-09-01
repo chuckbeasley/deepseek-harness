@@ -16,18 +16,18 @@ deepseek-harness.slnx
 │   ├── Cordis.Plugin.Timer/       # background scheduling
 │   ├── Cordis.Plugin.Hmr/         # config watch + .NET hot reload
 │   └── Cordis.Logger.Console/     # console logging (→ Microsoft.Extensions.Logging)
-├── src/Dsh.Core/                  # session, system-prompt, tools, agent, agent-loop, scope
-├── src/Dsh.Llm/                   # llm seam + DeepSeek providers + streaming
-├── src/Dsh.<capability>/*         # fs, subprocess, shell, terminal, sandbox, lsp, web, skill,
+├── src/Hsh.Core/                  # session, system-prompt, tools, agent, agent-loop, scope
+├── src/Hsh.Llm/                   # llm seam + DeepSeek providers + streaming
+├── src/Hsh.<capability>/*         # fs, subprocess, shell, terminal, sandbox, lsp, web, skill,
 │                                   # compaction, context, subagent, jobs, workflow, webhook, todo,
 │                                   # plan, preset, guard, hooks, session-query, settings, credentials,
 │                                   # storage, workspace, attachment, spill, goal, schedule, feedback, identity
-├── src/Dsh.Cli/                   # dsh tool: args, profile boot, plugin mgmt, dump-config, TUI
-├── src/Dsh.Web.Host/              # ASP.NET Core (Kestrel) + SignalR + Typert gateway
-├── src/Dsh.Web.App/               # Blazor shell: slot outlet, store layer, localization, theme
-├── src/Dsh.Web.Plugins.*/         # Razor Class Libraries (one per current ui-* plugin)
-├── src/Dsh.Sdk/                   # .NET client SDK (replaces Python SDK) + stdio JSON-RPC server
-├── src/Dsh.Acp/                   # ACP server
+├── src/Hsh.Cli/                   # hsh tool: args, profile boot, plugin mgmt, dump-config, TUI
+├── src/Hsh.Web.Host/              # ASP.NET Core (Kestrel) + SignalR + Typert gateway
+├── src/Hsh.Web.App/               # Blazor shell: slot outlet, store layer, localization, theme
+├── src/Hsh.Web.Plugins.*/         # Razor Class Libraries (one per current ui-* plugin)
+├── src/Hsh.Sdk/                   # .NET client SDK (replaces Python SDK) + stdio JSON-RPC server
+├── src/Hsh.Acp/                   # ACP server
 ├── native/landlock-run/           # unchanged native code, P/Invoke + sidecar binding
 └── tests/                         # xUnit, bUnit, Playwright, Verify snapshots, e2e
 ```

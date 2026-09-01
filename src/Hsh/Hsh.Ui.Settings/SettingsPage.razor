@@ -1,0 +1,29 @@
+@page "/settings"
+@rendermode InteractiveServer
+@inject Harness.Cordis.Core.Context Ctx
+@inject WebLocale Locale
+
+<div class="hsh-page">
+    <h1>@Locale.T("settings")</h1>
+    @if (Provider is null)
+    {
+        <p class="hsh-muted">@Locale.T("noSettings")</p>
+    }
+    else
+    {
+        <p class="hsh-settings-path">@Locale.T("settingsDocument") @(Provider.DocumentPath ?? "-")</p>
+        <ul class="hsh-settings-namespaces">
+            @foreach (var ns in Provider.Describe(new Harness.Settings.SettingsDescribeOptions(RedactSecrets: true)))
+            {
+                <li class="hsh-settings-namespace">
+                    <span class="hsh-settings-ns">@ns.Ns</span>
+                    <span class="hsh-settings-facts">r@ns.Revision</span>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private Harness.Settings.SettingsProvider? Provider => Ctx.Get<Harness.Settings.SettingsProvider>("settings");
+}

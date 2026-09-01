@@ -4,7 +4,7 @@
 # compiler with captured stdout/stderr, and the sandbox denies child processes that capture output
 # through pipes. This script compiles each project directly with csc (response-file refs copied into
 # bin\refs) in dependency order and runs the zero-dependency console assertion suite. On an
-# unrestricted host, `dotnet build` / `dotnet run --project tests\Dsh.Agent.Tests` work normally.
+# unrestricted host, `dotnet build` / `dotnet run --project tests\Hsh.Agent.Tests` work normally.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sdkDir = Get-ChildItem (Join-Path $env:ProgramFiles 'dotnet\sdk') -Directory | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
@@ -32,27 +32,27 @@ function Invoke-Csc {
 }
 
 $core = Get-ChildItem (Join-Path $root 'src\Cordis\Cordis.Core') -Filter '*.cs' | ForEach-Object FullName
-$llm = Get-ChildItem (Join-Path $root 'src\Dsh\Dsh.Llm') -Filter '*.cs' | ForEach-Object FullName
-$session = Get-ChildItem (Join-Path $root 'src\Dsh\Dsh.Session') -Filter '*.cs' | ForEach-Object FullName
-$agent = Get-ChildItem (Join-Path $root 'src\Dsh\Dsh.Agent') -Filter '*.cs' | ForEach-Object FullName
-$scope = Get-ChildItem (Join-Path $root 'src\Dsh\Dsh.Scope') -Filter '*.cs' | ForEach-Object FullName
-$tests = Get-ChildItem (Join-Path $root 'tests\Dsh.Agent.Tests') -Filter '*.cs' | ForEach-Object FullName
+$llm = Get-ChildItem (Join-Path $root 'src\Hsh\Hsh.Llm') -Filter '*.cs' | ForEach-Object FullName
+$session = Get-ChildItem (Join-Path $root 'src\Hsh\Hsh.Session') -Filter '*.cs' | ForEach-Object FullName
+$agent = Get-ChildItem (Join-Path $root 'src\Hsh\Hsh.Agent') -Filter '*.cs' | ForEach-Object FullName
+$scope = Get-ChildItem (Join-Path $root 'src\Hsh\Hsh.Scope') -Filter '*.cs' | ForEach-Object FullName
+$tests = Get-ChildItem (Join-Path $root 'tests\Hsh.Agent.Tests') -Filter '*.cs' | ForEach-Object FullName
 
-# Compile in dependency order: Cordis.Core, then Dsh.Llm (-> Core), Dsh.Session (-> Core + Llm),
-# Dsh.Agent (-> Core + Llm + Session), Dsh.Scope (-> Core + Agent), then the tests app.
+# Compile in dependency order: Cordis.Core, then Hsh.Llm (-> Core), Hsh.Session (-> Core + Llm),
+# Hsh.Agent (-> Core + Llm + Session), Hsh.Scope (-> Core + Agent), then the tests app.
 $coreDll = Join-Path $bin 'Cordis.Core.dll'
-$llmDll = Join-Path $bin 'Dsh.Llm.dll'
-$sessionDll = Join-Path $bin 'Dsh.Session.dll'
-$agentDll = Join-Path $bin 'Dsh.Agent.dll'
-$scopeDll = Join-Path $bin 'Dsh.Scope.dll'
-$testsDll = Join-Path $bin 'Dsh.Agent.Tests.dll'
+$llmDll = Join-Path $bin 'Hsh.Llm.dll'
+$sessionDll = Join-Path $bin 'Hsh.Session.dll'
+$agentDll = Join-Path $bin 'Hsh.Agent.dll'
+$scopeDll = Join-Path $bin 'Hsh.Scope.dll'
+$testsDll = Join-Path $bin 'Hsh.Agent.Tests.dll'
 
 Invoke-Csc -ExtraArgs @('-target:library', "-out:$coreDll") -Sources $core -Label 'Cordis.Core'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$llmDll", "-r:$coreDll") -Sources $llm -Label 'Dsh.Llm'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$sessionDll", "-r:$coreDll", "-r:$llmDll") -Sources $session -Label 'Dsh.Session'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$agentDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll") -Sources $agent -Label 'Dsh.Agent'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$scopeDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$agentDll") -Sources $scope -Label 'Dsh.Scope'
-Invoke-Csc -ExtraArgs @('-target:exe', "-out:$testsDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$agentDll", "-r:$scopeDll") -Sources $tests -Label 'Dsh.Agent.Tests'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$llmDll", "-r:$coreDll") -Sources $llm -Label 'Hsh.Llm'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$sessionDll", "-r:$coreDll", "-r:$llmDll") -Sources $session -Label 'Hsh.Session'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$agentDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll") -Sources $agent -Label 'Hsh.Agent'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$scopeDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$agentDll") -Sources $scope -Label 'Hsh.Scope'
+Invoke-Csc -ExtraArgs @('-target:exe', "-out:$testsDll", "-r:$coreDll", "-r:$llmDll", "-r:$sessionDll", "-r:$agentDll", "-r:$scopeDll") -Sources $tests -Label 'Hsh.Agent.Tests'
 
 $runtime = $pack.Name
 $runtimeConfig = @{
@@ -63,8 +63,8 @@ $runtimeConfig = @{
         configProperties = @{ 'System.Reflection.Metadata.MetadataUpdater.IsSupported' = $false }
     }
 }
-$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Dsh.Agent.Tests.runtimeconfig.json') -Encoding utf8
+$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Hsh.Agent.Tests.runtimeconfig.json') -Encoding utf8
 
-Write-Host '== Running Dsh.Agent.Tests =='
+Write-Host '== Running Hsh.Agent.Tests =='
 & dotnet $testsDll
 exit $LASTEXITCODE

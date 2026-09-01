@@ -4,7 +4,7 @@
 
 Convert this repository from a TypeScript monorepo into a **C# / .NET 10** codebase:
 
-- **CLI** → a `dsh` dotnet tool / single-file executable with a **TUI** (Spectre.Console + Terminal.Gui).
+- **CLI** → a `hsh` dotnet tool / single-file executable with a **TUI** (Spectre.Console + Terminal.Gui).
 - **Web UI** → **Blazor** (Blazor Server / Blazor Web App, server interactivity), replacing the React client + Node host.
 - **Python SDK** → retired and replaced by a **.NET client SDK** (no Python remains).
 - **Docs website** → folded into the Blazor app (content preserved).
@@ -34,7 +34,7 @@ Convert this repository from a TypeScript monorepo into a **C# / .NET 10** codeb
 | Language | TypeScript, ESM, `strict`, 100%-coverage CI gate |
 | Framework | Vendored **Cordis** (Context / Service / typed Events / Fiber effects / Loader / Include / HMR / Schemastery / Cosmokit) |
 | Type/RPC | **Typert** build-time type-graph generator + runtime registry + Remote-method RPC |
-| CLI | `apps/cli` — `dsh` profile boot, plugin mgmt, `--dump-config`, web alias |
+| CLI | `apps/cli` — `hsh` profile boot, plugin mgmt, `--dump-config`, web alias |
 | Web | Node host half (HTTP + Typert gateway) + React client half (~45 `ui-*` plugins, slot system, observable stores, SSE/WS) |
 | SDKs | TypeScript SDK + Python SDK, both over stdio JSON-RPC |
 | Persistence | SQLite + JSONL session log, monotonic schema/format versions |

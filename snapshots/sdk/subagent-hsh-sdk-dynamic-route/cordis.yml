@@ -1,0 +1,61 @@
+# SDK-profile patch for a deterministic parent model that selects a route for
+# a separate SDK child runtime. Both runtimes persist their request headers.
+
+- id: llm-deepseek
+  name: '@deepseek-ai/hsh-llm-deepseek'
+  disabled: true
+
+- id: tool-subagent
+  name: '@deepseek-ai/hsh-tool-subagent'
+  disabled: true
+
+- id: sdk-jsonrpc-server
+  name: '@deepseek-ai/hsh-sdk-jsonrpc-server'
+  disabled: true
+
+- id: session-persistence-jsonl
+  name: '@deepseek-ai/hsh-session-persistence-jsonl'
+  config:
+    root: !!js hshHomePath('sessions')
+    compression: none
+
+- insert:
+    - id: mock-llm
+      name: '../../../packages/subagent/subagent-hsh-sdk/tests/fixtures/loader/mock-delegating-llm.ts'
+      disabled: !!js process.env.HSH_SNAPSHOT !== 'record'
+
+    - id: subagent-hsh-sdk
+      name: '@deepseek-ai/hsh-subagent-hsh-sdk'
+      config:
+        profile: sdk
+        patches: !!js JSON.parse(process.env.HSH_TEST_CHILD_PATCHES ?? '[]')
+        hshHome: !!js process.env.HSH_TEST_CHILD_HOME
+        provider: mock
+        model: mock-routed
+        env:
+          HSH_TELEMETRY_DISABLED: '1'
+
+    - id: subagent-model-selection-settings
+      name: '@deepseek-ai/hsh-tool-subagent/model-selection-settings'
+      config:
+        enabled: true
+        allowedModels:
+          - provider: mock
+            model: mock-routed
+
+    - id: tool-subagent-hsh-sdk
+      name: '../../../packages/subagent/subagent-hsh-sdk/tests/fixtures/loader/scoped-tool-subagent.ts'
+      config:
+        provider: hsh-sdk
+        toolName: subagent
+        enableRunInBackground: false
+        agentOptions:
+          maxTokens: 777
+        maxDepth: 'provider-managed'
+
+    - id: sdk-jsonrpc-server-dynamic-live
+      name: '@deepseek-ai/hsh-sdk-jsonrpc-server'
+      inject: [sdkAppStartup, loader]
+      disabled: !!js process.env.HSH_SNAPSHOT !== 'record'
+      config:
+        maxTokensAsSuccess: true

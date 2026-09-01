@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Harness.Sdk.Client</RootNamespace>
+    <!-- The public SDK surface (the .NET replacement for the retired Python SDK):
+         the package consumers restore. -->
+    <PackageId>Harness.Sdk</PackageId>
+    <Description>The Harness .NET client SDK: spawns the hsh runtime as a subprocess and drives typed session turns over the JSON-RPC line transport.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hsh.Sdk.Protocol\Hsh.Sdk.Protocol.csproj" />
+    <ProjectReference Include="..\Hsh.Llm\Hsh.Llm.csproj" />
+    <InternalsVisibleTo Include="Hsh.Sdk.Client.Tests" />
+  </ItemGroup>
+
+</Project>

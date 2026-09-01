@@ -5,7 +5,7 @@
 # through pipes. Restore itself works, and the compiler runs fine when spawned with inherited
 # stdio, so this script compiles each project directly with csc and runs the zero-dependency
 # console assertion suite. On an unrestricted host, `dotnet build` / `dotnet run --project
-# tests\Dsh.Session.Persistence.Tests` work normally.
+# tests\Hsh.Session.Persistence.Tests` work normally.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sdkDir = Get-ChildItem (Join-Path $env:ProgramFiles 'dotnet\sdk') -Directory | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
@@ -33,32 +33,32 @@ function Invoke-Csc {
 }
 
 $cordis = Get-ChildItem (Join-Path $root 'src\Cordis\Cordis.Core') -Filter '*.cs' | ForEach-Object FullName
-$src = Join-Path $root 'src\Dsh'
-$llm = Get-ChildItem (Join-Path $src 'Dsh.Llm') -Filter '*.cs' | ForEach-Object FullName
-$session = Get-ChildItem (Join-Path $src 'Dsh.Session') -Filter '*.cs' | ForEach-Object FullName
-$persistence = Get-ChildItem (Join-Path $src 'Dsh.Session.Persistence') -Filter '*.cs' | ForEach-Object FullName
-$projection = Get-ChildItem (Join-Path $src 'Dsh.Session.Projection') -Filter '*.cs' | ForEach-Object FullName
-$titles = Get-ChildItem (Join-Path $src 'Dsh.Session.Titles') -Filter '*.cs' | ForEach-Object FullName
-$tests = Get-ChildItem (Join-Path $root 'tests\Dsh.Session.Persistence.Tests') -Filter '*.cs' | ForEach-Object FullName
+$src = Join-Path $root 'src\Hsh'
+$llm = Get-ChildItem (Join-Path $src 'Hsh.Llm') -Filter '*.cs' | ForEach-Object FullName
+$session = Get-ChildItem (Join-Path $src 'Hsh.Session') -Filter '*.cs' | ForEach-Object FullName
+$persistence = Get-ChildItem (Join-Path $src 'Hsh.Session.Persistence') -Filter '*.cs' | ForEach-Object FullName
+$projection = Get-ChildItem (Join-Path $src 'Hsh.Session.Projection') -Filter '*.cs' | ForEach-Object FullName
+$titles = Get-ChildItem (Join-Path $src 'Hsh.Session.Titles') -Filter '*.cs' | ForEach-Object FullName
+$tests = Get-ChildItem (Join-Path $root 'tests\Hsh.Session.Persistence.Tests') -Filter '*.cs' | ForEach-Object FullName
 
-# Compile in dependency order: Cordis.Core -> Dsh.Llm -> Dsh.Session -> the three new projects -> tests.
+# Compile in dependency order: Cordis.Core -> Hsh.Llm -> Hsh.Session -> the three new projects -> tests.
 $core = Join-Path $bin 'Cordis.Core.dll'
-$llmDll = Join-Path $bin 'Dsh.Llm.dll'
-$sessionDll = Join-Path $bin 'Dsh.Session.dll'
-$persistenceDll = Join-Path $bin 'Dsh.Session.Persistence.dll'
-$projectionDll = Join-Path $bin 'Dsh.Session.Projection.dll'
-$titlesDll = Join-Path $bin 'Dsh.Session.Titles.dll'
+$llmDll = Join-Path $bin 'Hsh.Llm.dll'
+$sessionDll = Join-Path $bin 'Hsh.Session.dll'
+$persistenceDll = Join-Path $bin 'Hsh.Session.Persistence.dll'
+$projectionDll = Join-Path $bin 'Hsh.Session.Projection.dll'
+$titlesDll = Join-Path $bin 'Hsh.Session.Titles.dll'
 
 Invoke-Csc -ExtraArgs @('-target:library', "-out:$core") -Sources $cordis -Label 'Cordis.Core'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$llmDll", "-r:$core") -Sources $llm -Label 'Dsh.Llm'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$sessionDll", "-r:$core", "-r:$llmDll") -Sources $session -Label 'Dsh.Session'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$persistenceDll", "-r:$core", "-r:$llmDll", "-r:$sessionDll") -Sources $persistence -Label 'Dsh.Session.Persistence'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$projectionDll", "-r:$core", "-r:$llmDll", "-r:$sessionDll") -Sources $projection -Label 'Dsh.Session.Projection'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$titlesDll", "-r:$core", "-r:$llmDll", "-r:$sessionDll") -Sources $titles -Label 'Dsh.Session.Titles'
-Invoke-Csc -ExtraArgs @('-target:exe', "-out:$(Join-Path $bin 'Dsh.Session.Persistence.Tests.dll')", "-r:$core", "-r:$llmDll", "-r:$sessionDll", "-r:$persistenceDll", "-r:$projectionDll", "-r:$titlesDll") -Sources $tests -Label 'Dsh.Session.Persistence.Tests'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$llmDll", "-r:$core") -Sources $llm -Label 'Hsh.Llm'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$sessionDll", "-r:$core", "-r:$llmDll") -Sources $session -Label 'Hsh.Session'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$persistenceDll", "-r:$core", "-r:$llmDll", "-r:$sessionDll") -Sources $persistence -Label 'Hsh.Session.Persistence'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$projectionDll", "-r:$core", "-r:$llmDll", "-r:$sessionDll") -Sources $projection -Label 'Hsh.Session.Projection'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$titlesDll", "-r:$core", "-r:$llmDll", "-r:$sessionDll") -Sources $titles -Label 'Hsh.Session.Titles'
+Invoke-Csc -ExtraArgs @('-target:exe', "-out:$(Join-Path $bin 'Hsh.Session.Persistence.Tests.dll')", "-r:$core", "-r:$llmDll", "-r:$sessionDll", "-r:$persistenceDll", "-r:$projectionDll", "-r:$titlesDll") -Sources $tests -Label 'Hsh.Session.Persistence.Tests'
 
 # Ship the hand-written replay fixture next to the test assembly.
-Copy-Item (Join-Path $root 'tests\Dsh.Session.Persistence.Tests\Fixtures\pinned-session.jsonl') $bin -Force
+Copy-Item (Join-Path $root 'tests\Hsh.Session.Persistence.Tests\Fixtures\pinned-session.jsonl') $bin -Force
 
 $runtime = $pack.Name
 $runtimeConfig = @{
@@ -69,8 +69,8 @@ $runtimeConfig = @{
         configProperties = @{ 'System.Reflection.Metadata.MetadataUpdater.IsSupported' = $false }
     }
 }
-$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Dsh.Session.Persistence.Tests.runtimeconfig.json') -Encoding utf8
+$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Hsh.Session.Persistence.Tests.runtimeconfig.json') -Encoding utf8
 
-Write-Host '== Running Dsh.Session.Persistence.Tests =='
-& dotnet (Join-Path $bin 'Dsh.Session.Persistence.Tests.dll')
+Write-Host '== Running Hsh.Session.Persistence.Tests =='
+& dotnet (Join-Path $bin 'Hsh.Session.Persistence.Tests.dll')
 exit $LASTEXITCODE

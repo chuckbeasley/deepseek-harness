@@ -1,0 +1,4 @@
+# hsh-tui bundle: the interactive terminal UI.
+- insert:
+    - id: tui
+      name: tui

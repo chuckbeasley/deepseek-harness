@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The CLI is the executable that boots the web host (hsh web), so it must be a Web SDK project:
+     the Blazor framework assets (_framework/blazor.web.js) only flow into an SDK.Web executable's
+     static web assets manifest. -->
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Harness.Cli</RootNamespace>
+    <!-- The bundle manifests are declared explicitly below; the Web SDK's default Content glob
+         (wwwroot and friends) would duplicate them. -->
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <!-- The CLI hosts the Razor components app (hsh web) but carries no .razor files of its own,
+         so the SDK's automatic condition would skip the Blazor framework assets; the host needs
+         them regardless. -->
+    <RequiresAspNetWebAssets>true</RequiresAspNetWebAssets>
+    <!-- Phase 8 packaging: the runtime ships as the DeepSeek.Harness dotnet tool (command hsh);
+         the SDK client spawns it and the corpus replays through it. -->
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>hsh</ToolCommandName>
+    <PackageId>Harness</PackageId>
+    <Description>The Harness runtime (hsh): the agent harness CLI, headless profile, TUI, and web host. Install as a dotnet tool; the Harness.Sdk client drives it.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
+    <ProjectReference Include="..\..\Cordis\Cordis.Cosmokit\Cordis.Cosmokit.csproj" />
+    <ProjectReference Include="..\..\Cordis\Cordis.Plugin.Loader\Cordis.Plugin.Loader.csproj" />
+    <ProjectReference Include="..\..\Cordis\Cordis.Plugin.Include\Cordis.Plugin.Include.csproj" />
+    <ProjectReference Include="..\..\Cordis\Cordis.Plugin.Timer\Cordis.Plugin.Timer.csproj" />
+    <ProjectReference Include="..\Hsh.Llm\Hsh.Llm.csproj" />
+    <ProjectReference Include="..\Hsh.Llm.DeepSeek\Hsh.Llm.DeepSeek.csproj" />
+    <ProjectReference Include="..\Hsh.Llm.Replay\Hsh.Llm.Replay.csproj" />
+    <ProjectReference Include="..\Hsh.Session\Hsh.Session.csproj" />
+    <ProjectReference Include="..\Hsh.Session.Titles\Hsh.Session.Titles.csproj" />
+<ProjectReference Include="..\Hsh.Session.Projection\Hsh.Session.Projection.csproj" />
+    <ProjectReference Include="..\Hsh.Session.Persistence\Hsh.Session.Persistence.csproj" />
+    <ProjectReference Include="..\Hsh.Agent\Hsh.Agent.csproj" />
+    <ProjectReference Include="..\Hsh.AgentLoop\Hsh.AgentLoop.csproj" />
+    <ProjectReference Include="..\Hsh.SystemPrompt\Hsh.SystemPrompt.csproj" />
+    <ProjectReference Include="..\Hsh.Code\Hsh.Code.csproj" />
+    <ProjectReference Include="..\Hsh.CordisRunner\Hsh.CordisRunner.csproj" />
+    <ProjectReference Include="..\Hsh.Tools\Hsh.Tools.csproj" />
+    <ProjectReference Include="..\Hsh.Todo\Hsh.Todo.csproj" />
+    <ProjectReference Include="..\Hsh.Fs\Hsh.Fs.csproj" />
+    <ProjectReference Include="..\Hsh.Identity\Hsh.Identity.csproj" />
+    <ProjectReference Include="..\Hsh.Jobs\Hsh.Jobs.csproj" />
+    <ProjectReference Include="..\Hsh.Interaction\Hsh.Interaction.csproj" />
+    <ProjectReference Include="..\Hsh.Ui.Sidebar\Hsh.Ui.Sidebar.csproj" />
+    <ProjectReference Include="..\Hsh.Ui.Approval\Hsh.Ui.Approval.csproj" />
+    <ProjectReference Include="..\Hsh.Ui.Settings\Hsh.Ui.Settings.csproj" />
+    <ProjectReference Include="..\Hsh.Ui.Plan\Hsh.Ui.Plan.csproj" />
+    <ProjectReference Include="..\Hsh.Ui.Sessions\Hsh.Ui.Sessions.csproj" />
+    <ProjectReference Include="..\Hsh.Ui.Chat\Hsh.Ui.Chat.csproj" />
+    <ProjectReference Include="..\Hsh.Ui.Workspace\Hsh.Ui.Workspace.csproj" />
+    <ProjectReference Include="..\Hsh.Workflow\Hsh.Workflow.csproj" />
+    <ProjectReference Include="..\Hsh.Webhook\Hsh.Webhook.csproj" />
+    <ProjectReference Include="..\Hsh.Plan\Hsh.Plan.csproj" />
+    <ProjectReference Include="..\Hsh.Shell\Hsh.Shell.csproj" />
+    <ProjectReference Include="..\Hsh.Skill\Hsh.Skill.csproj" />
+    <ProjectReference Include="..\Hsh.Subprocess\Hsh.Subprocess.csproj" />
+    <ProjectReference Include="..\Hsh.Credentials\Hsh.Credentials.csproj" />
+<ProjectReference Include="..\Hsh.Settings\Hsh.Settings.csproj" />
+    <ProjectReference Include="..\Hsh.Authorization\Hsh.Authorization.csproj" />
+    <ProjectReference Include="..\Hsh.Sandbox\Hsh.Sandbox.csproj" />
+    <ProjectReference Include="..\Hsh.Web\Hsh.Web.csproj" />
+    <ProjectReference Include="..\Hsh.Goal\Hsh.Goal.csproj" />
+    <ProjectReference Include="..\Hsh.Schedule\Hsh.Schedule.csproj" />
+    <ProjectReference Include="..\Hsh.Feedback\Hsh.Feedback.csproj" />
+    <ProjectReference Include="..\Hsh.Storage\Hsh.Storage.csproj" />
+    <ProjectReference Include="..\Hsh.Workspace\Hsh.Workspace.csproj" />
+    <ProjectReference Include="..\Hsh.Spill\Hsh.Spill.csproj" />
+    <ProjectReference Include="..\Hsh.Attachment\Hsh.Attachment.csproj" />
+    <ProjectReference Include="..\Hsh.Compaction\Hsh.Compaction.csproj" />
+    <ProjectReference Include="..\Hsh.Context\Hsh.Context.csproj" />
+    <ProjectReference Include="..\Hsh.SessionQuery\Hsh.SessionQuery.csproj" />
+    <ProjectReference Include="..\Hsh.Preset\Hsh.Preset.csproj" />
+    <ProjectReference Include="..\Hsh.Guard\Hsh.Guard.csproj" />
+    <ProjectReference Include="..\Hsh.Terminal\Hsh.Terminal.csproj" />
+    <ProjectReference Include="..\Hsh.Hooks\Hsh.Hooks.csproj" />
+    <ProjectReference Include="..\Hsh.Lsp\Hsh.Lsp.csproj" />
+    <ProjectReference Include="..\Hsh.Subagent\Hsh.Subagent.csproj" />
+    <ProjectReference Include="..\Hsh.Web.App\Hsh.Web.App.csproj" />
+    <ProjectReference Include="..\Hsh.Spike\Hsh.Spike.csproj" />
+    <ProjectReference Include="..\Hsh.Tui\Hsh.Tui.csproj" />
+    <ProjectReference Include="..\Hsh.Sdk.Protocol\Hsh.Sdk.Protocol.csproj" />
+    <ProjectReference Include="..\Hsh.Sdk.Server\Hsh.Sdk.Server.csproj" />
+    <ProjectReference Include="..\Hsh.Acp\Hsh.Acp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="bundles\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+  </ItemGroup>
+
+</Project>
+
+
+
+

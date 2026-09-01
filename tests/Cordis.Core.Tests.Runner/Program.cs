@@ -3,7 +3,7 @@ using Harness.Cordis.Core.Tests.Runner;
 namespace Harness.Cordis.Core.Tests.Runner;
 
 /// <summary>
-/// Zero-dependency console assertion runner for the global::Harness.Cordis.Core Phase 0 port. Each entry runs one
+/// Zero-dependency console assertion runner for the Harness.Cordis.Core Phase 0 port. Each entry runs one
 /// scenario; failures are collected and the process exits non-zero when any assertion fails.
 /// </summary>
 internal static class Program

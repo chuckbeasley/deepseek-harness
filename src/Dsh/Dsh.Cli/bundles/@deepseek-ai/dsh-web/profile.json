@@ -1,8 +1,0 @@
-﻿{
-  "name": "dsh-web",
-  "dsh": {
-    "bundle": {
-      "patch": "cordis.patch.yml"
-    }
-  }
-}

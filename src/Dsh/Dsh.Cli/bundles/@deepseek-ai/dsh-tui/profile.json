@@ -1,9 +1,0 @@
-{
-  "name": "dsh-tui",
-  "dsh": {
-    "bundle": {
-      "patch": "cordis.patch.yml"
-    }
-  }
-}
-

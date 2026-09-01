@@ -1,0 +1,8 @@
+@inject WebLocale Locale
+@inject ShellBus Bus
+
+<button class="hsh-sidebar-action" @onclick="OnClick">@Locale.T("newSessionAction")</button>
+
+@code {
+    private void OnClick() => Bus.RequestNewSession();
+}

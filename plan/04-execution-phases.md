@@ -21,9 +21,9 @@ Full `Cordis.*` (Loader, Include + patch layers, Group, Timer, Hmr, Logger), the
 
 ## Phase 3 — CLI + TUI
 
-`dsh` tool (args, profile boot, `--dump-config`, plugin management) + the TUI: a full-screen interactive session view (chat, tool-call disclosure, approval prompts, goal/plan/jobs panels) using Terminal.Gui with Spectre.Console for prompts/tables.
+`hsh` tool (args, profile boot, `--dump-config`, plugin management) + the TUI: a full-screen interactive session view (chat, tool-call disclosure, approval prompts, goal/plan/jobs panels) using Terminal.Gui with Spectre.Console for prompts/tables.
 
-- **Deliverable:** command parity with today's `dsh` plus a working interactive TUI.
+- **Deliverable:** command parity with today's `hsh` plus a working interactive TUI.
 
 ## Phase 4 — Capability seams (parallelizable, group-by-group)
 
@@ -35,7 +35,7 @@ Migrate each group: fs, subprocess, shell, terminal, sandbox (+native bridge), l
 
 ASP.NET Core host + SignalR + Typert source-gen/RPC gateway; Blazor slot system + store layer; port the ~45 `ui-*` plugins to Razor Class Libraries; localization, theme, docs-site folding.
 
-- **Deliverable:** `dsh web` serves the Blazor app with feature parity to the current GUI; browser snapshots/e2e pass.
+- **Deliverable:** `hsh web` serves the Blazor app with feature parity to the current GUI; browser snapshots/e2e pass.
 
 ## Phase 6 — SDK + ACP + hooks
 
@@ -51,7 +51,7 @@ Run snapshot/e2e parity against the TS tree; fix drift; delete `packages/`, `app
 
 ## Phase 8 — Hardening and distribution
 
-OpenTelemetry observability, performance, NativeAOT single-file for CLI/runtime, NuGet publishing, container images, release pipeline parity (`dsh` + SDK + ACP).
+OpenTelemetry observability, performance, NativeAOT single-file for CLI/runtime, NuGet publishing, container images, release pipeline parity (`hsh` + SDK + ACP).
 
 - **Deliverable:** production-grade packaging and release.
 

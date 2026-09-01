@@ -1,0 +1,8 @@
+{
+  "name": "hsh-sdk",
+  "hsh": {
+    "bundle": {
+      "patch": "cordis.patch.yml"
+    }
+  }
+}

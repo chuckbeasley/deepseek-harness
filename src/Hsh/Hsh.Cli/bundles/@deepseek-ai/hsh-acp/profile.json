@@ -1,0 +1,8 @@
+{
+  "name": "hsh-acp",
+  "hsh": {
+    "bundle": {
+      "patch": "cordis.patch.yml"
+    }
+  }
+}

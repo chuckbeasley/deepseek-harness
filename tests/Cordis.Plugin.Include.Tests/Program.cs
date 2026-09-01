@@ -172,8 +172,8 @@ internal static class ExprTests
 {
     public static void LiteralsAndEnv()
     {
-        Environment.SetEnvironmentVariable("DSH_INCLUDE_TEST_FLAG", "yes");
-        Assert.Equal("yes", new ConfigExpression("$env.DSH_INCLUDE_TEST_FLAG").Evaluate());
+        Environment.SetEnvironmentVariable("HSH_INCLUDE_TEST_FLAG", "yes");
+        Assert.Equal("yes", new ConfigExpression("$env.HSH_INCLUDE_TEST_FLAG").Evaluate());
         Assert.Equal(42L, new ConfigExpression("42").Evaluate());
         Assert.Equal(true, new ConfigExpression("true").Evaluate());
         Assert.Equal(null, new ConfigExpression("null").Evaluate());
@@ -304,7 +304,7 @@ internal static class IncludeTests
 {
     private static string TempConfig(string content)
     {
-        var file = Path.Combine(Path.GetTempPath(), $"dsh-include-{Guid.NewGuid():N}.yml");
+        var file = Path.Combine(Path.GetTempPath(), $"hsh-include-{Guid.NewGuid():N}.yml");
         File.WriteAllText(file, content);
         return file;
     }
@@ -385,7 +385,7 @@ internal static class IncludeTests
 
     public static async Task InitialSeedsMissingFile()
     {
-        var file = Path.Combine(Path.GetTempPath(), $"dsh-include-{Guid.NewGuid():N}.yml");
+        var file = Path.Combine(Path.GetTempPath(), $"hsh-include-{Guid.NewGuid():N}.yml");
         try
         {
             var (ctx, _) = Boot();
@@ -432,8 +432,8 @@ internal static class IncludeTests
     public static async Task DisabledExpression()
     {
         ProbePlugin.Seen = null;
-        Environment.SetEnvironmentVariable("DSH_INCLUDE_DISABLE", "true");
-        var file = TempConfig("- id: svc\n  name: probe\n  disabled: !!js $env.DSH_INCLUDE_DISABLE\n  config:\n    value: hidden\n");
+        Environment.SetEnvironmentVariable("HSH_INCLUDE_DISABLE", "true");
+        var file = TempConfig("- id: svc\n  name: probe\n  disabled: !!js $env.HSH_INCLUDE_DISABLE\n  config:\n    value: hidden\n");
         try
         {
             var (ctx, _) = Boot();

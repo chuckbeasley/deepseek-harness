@@ -1,0 +1,5 @@
+# hsh-sdk bundle: the SDK runtime profile — the base spine plus one JSON-RPC server
+# over console stdio (stdout is the wire; nothing else may write to it).
+- insert:
+    - id: sdkRuntime
+      name: sdkRuntime

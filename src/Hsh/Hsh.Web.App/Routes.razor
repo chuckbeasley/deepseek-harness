@@ -1,0 +1,15 @@
+@using Microsoft.AspNetCore.Components.Routing
+@inject PageAssemblyRegistry PageAssemblies
+
+<Router AppAssembly="typeof(App).Assembly" AdditionalAssemblies="PageAssemblies.List()">
+    <Found Context="routeData">
+        <!-- The Router and RouteView stay static: their parameters (a Type, a RouteData) cannot
+             serialize across an interactive boundary. Pages opt in with the rendermode directive. -->
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(MainLayout)">
+            <p>hsh: no such page.</p>
+        </LayoutView>
+    </NotFound>
+</Router>

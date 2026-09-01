@@ -42,9 +42,9 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/chuckbeasley/deepseek-harness</RepositoryUrl>
     <PackageProjectUrl>https://github.com/chuckbeasley/deepseek-harness</PackageProjectUrl>
-    <PackageTags>deepseek;harness;agent;cordis;dsh</PackageTags>
+    <PackageTags>deepseek;harness;agent;cordis;hsh</PackageTags>
     <IsPackable Condition="$(MSBuildProjectDirectory.Contains('tests'))">false</IsPackable>
-    <PackageId Condition="'$(PackageId)' == '' and '$(IsPackable)' != 'false' and $(MSBuildProjectDirectory.Contains('src'))">Harness.$(MSBuildProjectName.Replace('Dsh.', ''))</PackageId>
+    <PackageId Condition="'$(PackageId)' == '' and '$(IsPackable)' != 'false' and $(MSBuildProjectDirectory.Contains('src'))">Harness.$(MSBuildProjectName.Replace('Hsh.', ''))</PackageId>
   </PropertyGroup>
 
 </Project>

@@ -5,7 +5,7 @@
 # through pipes. Restore itself works, and the compiler runs fine when spawned with inherited
 # stdio, so this script compiles each project directly with csc and runs the zero-dependency
 # console assertion suite. On an unrestricted host, `dotnet build` / `dotnet run --project
-# tests\Dsh.Llm.DeepSeek.Tests` work normally.
+# tests\Hsh.Llm.DeepSeek.Tests` work normally.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sdkDir = Get-ChildItem (Join-Path $env:ProgramFiles 'dotnet\sdk') -Directory | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
@@ -33,20 +33,20 @@ function Invoke-Csc {
 }
 
 $core = Get-ChildItem (Join-Path $root 'src\Cordis\Cordis.Core') -Filter '*.cs' | ForEach-Object FullName
-$llm = Get-ChildItem (Join-Path $root 'src\Dsh\Dsh.Llm') -Filter '*.cs' | ForEach-Object FullName
-$deepseek = Get-ChildItem (Join-Path $root 'src\Dsh\Dsh.Llm.DeepSeek') -Filter '*.cs' | ForEach-Object FullName
-$tests = Get-ChildItem (Join-Path $root 'tests\Dsh.Llm.DeepSeek.Tests') -Filter '*.cs' | ForEach-Object FullName
+$llm = Get-ChildItem (Join-Path $root 'src\Hsh\Hsh.Llm') -Filter '*.cs' | ForEach-Object FullName
+$deepseek = Get-ChildItem (Join-Path $root 'src\Hsh\Hsh.Llm.DeepSeek') -Filter '*.cs' | ForEach-Object FullName
+$tests = Get-ChildItem (Join-Path $root 'tests\Hsh.Llm.DeepSeek.Tests') -Filter '*.cs' | ForEach-Object FullName
 
-# Compile in dependency order: Cordis.Core -> Dsh.Llm -> Dsh.Llm.DeepSeek -> tests app.
+# Compile in dependency order: Cordis.Core -> Hsh.Llm -> Hsh.Llm.DeepSeek -> tests app.
 $coreDll = Join-Path $bin 'Cordis.Core.dll'
-$llmDll = Join-Path $bin 'Dsh.Llm.dll'
-$deepseekDll = Join-Path $bin 'Dsh.Llm.DeepSeek.dll'
-$testsDll = Join-Path $bin 'Dsh.Llm.DeepSeek.Tests.dll'
+$llmDll = Join-Path $bin 'Hsh.Llm.dll'
+$deepseekDll = Join-Path $bin 'Hsh.Llm.DeepSeek.dll'
+$testsDll = Join-Path $bin 'Hsh.Llm.DeepSeek.Tests.dll'
 
 Invoke-Csc -ExtraArgs @('-target:library', "-out:$coreDll") -Sources $core -Label 'Cordis.Core'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$llmDll", "-r:$coreDll") -Sources $llm -Label 'Dsh.Llm'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$deepseekDll", "-r:$coreDll", "-r:$llmDll") -Sources $deepseek -Label 'Dsh.Llm.DeepSeek'
-Invoke-Csc -ExtraArgs @('-target:exe', "-out:$testsDll", "-r:$coreDll", "-r:$llmDll", "-r:$deepseekDll") -Sources $tests -Label 'Dsh.Llm.DeepSeek.Tests'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$llmDll", "-r:$coreDll") -Sources $llm -Label 'Hsh.Llm'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$deepseekDll", "-r:$coreDll", "-r:$llmDll") -Sources $deepseek -Label 'Hsh.Llm.DeepSeek'
+Invoke-Csc -ExtraArgs @('-target:exe', "-out:$testsDll", "-r:$coreDll", "-r:$llmDll", "-r:$deepseekDll") -Sources $tests -Label 'Hsh.Llm.DeepSeek.Tests'
 
 $runtime = $pack.Name
 $runtimeConfig = @{
@@ -57,8 +57,8 @@ $runtimeConfig = @{
         configProperties = @{ 'System.Reflection.Metadata.MetadataUpdater.IsSupported' = $false }
     }
 }
-$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Dsh.Llm.DeepSeek.Tests.runtimeconfig.json') -Encoding utf8
+$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Hsh.Llm.DeepSeek.Tests.runtimeconfig.json') -Encoding utf8
 
-Write-Host '== Running Dsh.Llm.DeepSeek.Tests =='
+Write-Host '== Running Hsh.Llm.DeepSeek.Tests =='
 & dotnet $testsDll
 exit $LASTEXITCODE

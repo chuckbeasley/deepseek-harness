@@ -1,0 +1,4 @@
+# hsh-headless bundle: one-shot task execution through the real agent loop.
+- insert:
+    - id: headless
+      name: headless

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Harness.Tui.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Tui\Hsh.Tui.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Agent\Hsh.Agent.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.AgentLoop\Hsh.AgentLoop.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Llm\Hsh.Llm.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Session\Hsh.Session.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Spike\Hsh.Spike.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Tools\Hsh.Tools.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Todo\Hsh.Todo.csproj" />
+  </ItemGroup>
+
+</Project>

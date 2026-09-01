@@ -55,7 +55,7 @@ public static class Program
         Run("Cosmokit: Deadline fires identifiable timeout reason", CosmokitSmokeTests.DeadlineFiresIdentifiableTimeoutReason);
         Run("Cosmokit: ItemRetainer keeps head and counts omissions", CosmokitSmokeTests.ItemRetainerKeepsHeadAndCountsOmissions);
         Run("Cosmokit: TextRetainer head/tail preserves UTF-8 boundaries", CosmokitSmokeTests.TextRetainerHeadTailPreservesUtf8Boundaries);
-        Run("Cosmokit: ResolveDshHome honors environment override", CosmokitSmokeTests.ResolveDshHomeHonorsEnvironmentOverride);
+        Run("Cosmokit: ResolveHshHome honors environment override", CosmokitSmokeTests.ResolveHshHomeHonorsEnvironmentOverride);
         Run("Cosmokit: brand helpers, arrays, and strings work", CosmokitSmokeTests.BrandHelpersArraysAndStringsWork);
 
         Console.WriteLine();

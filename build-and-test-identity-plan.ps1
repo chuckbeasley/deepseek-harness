@@ -5,8 +5,8 @@
 # through pipes (the same boundary documented in the harness pwsh tool notes). Restore itself
 # works, and the compiler runs fine when spawned with inherited stdio, so this script compiles
 # each project directly with csc and runs the zero-dependency console assertion suites. On an
-# unrestricted host, `dotnet build` / `dotnet run --project tests\Dsh.Identity.Tests` and
-# `tests\Dsh.Plan.Tests` work normally.
+# unrestricted host, `dotnet build` / `dotnet run --project tests\Hsh.Identity.Tests` and
+# `tests\Hsh.Plan.Tests` work normally.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sdkDir = Get-ChildItem (Join-Path $env:ProgramFiles 'dotnet\sdk') -Directory | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
@@ -35,34 +35,34 @@ function Invoke-Csc {
 
 $cordis = Get-ChildItem (Join-Path $root 'src\Cordis\Cordis.Core') -Filter '*.cs' | ForEach-Object FullName
 $cosmokit = Get-ChildItem (Join-Path $root 'src\Cordis\Cordis.Cosmokit') -Filter '*.cs' | ForEach-Object FullName
-$src = Join-Path $root 'src\Dsh'
-$llm = Get-ChildItem (Join-Path $src 'Dsh.Llm') -Filter '*.cs' | ForEach-Object FullName
-$session = Get-ChildItem (Join-Path $src 'Dsh.Session') -Filter '*.cs' | ForEach-Object FullName
-$tools = Get-ChildItem (Join-Path $src 'Dsh.Tools') -Filter '*.cs' | ForEach-Object FullName
-$identity = Get-ChildItem (Join-Path $src 'Dsh.Identity') -Filter '*.cs' | ForEach-Object FullName
-$plan = Get-ChildItem (Join-Path $src 'Dsh.Plan') -Filter '*.cs' | ForEach-Object FullName
-$identityTests = Get-ChildItem (Join-Path $root 'tests\Dsh.Identity.Tests') -Filter '*.cs' | ForEach-Object FullName
-$planTests = Get-ChildItem (Join-Path $root 'tests\Dsh.Plan.Tests') -Filter '*.cs' | ForEach-Object FullName
+$src = Join-Path $root 'src\Hsh'
+$llm = Get-ChildItem (Join-Path $src 'Hsh.Llm') -Filter '*.cs' | ForEach-Object FullName
+$session = Get-ChildItem (Join-Path $src 'Hsh.Session') -Filter '*.cs' | ForEach-Object FullName
+$tools = Get-ChildItem (Join-Path $src 'Hsh.Tools') -Filter '*.cs' | ForEach-Object FullName
+$identity = Get-ChildItem (Join-Path $src 'Hsh.Identity') -Filter '*.cs' | ForEach-Object FullName
+$plan = Get-ChildItem (Join-Path $src 'Hsh.Plan') -Filter '*.cs' | ForEach-Object FullName
+$identityTests = Get-ChildItem (Join-Path $root 'tests\Hsh.Identity.Tests') -Filter '*.cs' | ForEach-Object FullName
+$planTests = Get-ChildItem (Join-Path $root 'tests\Hsh.Plan.Tests') -Filter '*.cs' | ForEach-Object FullName
 
-# Compile in dependency order: Cordis.Core -> Cordis.Cosmokit -> Dsh.Llm -> Dsh.Session ->
-# Dsh.Tools -> Dsh.Identity -> Dsh.Plan, then both test executables.
+# Compile in dependency order: Cordis.Core -> Cordis.Cosmokit -> Hsh.Llm -> Hsh.Session ->
+# Hsh.Tools -> Hsh.Identity -> Hsh.Plan, then both test executables.
 $core = Join-Path $bin 'Cordis.Core.dll'
 $cosmokitDll = Join-Path $bin 'Cordis.Cosmokit.dll'
-$llmDll = Join-Path $bin 'Dsh.Llm.dll'
-$sessionDll = Join-Path $bin 'Dsh.Session.dll'
-$toolsDll = Join-Path $bin 'Dsh.Tools.dll'
-$identityDll = Join-Path $bin 'Dsh.Identity.dll'
-$planDll = Join-Path $bin 'Dsh.Plan.dll'
+$llmDll = Join-Path $bin 'Hsh.Llm.dll'
+$sessionDll = Join-Path $bin 'Hsh.Session.dll'
+$toolsDll = Join-Path $bin 'Hsh.Tools.dll'
+$identityDll = Join-Path $bin 'Hsh.Identity.dll'
+$planDll = Join-Path $bin 'Hsh.Plan.dll'
 
 Invoke-Csc -ExtraArgs @('-target:library', "-out:$core") -Sources $cordis -Label 'Cordis.Core'
 Invoke-Csc -ExtraArgs @('-target:library', "-out:$cosmokitDll") -Sources $cosmokit -Label 'Cordis.Cosmokit'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$llmDll", "-r:$core") -Sources $llm -Label 'Dsh.Llm'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$sessionDll", "-r:$core", "-r:$llmDll") -Sources $session -Label 'Dsh.Session'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$toolsDll", "-r:$core", "-r:$sessionDll", "-r:$llmDll") -Sources $tools -Label 'Dsh.Tools'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$identityDll", "-r:$core", "-r:$cosmokitDll", "-r:$llmDll") -Sources $identity -Label 'Dsh.Identity'
-Invoke-Csc -ExtraArgs @('-target:library', "-out:$planDll", "-r:$core", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll") -Sources $plan -Label 'Dsh.Plan'
-Invoke-Csc -ExtraArgs @('-target:exe', "-out:$(Join-Path $bin 'Dsh.Identity.Tests.dll')", "-r:$core", "-r:$cosmokitDll", "-r:$llmDll", "-r:$identityDll") -Sources $identityTests -Label 'Dsh.Identity.Tests'
-Invoke-Csc -ExtraArgs @('-target:exe', "-out:$(Join-Path $bin 'Dsh.Plan.Tests.dll')", "-r:$core", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll", "-r:$planDll") -Sources $planTests -Label 'Dsh.Plan.Tests'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$llmDll", "-r:$core") -Sources $llm -Label 'Hsh.Llm'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$sessionDll", "-r:$core", "-r:$llmDll") -Sources $session -Label 'Hsh.Session'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$toolsDll", "-r:$core", "-r:$sessionDll", "-r:$llmDll") -Sources $tools -Label 'Hsh.Tools'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$identityDll", "-r:$core", "-r:$cosmokitDll", "-r:$llmDll") -Sources $identity -Label 'Hsh.Identity'
+Invoke-Csc -ExtraArgs @('-target:library', "-out:$planDll", "-r:$core", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll") -Sources $plan -Label 'Hsh.Plan'
+Invoke-Csc -ExtraArgs @('-target:exe', "-out:$(Join-Path $bin 'Hsh.Identity.Tests.dll')", "-r:$core", "-r:$cosmokitDll", "-r:$llmDll", "-r:$identityDll") -Sources $identityTests -Label 'Hsh.Identity.Tests'
+Invoke-Csc -ExtraArgs @('-target:exe', "-out:$(Join-Path $bin 'Hsh.Plan.Tests.dll')", "-r:$core", "-r:$llmDll", "-r:$sessionDll", "-r:$toolsDll", "-r:$planDll") -Sources $planTests -Label 'Hsh.Plan.Tests'
 
 $runtime = $pack.Name
 $runtimeConfig = @{
@@ -73,15 +73,15 @@ $runtimeConfig = @{
         configProperties = @{ 'System.Reflection.Metadata.MetadataUpdater.IsSupported' = $false }
     }
 }
-$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Dsh.Identity.Tests.runtimeconfig.json') -Encoding utf8
-$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Dsh.Plan.Tests.runtimeconfig.json') -Encoding utf8
+$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Hsh.Identity.Tests.runtimeconfig.json') -Encoding utf8
+$runtimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $bin 'Hsh.Plan.Tests.runtimeconfig.json') -Encoding utf8
 
-Write-Host '== Running Dsh.Identity.Tests =='
-& dotnet (Join-Path $bin 'Dsh.Identity.Tests.dll')
-if ($LASTEXITCODE -ne 0) { throw "Dsh.Identity.Tests failed (exit $LASTEXITCODE)" }
+Write-Host '== Running Hsh.Identity.Tests =='
+& dotnet (Join-Path $bin 'Hsh.Identity.Tests.dll')
+if ($LASTEXITCODE -ne 0) { throw "Hsh.Identity.Tests failed (exit $LASTEXITCODE)" }
 
-Write-Host '== Running Dsh.Plan.Tests =='
-& dotnet (Join-Path $bin 'Dsh.Plan.Tests.dll')
-if ($LASTEXITCODE -ne 0) { throw "Dsh.Plan.Tests failed (exit $LASTEXITCODE)" }
+Write-Host '== Running Hsh.Plan.Tests =='
+& dotnet (Join-Path $bin 'Hsh.Plan.Tests.dll')
+if ($LASTEXITCODE -ne 0) { throw "Hsh.Plan.Tests failed (exit $LASTEXITCODE)" }
 
 exit 0

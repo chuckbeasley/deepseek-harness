@@ -1,0 +1,68 @@
+# TypeScript SDK snapshot patch for foreground and background HSH SDK failures.
+
+- id: skill-filesystem
+  name: '@deepseek-ai/hsh-skill-filesystem'
+  config:
+    includeDefaultRoots: false
+
+- id: llm-deepseek
+  name: '@deepseek-ai/hsh-llm-deepseek'
+  config:
+    thinking: enabled
+    reasoningEffort: max
+
+- id: session-persistence-jsonl
+  name: '@deepseek-ai/hsh-session-persistence-jsonl'
+  config:
+    root: !!js hshHomePath('sessions')
+    compression: !!js "process.env.HSH_SNAPSHOT === undefined ? 'zstd' : 'none'"
+
+- id: session-log-deepseek
+  name: '@deepseek-ai/hsh-session-log-deepseek'
+  config:
+    enabled: true
+
+- insert:
+    - id: subagent-hsh-sdk-diagnostic
+      name: '@deepseek-ai/hsh-subagent-hsh-sdk'
+      config:
+        providerName: hsh-sdk-diagnostic
+        profile: sdk
+        patches:
+          - !!js process.env.HSH_TEST_CHILD_PATCH
+        hshHome: !!js hshHomePath('children/foreground')
+        provider: mock
+        model: mock-echo
+        env:
+          HSH_TELEMETRY_DISABLED: '1'
+          HSH_TEST_CHILD_FAILURE: '1'
+    - id: tool-subagent-hsh-sdk-diagnostic
+      name: '@deepseek-ai/hsh-tool-subagent'
+      config:
+        provider: hsh-sdk-diagnostic
+        toolName: subagent_hsh_sdk
+        backgroundMode: one-shot
+        maxDepth: provider-managed
+    - id: subagent-hsh-sdk-diagnostic-background
+      name: '@deepseek-ai/hsh-subagent-hsh-sdk'
+      config:
+        providerName: hsh-sdk-diagnostic-background
+        profile: sdk
+        patches:
+          - !!js process.env.HSH_TEST_CHILD_PATCH
+        hshHome: !!js hshHomePath('children/background')
+        provider: mock
+        model: mock-echo
+        env:
+          HSH_TELEMETRY_DISABLED: '1'
+          HSH_TEST_CHILD_FAILURE: '1'
+          FAKE_INIT_GO: .hsh-sdk-background-release
+    - id: tool-subagent-hsh-sdk-diagnostic-background
+      name: '@deepseek-ai/hsh-tool-subagent'
+      config:
+        provider: hsh-sdk-diagnostic-background
+        toolName: subagent_hsh_sdk_background
+        backgroundMode: one-shot
+        maxDepth: provider-managed
+    - id: release-hsh-sdk-background-on-job-output
+      name: '../../../apps/cli/tests/profiles/sdk/fixtures/subagent-hsh-sdk-release-on-job-output.ts'

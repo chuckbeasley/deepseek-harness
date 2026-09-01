@@ -12,7 +12,7 @@ Microsoft DI cannot express Cordis's load-bearing semantics: **lazy service depe
 
 ### 3.2 Plugin loading model
 
-Today `cordis.yml` can mount arbitrary JS/TS files, and custom profiles live-reload them. In .NET, out-of-tree plugins are **compiled assemblies loaded via `AssemblyLoadContext`** (unloadable for reload). This is the biggest UX change: "config = arbitrary code" becomes "config = declared assemblies + declarative YAML". Shipped plugins remain first-party; the plan documents a `dsh plugin` packaging model (NuGet or a plugin dir of DLLs) early.
+Today `cordis.yml` can mount arbitrary JS/TS files, and custom profiles live-reload them. In .NET, out-of-tree plugins are **compiled assemblies loaded via `AssemblyLoadContext`** (unloadable for reload). This is the biggest UX change: "config = arbitrary code" becomes "config = declared assemblies + declarative YAML". Shipped plugins remain first-party; the plan documents a `hsh plugin` packaging model (NuGet or a plugin dir of DLLs) early.
 
 ### 3.3 HMR / live reload
 

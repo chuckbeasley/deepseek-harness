@@ -1,0 +1,8 @@
+{
+  "name": "hsh-web",
+  "hsh": {
+    "bundle": {
+      "patch": "cordis.patch.yml"
+    }
+  }
+}

@@ -2,7 +2,7 @@ namespace Harness.Cordis.Plugin.Timer.Tests;
 
 /// <summary>
 /// Zero-dependency console assertion runner for the Phase 1 timer/logger port (mirrors
-/// <c>tests\global::Harness.Cordis.Tests</c>). Each entry runs one scenario; failures are collected and the
+/// <c>tests\Harness.Cordis.Tests</c>). Each entry runs one scenario; failures are collected and the
 /// process exits non-zero when any assertion fails.
 /// </summary>
 internal static class Program

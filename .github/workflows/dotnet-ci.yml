@@ -51,8 +51,8 @@ jobs:
         run: dotnet test tests/Cordis.Core.Tests/Cordis.Core.Tests.csproj -c Release --no-build --no-restore
 
       # Console-runner projects are the current test path because some suites
-      # are console-based: Cordis.Tests and Dsh.Spike.Tests are zero-dependency
-      # console assertion suites, and Dsh.Spike is the byte-pinned headless
+      # are console-based: Cordis.Tests and Hsh.Spike.Tests are zero-dependency
+      # console assertion suites, and Hsh.Spike is the byte-pinned headless
       # smoke. The xUnit lane above is the framework test path.
       # (tests/Cordis.Core.Tests.Runner is the sandbox-only console twin of the
       # xUnit suite: it has no csproj and is compiled by
@@ -61,8 +61,8 @@ jobs:
       - name: Run console suite (Cordis.Tests)
         run: dotnet run --project tests/Cordis.Tests/Cordis.Tests.csproj -c Release --no-build --no-restore
 
-      - name: Run console suite (Dsh.Spike.Tests)
-        run: dotnet run --project tests/Dsh.Spike.Tests/Dsh.Spike.Tests.csproj -c Release --no-build --no-restore
+      - name: Run console suite (Hsh.Spike.Tests)
+        run: dotnet run --project tests/Hsh.Spike.Tests/Hsh.Spike.Tests.csproj -c Release --no-build --no-restore
 
       # Every remaining tests/* project is a zero-dependency console assertion
       # suite (the capability-seam lanes). The ConPTY suites self-skip on
@@ -77,5 +77,5 @@ jobs:
             dotnet run --project "$project" -c Release --no-build --no-restore
           done
 
-      - name: Run headless smoke (Dsh.Spike)
-        run: dotnet run --project src/Dsh/Dsh.Spike/Dsh.Spike.csproj -c Release --no-build --no-restore
+      - name: Run headless smoke (Hsh.Spike)
+        run: dotnet run --project src/Hsh/Hsh.Spike/Hsh.Spike.csproj -c Release --no-build --no-restore

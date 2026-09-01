@@ -1,0 +1,41 @@
+@inject Harness.Web.App.Store.WebSessionStore Store
+@inject Harness.Web.App.ShellState State
+@inject WebLocale Locale
+@implements IDisposable
+
+<section class="hsh-session-list">
+    <h3>@Locale.T("sessions")</h3>
+    @if (Store.List().Count == 0)
+    {
+        <p class="hsh-muted">@Locale.T("noSessions")</p>
+    }
+    @foreach (var entry in Store.List())
+    {
+        <button class="hsh-session-item @(entry.Session.Id == State.Selected?.Session.Id ? "hsh-selected" : "")"
+                @onclick="() => State.Select(entry)">
+            <span class="hsh-session-id">@entry.Session.Id.Value</span>
+            <span class="hsh-session-summary">@(entry.Summary ?? Locale.T("newSession"))</span>
+            <span class="hsh-session-state">
+                @if (entry.Running)
+                {
+                    <span class="hsh-running">@Locale.T("running")</span>
+                }
+                @if (entry.Queued > 0)
+                {
+                    <span class="hsh-queued">@entry.Queued @Locale.T("queued")</span>
+                }
+            </span>
+        </button>
+    }
+</section>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // The page (or the new-session action) may change the selection too; the highlight
+        // follows the shared state either way.
+        State.Changed += StateHasChanged;
+    }
+
+    public void Dispose() => State.Changed -= StateHasChanged;
+}

@@ -67,12 +67,12 @@ public static class CosmokitSmokeTests
         Assert.Equal(new Omitted.Exact(3), result.OmittedBytes);
     }
 
-    public static void ResolveDshHomeHonorsEnvironmentOverride()
+    public static void ResolveHshHomeHonorsEnvironmentOverride()
     {
-        var env = new Dictionary<string, string?> { [HomePaths.DshHomeEnv] = "~/custom-dsh" };
-        var home = HomePaths.ResolveDshHome(null, env);
-        Assert.EndsWith("custom-dsh", home);
-        Assert.Equal("$DSH_HOME", HomePaths.DshHomeDisplay(home));
+        var env = new Dictionary<string, string?> { [HomePaths.HshHomeEnv] = "~/custom-hsh" };
+        var home = HomePaths.ResolveHshHome(null, env);
+        Assert.EndsWith("custom-hsh", home);
+        Assert.Equal("$HSH_HOME", HomePaths.HshHomeDisplay(home));
     }
 
     public static void BrandHelpersArraysAndStringsWork()

@@ -2,7 +2,7 @@ namespace Harness.Cordis.Cosmokit;
 
 /// <summary>
 /// A nominal (branded) identifier wrapping a string, the C# equivalent of
-/// <c>Branded&lt;B&gt;</c> from <c>@deepseek-ai/dsh-brand</c>. Two ids branded
+/// <c>Branded&lt;B&gt;</c> from <c>@deepseek-ai/hsh-brand</c>. Two ids branded
 /// with different marker types are distinct .NET types, so the compiler rejects
 /// assigning one brand where another is expected even though every brand wraps
 /// an ordinary string at runtime. Comparison, hashing, and formatting all

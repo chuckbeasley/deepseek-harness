@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Harness.Sdk.Client.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Sdk.Client\Hsh.Sdk.Client.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Sdk.Protocol\Hsh.Sdk.Protocol.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Spike\Hsh.Spike.csproj" />
+    <!-- The e2e suites spawn the real hsh CLI; the reference builds it (without linking) and the
+         metadata attribute carries its output path into the test assembly. -->
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Cli\Hsh.Cli.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <HshCliTargetPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\src\Hsh\Hsh.Cli\bin\$(Configuration)\$(TargetFramework)\Hsh.Cli.dll'))</HshCliTargetPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>HshCliPath</_Parameter1>
+      <_Parameter2>$(HshCliTargetPath)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>

@@ -25,7 +25,7 @@ internal static class HmrTests
 
     private static string TempConfig(string content)
     {
-        var file = Path.Combine(Path.GetTempPath(), $"dsh-hmr-{Guid.NewGuid():N}.yml");
+        var file = Path.Combine(Path.GetTempPath(), $"hsh-hmr-{Guid.NewGuid():N}.yml");
         File.WriteAllText(file, content);
         return file;
     }
@@ -72,7 +72,7 @@ internal static class HmrTests
         ProbePlugin.Seen = null;
         // Pre-create a test-owned root so the watcher watches only this subtree, then register a
         // path under two missing parent directories.
-        var root = Path.Combine(Path.GetTempPath(), $"dsh-hmr-missing-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"hsh-hmr-missing-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         var file = Path.Combine(root, "a", "b", "config.yml");
         try

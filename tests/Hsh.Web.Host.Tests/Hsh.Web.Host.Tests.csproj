@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Harness.Web.Host.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Cordis\Cordis.Core\Cordis.Core.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Web.Host\Hsh.Web.Host.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Interaction\Hsh.Interaction.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Ui.Sidebar\Hsh.Ui.Sidebar.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Ui.Sessions\Hsh.Ui.Sessions.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Ui.Chat\Hsh.Ui.Chat.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Ui.Workspace\Hsh.Ui.Workspace.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Ui.Approval\Hsh.Ui.Approval.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Ui.Settings\Hsh.Ui.Settings.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Ui.Plan\Hsh.Ui.Plan.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Workspace\Hsh.Workspace.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Agent\Hsh.Agent.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.AgentLoop\Hsh.AgentLoop.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Jobs\Hsh.Jobs.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Todo\Hsh.Todo.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Preset\Hsh.Preset.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Storage\Hsh.Storage.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Session.Projection\Hsh.Session.Projection.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Llm\Hsh.Llm.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Tools\Hsh.Tools.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.SystemPrompt\Hsh.SystemPrompt.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Settings\Hsh.Settings.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Credentials\Hsh.Credentials.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Workspace\Hsh.Workspace.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Spike\Hsh.Spike.csproj" />
+    <ProjectReference Include="..\..\src\Hsh\Hsh.Web.App\Hsh.Web.App.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.11" />
+  </ItemGroup>
+
+</Project>
+
+
+
+
+
