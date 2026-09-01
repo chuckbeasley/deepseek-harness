@@ -108,7 +108,11 @@ public static class CorpusTests
             if (childFiles is not null) env["DSH_SNAPSHOT_CHILD_FILES"] = childFiles;
             var result = SnapshotDriver.RunHeadless(home, cwd, task, fixtureFile,
                 provider: model.Provider, model: model.Model, extraEnv: env);
-            var actualLog = SnapshotDriver.HarvestSessionLog(home);
+            // Redaction runs across every persisted session log (the primary plus children) so a
+            // child-session reference in the primary log redacts to the token the full-set
+            // recording pinned (the fixture's {{session:3}} workflow child, for example).
+            var actualLogs = SnapshotDriver.HarvestSessionLogs(home);
+            var actualLog = actualLogs.Length > 0 ? actualLogs[0] : null;
 
             var expectedStdout = FinalTextFromSession(fixture) + "\n";
             if (result.Stdout != expectedStdout)
@@ -131,10 +135,9 @@ public static class CorpusTests
             }
             var fixtureLogs = FixtureLogs(dir);
             var fixtureCount = fixtureLogs.Length;
-            var actualCount = SessionLogCount(home);
-            if (actualCount != fixtureCount)
+            if (actualLogs.Length != fixtureCount)
             {
-                reasons.Add($"session count: expected {fixtureCount} got {actualCount}");
+                reasons.Add($"session count: expected {fixtureCount} got {actualLogs.Length}");
             }
             var ctx = new NormalizeContext(CwdOf(actualLog) ?? "", Array.Empty<string>());
             var fixtureCtx = new NormalizeContext(CwdOf(fixture) ?? "", Array.Empty<string>());
@@ -143,7 +146,7 @@ public static class CorpusTests
             string redactedLog;
             string normalizedLog;
             string scrubbedLog;
-            try { redactedLog = SnapshotNormalizer.RedactSessionSnapshotIds(new[] { actualLog })[0]; }
+            try { redactedLog = SnapshotNormalizer.RedactSessionSnapshotIds(actualLogs)[0]; }
             catch (Exception normalizeError) { throw new InvalidOperationException($"redact: {normalizeError.Message}", normalizeError); }
             try { normalizedLog = SnapshotNormalizer.NormalizeSessionLog(redactedLog, ctx); }
             catch (Exception normalizeError) { throw new InvalidOperationException($"normalize: {normalizeError.Message}", normalizeError); }
@@ -219,14 +222,15 @@ public static class CorpusTests
             if (childFiles is not null) env["DSH_SNAPSHOT_CHILD_FILES"] = childFiles;
             var result = SnapshotDriver.RunHeadless(home, cwd, task, fixtureFile,
                 provider: model.Provider, model: model.Model, extraEnv: env);
-            var actualLog = SnapshotDriver.HarvestSessionLog(home) ?? "";
+            var actualLogs = SnapshotDriver.HarvestSessionLogs(home);
+            var actualLog = actualLogs.Length > 0 ? actualLogs[0] : "";
             var expectedStdout = FinalTextFromSession(fixture) + "\n";
             report($"stdout: expected {JsonSerializer.Serialize(expectedStdout)} got {JsonSerializer.Serialize(result.Stdout)} equal={result.Stdout == expectedStdout}");
             report($"stderr: expected {JsonSerializer.Serialize(StderrFromSession(fixture))} got {JsonSerializer.Serialize(result.Stderr)} equal={result.Stderr == StderrFromSession(fixture)}");
             report($"exit: expected {expectedExit} got {result.ExitCode}");
             var ctx = new NormalizeContext(CwdOf(actualLog) ?? "", Array.Empty<string>());
             var fixtureCtx = new NormalizeContext(CwdOf(fixture) ?? "", Array.Empty<string>());
-            var actualNormalized = SnapshotNormalizer.NormalizeSessionSnapshots(new[] { actualLog }, ctx);
+            var actualNormalized = SnapshotNormalizer.NormalizeSessionSnapshots(actualLogs, ctx);
             var fixtureNormalized = SnapshotNormalizer.NormalizeSessionSnapshots(new[] { fixture }, fixtureCtx);
             var expectedLines = fixtureNormalized[0].Split('\n').Where(line => line.Length > 0).ToArray();
             var actualLines = actualNormalized[0].Split('\n').Where(line => line.Length > 0).ToArray();
@@ -263,15 +267,6 @@ public static class CorpusTests
             .Select(File.ReadAllText)
             .ToArray();
 
-    /// <summary>The persisted session-log count under the run home (parent plus any child sessions).</summary>
-    private static int SessionLogCount(string home)
-    {
-        var root = Path.Combine(home, "profiles", "headless", "sessions");
-        return Directory.Exists(root)
-            ? Directory.EnumerateFiles(root, "session.jsonl", SearchOption.AllDirectories).Count()
-            : 0;
-    }
-
     private static string? CwdOf(string log)
     {
         var first = log.Split('\n').First(line => line.Trim().Length > 0);
@@ -295,7 +290,9 @@ public static class CorpusTests
                 && name != "web_fetch" && name != "web_search"
                 && name != "workflow" && name != "run_code"
                 && name != "list_agents" && name != "send_message" && name != "subagent" && name != "ask_user_question"
-                && name != "skill" && name != "read_image")
+                && name != "skill" && name != "read_image"
+                && name != "cordis_define" && name != "cordis_run" && name != "cordis_stop" && name != "cordis_undefine"
+                && name != "cordis_inspect_self" && name != "cordis_inspect_list" && name != "cordis_inspect_query")
             {
                 return name;
             }

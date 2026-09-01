@@ -1,0 +1,343 @@
+{
+    "mode": "service",
+    "service": {
+      "key": "tools",
+      "description": "Tool registry and execution pipeline. Scoped registrations shadow globals; one visibility resolver feeds presentation, lookup, and dispatch.",
+      "access": {
+        "optional": {
+          "expression": "ctx.get(\"tools\")",
+          "requiresUndefinedCheck": true
+        },
+        "hardDependency": {
+          "inject": [
+            "tools"
+          ],
+          "expression": "ctx.tools"
+        }
+      },
+      "methods": [
+        {
+          "signature": "presentAs(mode: ToolPresentationMode): () => void",
+          "description": "Present the calling scope's tools in `mode` instead of the deployment default. Nearest scope on the chain wins, so a preset's standing declaration covers every agent joined under it.\n\nScoped only, and one declaration per scope: this is how an agent preset composes PTC mode agents beside native ones in the same process, and a process-global override would be the `mode` config field instead.",
+          "parameters": [
+            {
+              "name": "mode",
+              "description": "the presentation the covered agents' models see."
+            }
+          ],
+          "returns": "the exact disposer that restores the deployment default."
+        },
+        {
+          "signature": "register(definition: ToolDefinition): () => void",
+          "description": "Register globally or in the calling agent scope. Scoped tools shadow globals; duplicates within one layer and the reserved `run_code` name fail.",
+          "parameters": [
+            {
+              "name": "definition",
+              "description": "tool schema, execution, and optional finalization/presentation callbacks."
+            }
+          ],
+          "returns": "the exact disposer that unregisters the tool."
+        },
+        {
+          "signature": "restrict(filter: ToolRestriction): () => void",
+          "description": "Restrict global tools for the calling agent scope. Empty filters, unknown names, scope-local names, and reserved transport names fail. Restrictions intersect; scoped registrations remain visible.",
+          "parameters": [
+            {
+              "name": "filter",
+              "description": "global-tool mask: `allow` (keep only) and/or `deny` (remove)."
+            }
+          ],
+          "returns": "the exact disposer that lifts this restriction."
+        },
+        {
+          "signature": "guard(guard: ToolGuard): () => void",
+          "description": "Register a monotonic guard after the extensible `tools/pre-execute` waterfall. A plain-context guard applies globally; one registered through `agent.ctx` applies only to that agent. Any matching guard may deny by returning a reason, while no guard can force-allow a call another guard denied. The exact effect disposer is returned for ordered ownership and HMR cleanup.",
+          "parameters": [
+            {
+              "name": "guard",
+              "description": "synchronous check; a returned string denies the execution."
+            }
+          ],
+          "returns": "the exact disposer that unregisters the guard."
+        },
+        {
+          "signature": "get(name: string, scope?: ScopeKey): ToolDefinition | undefined",
+          "description": "Look up a tool as one scope sees it (scoped shadows global; a restricted-away global reads as absent). Presenters pass the calling agent so the rendered card matches the definition that actually executed.",
+          "parameters": [
+            {
+              "name": "name",
+              "description": "the tool name as registered."
+            },
+            {
+              "name": "scope",
+              "description": "the viewing scope (the agent); omitted = the global view."
+            }
+          ],
+          "returns": "the definition the scope resolves, or undefined when none is visible."
+        },
+        {
+          "signature": "schemas(scope?: ScopeKey): ToolSchema[]",
+          "description": "Project visible definitions onto the allowlisted model-facing schema fields, excluding execution and presentation callbacks.",
+          "parameters": [
+            {
+              "name": "scope",
+              "description": "the viewing scope (the agent); omitted = the global view."
+            }
+          ],
+          "returns": "one deep-cloned schema per visible tool."
+        },
+        {
+          "signature": "executionMode(exec: ToolExecutionInput): ToolExecutionMode",
+          "description": "Classify a pending call through the caller's visible tool definition. Only an exact `true` is parallel; unknown, hidden, undeclared, invalid, or throwing classifiers are exclusive.",
+          "parameters": [
+            {
+              "name": "exec",
+              "description": "call name, parsed arguments, and optional agent scope."
+            }
+          ],
+          "returns": "the fail-closed scheduling mode."
+        },
+        {
+          "signature": "async execute(exec: ToolExecutionInput): Promise<ToolExecutionResult>",
+          "description": "Execute through pre-policy, guards, around-dispatch, post-policy, definition-owned content finalization, and final notification. Tool and listener failures resolve as materialized error results; an invisible tool reports `UNKNOWN_TOOL`. The returned outcome is the same lossless, frozen snapshot final observers receive. Cancellation arriving after entry and before final result materialization skips a not-yet-started body with `ABORTED_BEFORE_DISPATCH` or replaces a successful started outcome with `ABORTED`; already-started work is still drained and may retain a tool-owned structured error.",
+          "parameters": [
+            {
+              "name": "exec",
+              "description": "the typed same-process call input. The registry assigns its correlation token before policy begins."
+            }
+          ],
+          "returns": "the materialized final result."
+        }
+      ]
+    },
+    "referencedTypes": [
+      {
+        "name": "Agent",
+        "declaration": "export interface Agent {\n    readonly id: SessionId;\n}"
+      },
+      {
+        "name": "AssistantProvenance",
+        "declaration": "export interface AssistantProvenance {\n    provider: string;\n    model: string;\n    replayState?: unknown;\n}"
+      },
+      {
+        "name": "Branded",
+        "declaration": "export type Branded<B extends string> = string & {\n    readonly [BRAND]: B;\n};"
+      },
+      {
+        "name": "ContextFormed",
+        "declaration": "export type ContextFormed = {\n    readonly form?: never;\n} | {\n    readonly form: 'instructions';\n} | {\n    readonly form: 'catalog';\n} | {\n    readonly form: 'snapshot';\n    readonly sections: readonly ContextSnapshotSection[];\n} | {\n    readonly form: 'notice';\n    readonly summary: string;\n} | {\n    readonly form: 'relay';\n} | {\n    readonly form: 'recall';\n};"
+      },
+      {
+        "name": "ContextSnapshotSection",
+        "declaration": "export interface ContextSnapshotSection {\n    readonly name: string;\n    readonly text: string;\n}"
+      },
+      {
+        "name": "DiffCallView",
+        "declaration": "export interface DiffCallView {\n    card: 'diff';\n    title: string;\n    diffs: FileDiff[];\n    locations?: FileLocation[];\n}"
+      },
+      {
+        "name": "DiffResultView",
+        "declaration": "export interface DiffResultView {\n    card: 'diff';\n    title?: string;\n    diffs: FileDiff[];\n}"
+      },
+      {
+        "name": "FileDiff",
+        "declaration": "export interface FileDiff {\n    path: string;\n    oldText: string | null;\n    newText: string;\n}"
+      },
+      {
+        "name": "FileLocation",
+        "declaration": "export interface FileLocation {\n    path: string;\n    line?: number;\n}"
+      },
+      {
+        "name": "GenericCallView",
+        "declaration": "export interface GenericCallView {\n    card: 'generic';\n    title: string;\n    kind?: ToolCallKind;\n    rawInput?: unknown;\n    content?: ContentBlock[];\n    locations?: FileLocation[];\n}"
+      },
+      {
+        "name": "GenericResultView",
+        "declaration": "export interface GenericResultView {\n    card: 'generic';\n    title?: string;\n    content?: ContentBlock[];\n}"
+      },
+      {
+        "name": "JsonSchemaNode",
+        "declaration": "export interface JsonSchemaNode {\n    type?: JsonSchemaType;\n    oneOf?: JsonSchemaNode[];\n    properties?: Record<string, JsonSchemaNode>;\n    required?: string[];\n    additionalProperties?: boolean;\n    items?: JsonSchemaNode;\n    enum?: JsonSchemaScalar[];\n    const?: JsonSchemaScalar;\n    description?: string;\n    title?: string;\n    default?: JsonValue;\n    examples?: JsonValue;\n}"
+      },
+      {
+        "name": "JsonSchemaScalar",
+        "declaration": "export type JsonSchemaScalar = string | number | boolean | null;"
+      },
+      {
+        "name": "JsonSchemaType",
+        "declaration": "export type JsonSchemaType = 'object' | 'array' | 'string' | 'number' | 'integer' | 'boolean' | 'null';"
+      },
+      {
+        "name": "JsonValue",
+        "declaration": "export type JsonValue = null | boolean | number | string | JsonValue[] | {\n    [key: string]: JsonValue;\n};"
+      },
+      {
+        "name": "Message",
+        "declaration": "export interface Message {\n    readonly id: MessageId;\n    readonly role: 'system' | 'user' | 'assistant';\n    readonly content: ContentBlock[];\n    readonly source: MessageSource;\n}"
+      },
+      {
+        "name": "MessageId",
+        "declaration": "export type MessageId = Branded<'MessageId'>;"
+      },
+      {
+        "name": "MessageSource",
+        "declaration": "export type MessageSource = MessageSourceMap[keyof MessageSourceMap];"
+      },
+      {
+        "name": "MessageSourceMap",
+        "declaration": "export interface MessageSourceMap {\n    user: {\n        kind: 'user';\n    };\n    plugin: {\n        kind: 'plugin';\n        plugin: string;\n    } & ContextFormed;\n    model: ModelMessageSource;\n    tool: ToolMessageSource;\n}"
+      },
+      {
+        "name": "ModelMessageSource",
+        "declaration": "export interface ModelMessageSource extends AssistantProvenance {\n    kind: 'model';\n}"
+      },
+      {
+        "name": "ReadFileLine",
+        "declaration": "export interface ReadFileLine {\n    number: number;\n    text: string;\n}"
+      },
+      {
+        "name": "ReadResultView",
+        "declaration": "export interface ReadResultView {\n    card: 'read';\n    title?: string;\n    path: string;\n    offset: number;\n    lines: ReadFileLine[];\n    totalLines: number;\n    lang?: string;\n    content?: ContentBlock[];\n}"
+      },
+      {
+        "name": "ScopeKey",
+        "declaration": "export type ScopeKey = object;"
+      },
+      {
+        "name": "SearchFileMatches",
+        "declaration": "export interface SearchFileMatches {\n    path: string;\n    matches: SearchLineMatch[];\n}"
+      },
+      {
+        "name": "SearchLineMatch",
+        "declaration": "export interface SearchLineMatch {\n    lineNumber: number;\n    line: string;\n}"
+      },
+      {
+        "name": "SearchMatchesResultView",
+        "declaration": "export interface SearchMatchesResultView {\n    card: 'search';\n    shape: 'matches';\n    title?: string;\n    files: SearchFileMatches[];\n    truncated: boolean;\n    total: number;\n}"
+      },
+      {
+        "name": "SearchPathsResultView",
+        "declaration": "export interface SearchPathsResultView {\n    card: 'search';\n    shape: 'paths';\n    title?: string;\n    paths: string[];\n    truncated: boolean;\n    total: number;\n}"
+      },
+      {
+        "name": "SearchResultView",
+        "declaration": "export type SearchResultView = SearchMatchesResultView | SearchPathsResultView;"
+      },
+      {
+        "name": "SessionId",
+        "declaration": "export type SessionId = Branded<'SessionId'>;"
+      },
+      {
+        "name": "TerminalCallView",
+        "declaration": "export interface TerminalCallView {\n    card: 'terminal';\n    title: string;\n    description?: string;\n    cwd?: string;\n}"
+      },
+      {
+        "name": "TerminalResultView",
+        "declaration": "export interface TerminalResultView {\n    card: 'terminal';\n    title?: string;\n    output?: string;\n    exitCode?: number;\n    signal?: string;\n}"
+      },
+      {
+        "name": "ToolCallKind",
+        "declaration": "export type ToolCallKind = 'read' | 'edit' | 'delete' | 'move' | 'search' | 'execute' | 'fetch' | 'other';"
+      },
+      {
+        "name": "ToolCallView",
+        "declaration": "export type ToolCallView = GenericCallView | TerminalCallView | DiffCallView;"
+      },
+      {
+        "name": "ToolDefinition",
+        "declaration": "export interface ToolDefinition extends ToolSchema {\n    readonly output: ToolOutputDefinition;\n    execute(args: unknown, exec: ToolRunContext): Promise<unknown>;\n    finalizeContent?(exec: Readonly<ToolExecution>, result: Readonly<ToolExecutionResult>): ContentBlock[] | undefined;\n    timeoutMs?: number;\n    isConcurrencySafe?(args: unknown): boolean;\n    presentCall?(args: unknown): ToolCallView | undefined;\n    presentResult?(args: unknown, result: ToolResult): ToolResultView | undefined;\n}"
+      },
+      {
+        "name": "ToolErrorInfo",
+        "declaration": "export interface ToolErrorInfo {\n    name: string;\n    code: string;\n}"
+      },
+      {
+        "name": "ToolExecution",
+        "declaration": "export interface ToolExecution extends ToolExecutionInput {\n    readonly rootCallId: ToolCallId;\n    readonly token: ToolExecutionToken;\n}"
+      },
+      {
+        "name": "ToolExecutionFailure",
+        "declaration": "export interface ToolExecutionFailure {\n    readonly isError: true;\n    readonly error: ToolFailure;\n    readonly value?: never;\n    readonly content: ContentBlock[];\n    readonly meta?: JsonValue;\n    readonly additionalContexts?: UserMessage[];\n    readonly concludesTurn?: never;\n}"
+      },
+      {
+        "name": "ToolExecutionInput",
+        "declaration": "export interface ToolExecutionInput {\n    readonly callId: ToolCallId;\n    readonly rootCallId?: ToolCallId;\n    readonly name: string;\n    readonly arguments: unknown;\n    readonly agent?: Agent;\n    readonly parent?: ToolExecutionToken;\n    readonly signal: AbortSignal;\n}"
+      },
+      {
+        "name": "ToolExecutionMode",
+        "declaration": "export type ToolExecutionMode = {\n    kind: 'parallel';\n} | {\n    kind: 'exclusive';\n};"
+      },
+      {
+        "name": "ToolExecutionResult",
+        "declaration": "export type ToolExecutionResult = ToolExecutionSuccess | ToolExecutionFailure;"
+      },
+      {
+        "name": "ToolExecutionSuccess",
+        "declaration": "export interface ToolExecutionSuccess {\n    readonly isError: false;\n    readonly value: JsonValue;\n    readonly content: ContentBlock[];\n    readonly error?: never;\n    readonly meta?: JsonValue;\n    readonly additionalContexts?: UserMessage[];\n    readonly concludesTurn?: true;\n}"
+      },
+      {
+        "name": "ToolExecutionToken",
+        "declaration": "export type ToolExecutionToken = symbol & {\n    readonly [toolExecutionTokenBrand]: true;\n};"
+      },
+      {
+        "name": "ToolFailure",
+        "declaration": "export interface ToolFailure {\n    message: string;\n    info?: ToolErrorInfo;\n}"
+      },
+      {
+        "name": "ToolGuard",
+        "declaration": "export type ToolGuard = (execution: Readonly<ToolExecution>) => string | undefined;"
+      },
+      {
+        "name": "ToolMessageSource",
+        "declaration": "export interface ToolMessageSource {\n    kind: 'tool';\n    callId: ToolCallId;\n}"
+      },
+      {
+        "name": "ToolOutputDefinition",
+        "declaration": "export interface ToolOutputDefinition {\n    readonly schema: JsonSchemaNode;\n    render(args: unknown, value: JsonValue): ContentBlock[];\n    presentationMeta?(args: unknown, value: JsonValue): JsonValue;\n}"
+      },
+      {
+        "name": "ToolPresentationMode",
+        "declaration": "export type ToolPresentationMode = 'native' | 'ptc' | 'both';"
+      },
+      {
+        "name": "ToolRestriction",
+        "declaration": "export interface ToolRestriction {\n    readonly allow?: readonly string[];\n    readonly deny?: readonly string[];\n}"
+      },
+      {
+        "name": "ToolResult",
+        "declaration": "export interface ToolResult {\n    content: ContentBlock[];\n    isError: boolean;\n    meta?: JsonValue;\n}"
+      },
+      {
+        "name": "ToolResultView",
+        "declaration": "export type ToolResultView = GenericResultView | TerminalResultView | DiffResultView | SearchResultView | ReadResultView | WebResultView;"
+      },
+      {
+        "name": "ToolRunContext",
+        "declaration": "export interface ToolRunContext extends ToolExecution {\n    deferContext(context: UserMessage): void;\n    concludeTurn(): void;\n}"
+      },
+      {
+        "name": "ToolSchema",
+        "declaration": "export interface ToolSchema {\n    name: string;\n    description: string;\n    parameters: Record<string, unknown>;\n}"
+      },
+      {
+        "name": "UserMessage",
+        "declaration": "export interface UserMessage extends Message {\n    readonly role: 'user';\n}"
+      },
+      {
+        "name": "WebFetchResultView",
+        "declaration": "export interface WebFetchResultView {\n    card: 'web';\n    kind: 'fetch';\n    title?: string;\n    url: string;\n    statusCode: number;\n    truncated: boolean;\n}"
+      },
+      {
+        "name": "WebResultView",
+        "declaration": "export type WebResultView = WebSearchResultView | WebFetchResultView;"
+      },
+      {
+        "name": "WebSearchResultView",
+        "declaration": "export interface WebSearchResultView {\n    card: 'web';\n    kind: 'search';\n    title?: string;\n    sources: WebSource[];\n    answer?: string;\n    truncated: boolean;\n}"
+      },
+      {
+        "name": "WebSource",
+        "declaration": "export interface WebSource {\n    url: string;\n    title?: string;\n    snippet?: string;\n    publishedAt?: string;\n}"
+      }
+    ]
+  }

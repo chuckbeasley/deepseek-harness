@@ -214,6 +214,16 @@ public static class SpineRegistry
             Dsh.Code.CodeEventTypes.Register();
             return new SpineDisposables(ctx.Tools().Register(Dsh.Code.RunCodeTool.Definition(ctx.Tools())));
         }));
+        catalog.Register("cordis", new SpinePlugin("cordis", (ctx, _) =>
+        {
+            var runner = new Dsh.CordisRunner.DynamicCordisRunner();
+            var disposables = new List<IDisposable>();
+            foreach (var tool in Dsh.CordisRunner.CordisTools.Definitions(runner, ctx.Tools()))
+            {
+                disposables.Add(ctx.Tools().Register(tool));
+            }
+            return new SpineDisposables(disposables.ToArray());
+        }));
         catalog.Register("web", new SpinePlugin("web", (ctx, _) =>
         {
             Dsh.Web.WebEventTypes.Register();

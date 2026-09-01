@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using System.Text.Json;
 
 namespace Dsh.Snapshot.Tests;
 
@@ -129,6 +130,38 @@ public static class SnapshotDriver
             fallback ??= File.ReadAllText(file);
         }
         return fallback;
+    }
+
+    /// <summary>
+    /// Harvest every persisted session log under a profile home (the primary plus any child
+    /// sessions), ordered by the session header <c>createdAt</c> then id — the same ordering the
+    /// recorded fixture set uses, so a child-session reference in the primary log redacts to the
+    /// token the fixture pinned. An empty array means no log was persisted.
+    /// </summary>
+    public static string[] HarvestSessionLogs(string home, string profile = "headless")
+    {
+        var root = Path.Combine(home, "profiles", profile, "sessions");
+        if (!Directory.Exists(root)) return Array.Empty<string>();
+        var logs = new List<(long CreatedAt, string Id, string Text)>();
+        foreach (var file in Directory.EnumerateFiles(root, "session.jsonl", SearchOption.AllDirectories))
+        {
+            var text = File.ReadAllText(file);
+            var first = File.ReadLines(file).FirstOrDefault();
+            if (first is null) continue;
+            var createdAt = 0L;
+            var id = string.Empty;
+            using (var document = JsonDocument.Parse(first))
+            {
+                if (document.RootElement.TryGetProperty("createdAt", out var created)) createdAt = created.GetInt64();
+                if (document.RootElement.TryGetProperty("id", out var sessionId)) id = sessionId.GetString() ?? string.Empty;
+            }
+            logs.Add((createdAt, id, text));
+        }
+        return logs
+            .OrderBy(log => log.CreatedAt)
+            .ThenBy(log => log.Id, StringComparer.Ordinal)
+            .Select(log => log.Text)
+            .ToArray();
     }
 
     private static void CopyDirectory(string source, string target)

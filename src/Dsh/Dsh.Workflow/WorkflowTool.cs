@@ -15,7 +15,8 @@ namespace Dsh.Workflow;
 /// <summary>
 /// The model-facing <c>workflow</c> tool (port of tool-workflow with the recorded script subset
 /// interpreted natively — node is not used in the ported version): <c>phase('Title')</c>,
-/// <c>const name = await agent('prompt')</c>, and <c>return { ... }</c> statements run in C#,
+/// <c>const name = await agent('prompt')</c> (optionally <c>, { label: '…' }</c>), and
+/// <c>return { ... }</c> statements run in C#,
 /// each agent() delegating one fresh one-shot structured child through the agent loop. The
 /// durable tool-workflow/* record events fire around the run, and the terminal envelope renders
 /// the completed run with the pretty-printed return value.
@@ -28,7 +29,7 @@ public static class WorkflowTool
         + "\"args\":{\"type\":\"object\",\"description\":\"Optional JSON input exposed to the script as the args global.\"}}";
 
     private static readonly Regex PhaseRegex = new(@"^phase\('([^']*)'\)\s*;?\s*$", RegexOptions.CultureInvariant);
-    private static readonly Regex AgentRegex = new(@"^const\s+(\w+)\s*=\s*await\s+agent\('([^']*)'\)\s*;?\s*$", RegexOptions.CultureInvariant);
+    private static readonly Regex AgentRegex = new(@"^const\s+(\w+)\s*=\s*await\s+agent\('([^']*)'(?:\s*,\s*\{\s*label\s*:\s*'([^']*)'\s*\})?\)\s*;?\s*$", RegexOptions.CultureInvariant);
     private static readonly Regex ReturnRegex = new(@"^return\s+\{(.*)\}\s*;?\s*$", RegexOptions.CultureInvariant);
 
     /// <summary>Build the tool over the agent loop used to spawn the workflow children.</summary>
@@ -131,7 +132,8 @@ public static class WorkflowTool
                 var agent = AgentRegex.Match(line);
                 if (agent.Success)
                 {
-                    var value = await RunAgentAsync(agent.Groups[2].Value, ct);
+                    var label = agent.Groups[3].Success ? agent.Groups[3].Value : DefaultLabel(agent.Groups[2].Value);
+                    var value = await RunAgentAsync(agent.Groups[2].Value, label, ct);
                     _variables[agent.Groups[1].Value] = JsonValue.Create(value);
                     continue;
                 }
@@ -145,10 +147,9 @@ public static class WorkflowTool
             throw new InvalidOperationException("workflow script ended without a return statement");
         }
 
-        private async Task<string> RunAgentAsync(string prompt, CancellationToken ct)
+        private async Task<string> RunAgentAsync(string prompt, string label, CancellationToken ct)
         {
             var seq = ++AgentsStarted;
-            var label = DefaultLabel(prompt);
             var (provider, model) = _session.Events.OfType<RequestHeaderEvent>().Select(evt => evt.Header.Config).LastOrDefault() is { } config
                 ? (config.Provider, config.Model)
                 : (null, null);
