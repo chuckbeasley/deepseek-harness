@@ -9,7 +9,7 @@ public static class SubagentTests
     public static async Task Delegate_RunsAndSettlesCompleted()
     {
         var ctx = new Context();
-        var service = new InProcessSubagentProvider(ctx, (request, _) => Task.FromResult($"handled: {request.Task}"));
+        var service = new InProcessSubagentProvider(ctx, (request, _) => Task.FromResult(new SubagentResult($"handled: {request.Task}")));
         var handle = service.Delegate(new SubagentRequest("write tests", "tests"));
         var result = await handle.Done.WaitAsync(TimeSpan.FromSeconds(10));
         Assert.Equal(SubagentStatus.Completed, handle.Status, "the delegation completes");
@@ -37,7 +37,7 @@ public static class SubagentTests
         var service = new InProcessSubagentProvider(ctx, async (_, ct) =>
         {
             await Task.Delay(Timeout.InfiniteTimeSpan, ct);
-            return "unreachable";
+            return new SubagentResult("unreachable");
         });
         var handle = service.Delegate(new SubagentRequest("wait forever"));
         await Task.Delay(200);
@@ -54,7 +54,7 @@ public static class SubagentTests
         var service = new InProcessSubagentProvider(ctx, async (_, ct) =>
         {
             await Task.Delay(Timeout.InfiniteTimeSpan, ct);
-            return "unreachable";
+            return new SubagentResult("unreachable");
         });
         var handle = service.Delegate(new SubagentRequest("wait forever"));
         await Task.Delay(200);

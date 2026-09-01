@@ -30,11 +30,14 @@ public sealed class LocalTerminalProvider : Service, ITerminalService
     public Task<ITerminalSession> OpenAsync(TerminalOpenRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        if (request.Type != BackendType)
+        // "shell" is the recorded corpus's backend type for this provider (the TS terminal-bash
+        // spelling); "local" remains the port's own alias.
+        if (request.Type != BackendType && request.Type != "shell")
         {
             throw new InvalidOperationException($"terminal: unknown backend type {request.Type} (registered: {BackendType})");
         }
-        var shell = OperatingSystem.IsWindows() ? "cmd.exe" : "sh";
+        var shell = Environment.GetEnvironmentVariable("DSH_SHELL_PATH")
+            ?? (OperatingSystem.IsWindows() ? "cmd.exe" : "sh");
         var info = new ProcessStartInfo
         {
             FileName = shell,
@@ -45,6 +48,14 @@ public sealed class LocalTerminalProvider : Service, ITerminalService
             CreateNoWindow = true,
             WorkingDirectory = string.IsNullOrEmpty(request.Cwd) ? Environment.CurrentDirectory : request.Cwd,
         };
+        if (shell.EndsWith("sh.exe", StringComparison.OrdinalIgnoreCase) || shell.EndsWith("sh", StringComparison.OrdinalIgnoreCase))
+        {
+            // A quiet POSIX shell with the recorded "dsh> " prompt: the initial output line the
+            // read surface returns as the motd.
+            info.ArgumentList.Add("--noprofile");
+            info.ArgumentList.Add("--norc");
+            info.Environment["PS1"] = "dsh> ";
+        }
         var process = new Process { StartInfo = info, EnableRaisingEvents = true };
         try
         {
@@ -56,7 +67,7 @@ public sealed class LocalTerminalProvider : Service, ITerminalService
         }
         int id;
         lock (_gate) id = ++_counter;
-        var session = new LocalSession(new TerminalSessionId($"terminal-{id}"), request.Name, process);
+        var session = new LocalSession(new TerminalSessionId($"pty-{id}"), request.Name, process);
         lock (_gate) _sessions.Add(session);
         _ = session.Done.ContinueWith(_ =>
         {
@@ -87,6 +98,10 @@ public sealed class LocalTerminalProvider : Service, ITerminalService
     private sealed class LocalSession : ITerminalSession
     {
         private const int MaxLines = 500;
+
+        /// <summary>The seeded prompt line that forms the session's motd.</summary>
+        private const string PromptLine = "dsh> ";
+
         private readonly object _gate = new();
         private readonly Process _process;
         private readonly List<string> _lines = new();
@@ -102,6 +117,13 @@ public sealed class LocalTerminalProvider : Service, ITerminalService
             Name = name;
             _process = process;
             Pid = process.Id;
+            // The recorded shell backend's motd is the "dsh> " prompt line; it is seeded as the
+            // first scrollback line so the read surface is deterministic before any child output.
+            lock (_gate)
+            {
+                _lines.Add(PromptLine);
+                _motd = PromptLine;
+            }
             _ = RunAsync();
         }
 

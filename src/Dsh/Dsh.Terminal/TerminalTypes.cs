@@ -76,6 +76,9 @@ public interface ITerminalSession
     /// <summary>The registry-minted session identity.</summary>
     TerminalSessionId SessionId { get; }
 
+    /// <summary>Owner-local display name from the open request, when one was given.</summary>
+    string? Name { get; }
+
     /// <summary>Initial bounded terminal output returned from open.</summary>
     string Motd { get; }
 
