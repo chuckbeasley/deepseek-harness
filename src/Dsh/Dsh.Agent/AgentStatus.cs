@@ -42,6 +42,12 @@ public sealed record AgentOptions
 
     /// <summary>The child-session origin (e.g. "subagent"); absent for a top-level session.</summary>
     public string? Origin { get; init; }
+
+    /// <summary>
+    /// The named subagent provider a structured child runs under (e.g. "spawn"); the provider
+    /// marker drives the recorded <c>subagent/descriptor</c> event in the child session.
+    /// </summary>
+    public string? SubagentProvider { get; init; }
 }
 
 /// <summary>

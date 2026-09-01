@@ -23,6 +23,11 @@ public static class Program
         ("the workflow tool fails loud on an empty definition name", WorkflowToolsTests.WorkflowTool_EmptyDefinitionName_FailsLoud),
         ("stop-reason errors map every non-completed reason", WorkflowToolsTests.StopReasonError_MapsEveryNonCompletedReason),
         ("the result renderer caps long values", WorkflowToolsTests.RenderResult_CapsLongValues),
+        ("ralph: the worker prompt matches the recorded wording", RalphToolTests.BuildPrompt_MatchesTheRecordedWorkerWording),
+        ("ralph: the recorded round reports validate", RalphToolTests.ValidateReport_AcceptsTheRecordedReports),
+        ("ralph: malformed reports fail loud", RalphToolTests.ValidateReport_RejectsMalformedReports),
+        ("ralph: structured_output renders the recorded line", RalphToolTests.StructuredOutputTool_RendersTheRecordedText),
+        ("ralph: the terminal envelope matches the recording", RalphToolTests.RenderResult_MatchesTheRecordedEnvelope),
     };
 
     public static int Main()

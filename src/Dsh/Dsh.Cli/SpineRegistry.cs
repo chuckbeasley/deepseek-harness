@@ -458,6 +458,18 @@ public static class SpineRegistry
                 }
             });
         }));
+        catalog.Register("ralph", new SpinePlugin("ralph", (ctx, _) =>
+        {
+            var loop = ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
+                ?? throw new InvalidOperationException("ralph requires the \"agentLoop\" row");
+            Dsh.Subagent.SubagentEventTypes.Register();
+            return new SpineDisposables(new IDisposable[]
+            {
+                ctx.Tools().Register(Dsh.Workflow.RalphTool.StructuredOutputDefinition()),
+                ctx.Tools().Register(Dsh.Workflow.RalphTool.Definition(loop)),
+                Dsh.Workflow.RalphTool.InstallDescriptorListener(ctx),
+            });
+        }));
         catalog.Register("sdkSubagent", new SpinePlugin("sdkSubagent", (ctx, config) =>
         {
             var service = ctx.Get<Dsh.Subagent.ISubagentService>("subagent")

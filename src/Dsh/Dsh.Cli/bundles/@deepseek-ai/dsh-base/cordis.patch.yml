@@ -127,6 +127,9 @@
       config:
         provider: subagent
 
+    - id: ralph
+      name: ralph
+
     - id: jobs
       name: jobs
 

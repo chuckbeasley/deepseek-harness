@@ -291,6 +291,7 @@ public static class CorpusTests
                 && name != "job_list" && name != "job_output" && name != "job_kill" && name != "workflow"
                 && name != "message_feedback" && name != "terminal_open" && name != "terminal_read" && name != "terminal_send"
                 && name != "terminal_signal" && name != "terminal_close" && name != "terminal_list"
+                && name != "ralph" && name != "structured_output"
                 && name != "list_agents" && name != "send_message" && name != "subagent" && name != "ask_user_question"
                 && name != "skill" && name != "read_image")
             {
