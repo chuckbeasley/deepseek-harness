@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Goal;
+namespace Harness.Goal;
 
 /// <summary>Durable lifecycle phase of one goal. Serialized with the TS wire strings.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]

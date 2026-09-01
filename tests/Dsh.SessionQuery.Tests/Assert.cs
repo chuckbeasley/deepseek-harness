@@ -2,7 +2,7 @@ using System.Collections;
 using System.Reflection;
 using System.Text.Json;
 
-namespace Dsh.SessionQuery.Tests;
+namespace Harness.SessionQuery.Tests;
 
 /// <summary>Thrown by <see cref="Assert"/> when a check fails; aborts the current test.</summary>
 public sealed class AssertionException : Exception

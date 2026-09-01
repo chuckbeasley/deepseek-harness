@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Acp;
+namespace Harness.Acp;
 
 /// <summary>The ACP server's camelCase wire serializer (the transport embeds JsonElements verbatim).</summary>
 internal static class AcpWire

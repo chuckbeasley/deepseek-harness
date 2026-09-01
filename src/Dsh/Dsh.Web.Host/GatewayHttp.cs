@@ -2,7 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The unary HTTP carrier (port of the TS rpc-host): <c>POST /api/&lt;namespace&gt;/&lt;method&gt;</c>

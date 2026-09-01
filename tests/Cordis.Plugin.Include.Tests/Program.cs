@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Cordis.Plugin.Loader;
+using Harness.Cordis.Core;
+using Harness.Cordis.Plugin.Loader;
 
-namespace Cordis.Plugin.Include.Tests;
+namespace Harness.Cordis.Plugin.Include.Tests;
 
 /// <summary>Zero-dependency console runner for the Include port tests.</summary>
 public static class Program
@@ -309,10 +309,10 @@ internal static class IncludeTests
         return file;
     }
 
-    private static (Context Ctx, Cordis.Plugin.Loader.Loader Loader) Boot()
+    private static (Context Ctx, global::Harness.Cordis.Plugin.Loader.Loader Loader) Boot()
     {
         var ctx = new Context();
-        var loader = new Cordis.Plugin.Loader.Loader(ctx);
+        var loader = new global::Harness.Cordis.Plugin.Loader.Loader(ctx);
         loader.Catalog.RegisterType("probe", typeof(ProbePlugin));
         return (ctx, loader);
     }

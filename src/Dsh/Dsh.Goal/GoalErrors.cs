@@ -1,4 +1,4 @@
-namespace Dsh.Goal;
+namespace Harness.Goal;
 
 /// <summary>Stable error codes for rejected goal reads and mutations (TS <c>GoalErrorCode</c>).</summary>
 public static class GoalErrorCode

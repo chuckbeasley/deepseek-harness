@@ -1,4 +1,4 @@
-namespace Dsh.Acp.Tests;
+namespace Harness.Acp.Tests;
 
 /// <summary>Test failure carrying one assertion message.</summary>
 public sealed class AssertionException : Exception

@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The loopback process-token fence (port of the TS browser-auth + api-request-trust pair): the

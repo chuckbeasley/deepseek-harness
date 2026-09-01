@@ -1,4 +1,4 @@
-namespace Dsh.Attachment;
+namespace Harness.Attachment;
 
 /// <summary>
 /// Opaque storage identifier of one immutable attachment (port of the TS <c>AttachmentId</c>

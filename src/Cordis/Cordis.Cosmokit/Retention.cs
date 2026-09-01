@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Cordis.Cosmokit;
+namespace Harness.Cordis.Cosmokit;
 
 /// <summary>
 /// How much content a retainer omitted: <c>None</c>, an <c>Exact</c> count

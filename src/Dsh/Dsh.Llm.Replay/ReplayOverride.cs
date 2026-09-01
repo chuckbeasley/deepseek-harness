@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Llm.Replay;
+namespace Harness.Llm.Replay;
 
 /// <summary>An override sidecar document: either a whole-script replacement or the augmentation form.</summary>
 public sealed record OverrideDoc(IReadOnlyList<ReplayEntry>? WholeScript, IReadOnlyList<ReplayOverridePatch>? Patches);

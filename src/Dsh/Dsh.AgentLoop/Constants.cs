@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop;
+namespace Harness.AgentLoop;
 
 /// <summary>Shared agent-loop scheduler defaults (port of the TS constants module).</summary>
 public static class AgentLoopConstants

@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>default</LangVersion>
-    <RootNamespace>Dsh.Session.Persistence.Tests</RootNamespace>
+    <RootNamespace>Harness.Session.Persistence.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

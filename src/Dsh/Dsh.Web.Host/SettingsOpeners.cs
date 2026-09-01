@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The native-opener seam for the settings openers (port of the TS SettingsControllerInternals):

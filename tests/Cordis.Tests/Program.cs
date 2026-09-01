@@ -1,4 +1,4 @@
-namespace Cordis.Tests;
+namespace Harness.Cordis.Tests;
 
 /// <summary>
 /// Zero-dependency console test runner for the Phase 0 spike. The host sandbox

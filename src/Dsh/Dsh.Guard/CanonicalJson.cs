@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
-namespace Dsh.Guard;
+namespace Harness.Guard;
 
 /// <summary>
 /// Canonical JSON text: deep key-sort of parsed JSON values so two argument documents that differ

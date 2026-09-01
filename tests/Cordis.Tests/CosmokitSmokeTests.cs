@@ -1,7 +1,7 @@
-using Cordis.Cosmokit;
-using Timeout = Cordis.Cosmokit.Timeout;
+using Harness.Cordis.Cosmokit;
+using Timeout = global::Harness.Cordis.Cosmokit.Timeout;
 
-namespace Cordis.Tests;
+namespace Harness.Cordis.Tests;
 
 /// <summary>Sanity checks for the minimal Cosmokit utility port.</summary>
 public static class CosmokitSmokeTests

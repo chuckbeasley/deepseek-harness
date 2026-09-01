@@ -2,12 +2,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Credentials;
-using Dsh.Web.Host;
+using Harness.Cordis.Core;
+using Harness.Credentials;
+using Harness.Web.Host;
 using Microsoft.AspNetCore.Http;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The loopback process-token fence: the trust fence (403), the browser-session cookie (401), the

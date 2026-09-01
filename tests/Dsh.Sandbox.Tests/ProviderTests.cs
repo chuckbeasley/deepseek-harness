@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Sandbox.Tests;
+namespace Harness.Sandbox.Tests;
 
 /// <summary>The unsandboxed provider's facts: mode none, never denied, never failed.</summary>
 public static class ProviderTests

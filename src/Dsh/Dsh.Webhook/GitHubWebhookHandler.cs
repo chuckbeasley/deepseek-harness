@@ -1,10 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Credentials;
+using Harness.Cordis.Core;
+using Harness.Credentials;
 
-namespace Dsh.Webhook;
+namespace Harness.Webhook;
 
 /// <summary>
 /// HTTP refusal whose message is safe to return without request data. The status vocabulary is

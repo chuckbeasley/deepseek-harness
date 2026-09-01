@@ -1,14 +1,14 @@
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Spike;
-using Dsh.SystemPrompt;
-using Dsh.Tools;
-using Dsh.Web.App.Store;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Spike;
+using Harness.SystemPrompt;
+using Harness.Tools;
+using Harness.Web.App.Store;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The web session store: the live running/queued/error projection over real mock-LLM turns and
@@ -92,17 +92,17 @@ public static class WebSessionStoreTests
     }
 
     /// <summary>Boot the loop spine with the mock adapter mounted (the session-store prerequisites).</summary>
-    private static Context Boot(out SessionStore sessions, out Dsh.AgentLoop.AgentLoop loop)
+    private static Context Boot(out SessionStore sessions, out global::Harness.AgentLoop.AgentLoop loop)
     {
         var ctx = new Context();
         sessions = new SessionStore(ctx);
         var llm = new LlmRuntime(ctx);
         var tools = new ToolRuntime(ctx);
-        _ = new Dsh.Todo.TodoService(ctx, allowParallelInProgress: false);
-        _ = tools.Register(Dsh.Todo.TodoTool.Definition(ctx, allowParallelInProgress: false));
+        _ = new global::Harness.Todo.TodoService(ctx, allowParallelInProgress: false);
+        _ = tools.Register(global::Harness.Todo.TodoTool.Definition(ctx, allowParallelInProgress: false));
         _ = new SystemPromptService(ctx);
         _ = new AgentRegistry(ctx);
-        loop = new Dsh.AgentLoop.AgentLoop(ctx);
+        loop = new global::Harness.AgentLoop.AgentLoop(ctx);
         llm.RegisterAdapter(new[] { MockLlmProvider.Provider }, new MockLlmProvider());
         return ctx;
     }

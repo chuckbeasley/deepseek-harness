@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop;
+namespace Harness.AgentLoop;
 
 /// <summary>
 /// Request-reconstruction invariant for loop-built LLM calls (port of the TS invariant module).

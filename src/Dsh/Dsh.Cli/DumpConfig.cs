@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
-using Cordis.Plugin.Include;
+using Harness.Cordis.Plugin.Include;
 
-namespace Dsh.Cli;
+namespace Harness.Cli;
 
 /// <summary>One overlay patch list with the source label printed in dump comments.</summary>
 public sealed record ConfigDumpLayer(string Label, List<object?> Patches);

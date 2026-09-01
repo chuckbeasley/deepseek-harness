@@ -1,4 +1,4 @@
-namespace Dsh.SessionQuery.Tests;
+namespace Harness.SessionQuery.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

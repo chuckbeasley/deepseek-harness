@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Dsh.Llm.DeepSeek;
+namespace Harness.Llm.DeepSeek;
 
 /// <summary>
 /// Chat-completions adapter for DeepSeek (OpenAI-compatible endpoint). Builds the request from

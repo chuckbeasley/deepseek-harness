@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The auth-fence middleware (the TS request fence applied to every Host surface): the index path

@@ -1,4 +1,4 @@
-namespace Dsh.Guard.Tests;
+namespace Harness.Guard.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
-using Cordis.Cosmokit;
+using Harness.Cordis.Cosmokit;
 
-namespace Cordis.Schemastery;
+namespace Harness.Cordis.Schemastery;
 
 /// <summary>Resolver callback used by built-in and <see cref="Schema.RegisterType"/> custom schema types.</summary>
 /// <param name="data">The value being validated.</param>

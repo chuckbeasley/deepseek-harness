@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Dsh.Llm.DeepSeek;
+namespace Harness.Llm.DeepSeek;
 
 /// <summary>
 /// Decode an SSE byte stream into event <c>data</c> payloads. Framing is spec-strict: an event

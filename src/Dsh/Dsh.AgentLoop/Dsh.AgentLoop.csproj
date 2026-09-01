@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Dsh.AgentLoop</RootNamespace>
+    <RootNamespace>Harness.AgentLoop</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Web;
+using Harness.Cordis.Core;
+using Harness.Web;
 
-namespace Dsh.Web.Tests;
+namespace Harness.Web.Tests;
 
 /// <summary>Selection semantics and provider registry behavior of <see cref="WebRuntime"/>.</summary>
 public static class WebRuntimeTests

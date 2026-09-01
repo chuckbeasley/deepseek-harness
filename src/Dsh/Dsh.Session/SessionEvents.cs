@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Session;
+namespace Harness.Session;
 
 /// <summary>
 /// How a session event entered the ordered surface. Only message-producing events carry one:

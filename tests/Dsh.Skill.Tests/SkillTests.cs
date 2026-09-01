@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Tools;
 
-namespace Dsh.Skill.Tests;
+namespace Harness.Skill.Tests;
 
 /// <summary>
 /// Skill registry, filesystem provider, and catalog-tool tests (ported from

@@ -1,4 +1,4 @@
-namespace Dsh.Spike;
+namespace Harness.Spike;
 
 /// <summary>Headless console boot: runs the Phase 0 smoke scenario and exits non-zero on failure.</summary>
 public static class Program
@@ -13,7 +13,7 @@ public static class Program
         }
         catch (Exception error)
         {
-            Console.Error.WriteLine($"Dsh.Spike smoke failed: {error.Message}");
+            Console.Error.WriteLine($"Harness.Spike smoke failed: {error.Message}");
             return 1;
         }
     }

@@ -1,10 +1,10 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Tools;
-using Dsh.Web;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Tools;
+using Harness.Web;
 
-namespace Dsh.Web.Tests;
+namespace Harness.Web.Tests;
 
 /// <summary>
 /// The <c>web_fetch</c> and <c>web_search</c> tools executed through <see cref="ToolRuntime"/>, and

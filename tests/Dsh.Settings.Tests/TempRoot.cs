@@ -1,4 +1,4 @@
-namespace Dsh.Settings.Tests;
+namespace Harness.Settings.Tests;
 
 /// <summary>One temp directory removed on dispose; keeps test fixtures off the worktree.</summary>
 public sealed class TempRoot : IDisposable

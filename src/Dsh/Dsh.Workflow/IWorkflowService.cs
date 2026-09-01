@@ -1,4 +1,4 @@
-namespace Dsh.Workflow;
+namespace Harness.Workflow;
 
 /// <summary>
 /// Service Definition of the workflow capability seam (ctx.workflow): register workflow definitions,

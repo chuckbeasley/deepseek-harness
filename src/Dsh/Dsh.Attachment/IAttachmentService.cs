@@ -1,4 +1,4 @@
-namespace Dsh.Attachment;
+namespace Harness.Attachment;
 
 /// <summary>
 /// The attachment capability Service Definition (port of the attachment seam of
@@ -33,7 +33,7 @@ public interface IAttachmentService
     /// <param name="mediaType">the declared media type the bytes must match.</param>
     /// <param name="name">the caller-suggested display name (sanitized).</param>
     /// <returns>the durable image reference with its parsed dimensions.</returns>
-    Dsh.Llm.ImageAttachment SaveImage(byte[] data, string mediaType, string name);
+    Harness.Llm.ImageAttachment SaveImage(byte[] data, string mediaType, string name);
 
     /// <summary>
     /// Read one attachment's stored bytes and verify they still match the recorded reference. A

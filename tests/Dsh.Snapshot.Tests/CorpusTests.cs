@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace Dsh.Snapshot.Tests;
+namespace Harness.Snapshot.Tests;
 
 /// <summary>One parsed session-scenario manifest (snapshot.yml).</summary>
 public sealed record ScenarioManifest(

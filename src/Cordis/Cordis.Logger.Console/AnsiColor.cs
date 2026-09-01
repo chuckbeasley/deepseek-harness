@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Cordis.Logger.Console;
+namespace Harness.Cordis.Logger.Console;
 
 /// <summary>
 /// ANSI color helpers ported from the TS <c>Logger.color</c>/<c>Logger.code</c>: a deterministic

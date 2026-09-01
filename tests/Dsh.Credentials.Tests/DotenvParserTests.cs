@@ -1,6 +1,6 @@
-using Dsh.Credentials;
+using Harness.Credentials;
 
-namespace Dsh.Credentials.Tests;
+namespace Harness.Credentials.Tests;
 
 /// <summary>Parser behavior of <see cref="DotenvParser"/>: comments, blank lines, quoted values, precedence, and loud failures.</summary>
 public static class DotenvParserTests

@@ -1,4 +1,4 @@
-namespace Dsh.Lsp.Tests;
+namespace Harness.Lsp.Tests;
 
 /// <summary>Test failure carrying one assertion message.</summary>
 public sealed class AssertionException : Exception

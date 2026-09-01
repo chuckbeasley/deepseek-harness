@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace Dsh.Subagent.Tests;
+namespace Harness.Subagent.Tests;
 
 /// <summary>
 /// Scripted stand-in for the SDK runtime child, driven entirely by env vars — no model, no

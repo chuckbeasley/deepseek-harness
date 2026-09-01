@@ -1,4 +1,4 @@
-namespace Dsh.Context;
+namespace Harness.Context;
 
 /// <summary>
 /// Request clock contributor (port of time-context): the current time sampled from an injectable
@@ -27,7 +27,7 @@ public sealed class TimeContextContributor : IContextContributor
     public string Key => DefaultKey;
 
     /// <inheritdoc />
-    public Task<ContextSection?> ContributeAsync(Dsh.Session.Session session, CancellationToken cancellationToken = default)
+    public Task<ContextSection?> ContributeAsync(Harness.Session.Session session, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(session);
         cancellationToken.ThrowIfCancellationRequested();

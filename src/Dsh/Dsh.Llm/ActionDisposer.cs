@@ -1,4 +1,4 @@
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>Minimal <see cref="IDisposable"/> built from an action; used for sync effect cleanups.</summary>
 public sealed class ActionDisposer : IDisposable

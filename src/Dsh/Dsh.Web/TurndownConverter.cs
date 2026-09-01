@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Dsh.Web;
+namespace Harness.Web;
 
 /// <summary>
 /// Faithful C# port of the shared HTML→markdown converter (turndown 7 over its bundled domino

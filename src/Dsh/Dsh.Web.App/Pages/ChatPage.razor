@@ -1,7 +1,7 @@
 @page "/"
 @rendermode InteractiveServer
-@inject Cordis.Core.Context Ctx
-@inject Dsh.Web.App.Store.WebSessionStore Store
+@inject Harness.Cordis.Core.Context Ctx
+@inject Harness.Web.App.Store.WebSessionStore Store
 @inject SlotRegistry Slots
 @inject WebLocale Locale
 @inject LocaleScope LocaleScope
@@ -100,15 +100,15 @@
         _busy = true;
         try
         {
-            var sessionId = State.Selected?.Session.Id ?? new Dsh.Session.SessionId($"session-{Guid.NewGuid():N}");
-            var loop = Ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
+            var sessionId = State.Selected?.Session.Id ?? new Harness.Session.SessionId($"session-{Guid.NewGuid():N}");
+            var loop = Ctx.Get<Harness.AgentLoop.AgentLoop>("agentLoop")
                 ?? throw new InvalidOperationException("the web chat requires the agentLoop row");
             if (State.Selected is null)
             {
                 var key = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
                 var provider = string.IsNullOrEmpty(key) ? "mock" : "deepseek";
                 var model = string.IsNullOrEmpty(key) ? "mock-todo" : "deepseek-chat";
-                var handle = loop.Create(sessionId, new Dsh.Agent.AgentOptions { Provider = provider, Model = model });
+                var handle = loop.Create(sessionId, new Harness.Agent.AgentOptions { Provider = provider, Model = model });
                 var driver = loop.GetLoop(sessionId)
                     ?? throw new InvalidOperationException("the loop published no driver");
                 State.Select(Store.Get(sessionId));
@@ -127,32 +127,32 @@
         }
     }
 
-    private static async Task RunTurnAsync(Dsh.AgentLoop.LoopAgent driver, string text)
+    private static async Task RunTurnAsync(Harness.AgentLoop.LoopAgent driver, string text)
     {
-        var message = new Dsh.Llm.UserMessage
+        var message = new Harness.Llm.UserMessage
         {
-            Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("N")),
-            Content = new Dsh.Llm.ContentBlock[] { new Dsh.Llm.TextBlock(text) },
-            Source = new Dsh.Llm.UserSource(),
+            Id = new Harness.Llm.MessageId(Guid.NewGuid().ToString("N")),
+            Content = new Harness.Llm.ContentBlock[] { new Harness.Llm.TextBlock(text) },
+            Source = new Harness.Llm.UserSource(),
         };
-        driver.Send(message, Dsh.Agent.InboxTarget.NextTurn, wakeup: true);
+        driver.Send(message, Harness.Agent.InboxTarget.NextTurn, wakeup: true);
         await driver.WhenIdleAsync();
     }
 
-    private static RenderFragment RenderEvent(Dsh.Session.SessionEvent evt) => __builder =>
+    private static RenderFragment RenderEvent(Harness.Session.SessionEvent evt) => __builder =>
     {
         switch (evt)
         {
-            case Dsh.Session.UserMessageEvent user:
-                <div class="dsh-bubble dsh-user">@(string.Concat(user.Message.Content.OfType<Dsh.Llm.TextBlock>().Select(block => block.Text)))</div>
+            case Harness.Session.UserMessageEvent user:
+                <div class="dsh-bubble dsh-user">@(string.Concat(user.Message.Content.OfType<Harness.Llm.TextBlock>().Select(block => block.Text)))</div>
                 break;
-            case Dsh.Session.AssistantMessageEvent assistant:
-                <div class="dsh-bubble dsh-assistant">@(string.Concat(assistant.Message.Content.OfType<Dsh.Llm.TextBlock>().Select(block => block.Text)))</div>
+            case Harness.Session.AssistantMessageEvent assistant:
+                <div class="dsh-bubble dsh-assistant">@(string.Concat(assistant.Message.Content.OfType<Harness.Llm.TextBlock>().Select(block => block.Text)))</div>
                 break;
-            case Dsh.Session.AssistantChunkEvent chunk when chunk.Chunk is Dsh.Llm.TextDelta delta:
+            case Harness.Session.AssistantChunkEvent chunk when chunk.Chunk is Harness.Llm.TextDelta delta:
                 <div class="dsh-bubble dsh-assistant">@delta.Text</div>
                 break;
-            case Dsh.Session.ToolCallEvent tool:
+            case Harness.Session.ToolCallEvent tool:
                 <div class="dsh-bubble dsh-tool">tool @tool.Name</div>
                 break;
         }

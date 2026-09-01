@@ -3,11 +3,11 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Session;
-using Dsh.Web.Host;
+using Harness.Cordis.Core;
+using Harness.Session;
+using Harness.Web.Host;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The WebSocket mux: the $events logical stream (ready first, then live emits), the error frame

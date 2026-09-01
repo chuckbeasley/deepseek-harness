@@ -1,4 +1,4 @@
-namespace Cordis.Core.Tests.Runner;
+namespace Harness.Cordis.Core.Tests.Runner;
 
 /// <summary>
 /// Minimal assertion helpers for the zero-dependency console runner (compiled with a bare csc

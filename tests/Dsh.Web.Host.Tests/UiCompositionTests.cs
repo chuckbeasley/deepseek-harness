@@ -1,21 +1,21 @@
 using System.Net;
 using System.Net.Sockets;
-using Cordis.Core;
-using Dsh.Storage;
-using Dsh.Ui.Approval;
-using Dsh.Ui.Chat;
-using Dsh.Ui.Plan;
-using Dsh.Ui.Sessions;
-using Dsh.Ui.Settings;
-using Dsh.Ui.Sidebar;
-using Dsh.Ui.Workspace;
-using Dsh.Workspace;
-using Dsh.Web.App;
-using Dsh.Web.App.Slots;
+using Harness.Cordis.Core;
+using Harness.Storage;
+using Harness.Ui.Approval;
+using Harness.Ui.Chat;
+using Harness.Ui.Plan;
+using Harness.Ui.Sessions;
+using Harness.Ui.Settings;
+using Harness.Ui.Sidebar;
+using Harness.Ui.Workspace;
+using Harness.Workspace;
+using Harness.Web.App;
+using Harness.Web.App.Slots;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The ui-* slot contributions (the RCL port of the ui-* plugin set): each package registers its

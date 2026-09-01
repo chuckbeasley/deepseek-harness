@@ -1,8 +1,8 @@
-﻿using Dsh.Web.App;
-using Dsh.Web.App.Slots;
+using Harness.Web.App;
+using Harness.Web.App.Slots;
 using Microsoft.AspNetCore.Components;
 
-namespace Dsh.Ui.Chat;
+namespace Harness.Ui.Chat;
 
 /// <summary>
 /// The composer contribution (port of the TS ui-chat composer): the message input and submit

@@ -30,4 +30,21 @@
     <GenerateDocumentationFile Condition="!$(MSBuildProjectDirectory.Contains('tests'))">true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <!-- NuGet packaging (Phase 8): one version source for every packable project,
+       shared package metadata, and tests/ excluded from packing. The published
+       product surface carries explicit PackageIds (Harness.Sdk, the
+       Harness runtime tool); the remaining src/ libraries pack under
+       Harness.<name> so the SDK dependency closure resolves. -->
+  <PropertyGroup>
+    <Version>0.2.0</Version>
+    <Authors>DeepSeek</Authors>
+    <Company>DeepSeek</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/chuckbeasley/deepseek-harness</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/chuckbeasley/deepseek-harness</PackageProjectUrl>
+    <PackageTags>deepseek;harness;agent;cordis;dsh</PackageTags>
+    <IsPackable Condition="$(MSBuildProjectDirectory.Contains('tests'))">false</IsPackable>
+    <PackageId Condition="'$(PackageId)' == '' and '$(IsPackable)' != 'false' and $(MSBuildProjectDirectory.Contains('src'))">Harness.$(MSBuildProjectName.Replace('Dsh.', ''))</PackageId>
+  </PropertyGroup>
+
 </Project>

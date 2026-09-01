@@ -1,6 +1,6 @@
-using Dsh.Web;
+using Harness.Web;
 
-namespace Dsh.Web.Tests;
+namespace Harness.Web.Tests;
 
 /// <summary>A search provider whose behavior is scripted per test.</summary>
 internal sealed class FakeSearchProvider : WebSeam.ISearchProvider

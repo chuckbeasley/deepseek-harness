@@ -1,7 +1,7 @@
-﻿using Dsh.Web.App.Slots;
+using Harness.Web.App.Slots;
 using Microsoft.AspNetCore.Components;
 
-namespace Dsh.Ui.Approval;
+namespace Harness.Ui.Approval;
 
 /// <summary>
 /// The in-shell approval host (port of the TS ui-approval answerer): one component rendering

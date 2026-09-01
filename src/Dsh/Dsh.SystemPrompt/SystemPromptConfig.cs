@@ -1,4 +1,4 @@
-namespace Dsh.SystemPrompt;
+namespace Harness.SystemPrompt;
 
 /// <summary>
 /// Deployment-authored system-prompt configuration. Shape violations fail loud at

@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Dsh.Session.Projection</RootNamespace>
+    <RootNamespace>Harness.Session.Projection</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

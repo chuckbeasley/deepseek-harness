@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Subprocess;
+using Harness.Cordis.Core;
+using Harness.Subprocess;
 
-namespace Dsh.Subprocess.Tests;
+namespace Harness.Subprocess.Tests;
 
 /// <summary>The local provider's spawn, collect, env, spill, and termination contracts.</summary>
 public static class SubprocessTests

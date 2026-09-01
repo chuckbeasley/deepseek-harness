@@ -1,13 +1,13 @@
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Session.Persistence;
-using Dsh.Shell;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Session.Persistence;
+using Harness.Shell;
+using Harness.Tools;
 
-namespace Dsh.Hooks;
+namespace Harness.Hooks;
 
 /// <summary>Plugin config for the Claude Code bridge: where the CC hook config lives + substitution roots.</summary>
 public sealed record ClaudeCodeBridgeConfig(
@@ -43,7 +43,7 @@ public sealed class ClaudeCodeBridge : IDisposable
     private readonly DetachedRuns _detached = new();
     private readonly List<IDisposable> _disposers = new();
     private readonly IShellService _shell;
-    private readonly Dsh.AgentLoop.AgentLoop? _loop;
+    private readonly Harness.AgentLoop.AgentLoop? _loop;
     private readonly SessionPersistenceService? _persistence;
     private readonly Dictionary<(string Session, string CallId), UserMessage> _pendingContext = new();
     private int _handlerCounter;
@@ -61,7 +61,7 @@ public sealed class ClaudeCodeBridge : IDisposable
         }
         _shell = ctx.Get<IShellService>("shell")
             ?? throw new InvalidOperationException("hooks-claude-code requires the \"shell\" row");
-        _loop = ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop");
+        _loop = ctx.Get<Harness.AgentLoop.AgentLoop>("agentLoop");
         _persistence = ctx.Get<SessionPersistenceService>("sessionPersistence");
         try
         {
@@ -140,19 +140,19 @@ public sealed class ClaudeCodeBridge : IDisposable
                     // the ask always settles rejected — the recorded corpus shape).
                     if (exec.Session is not null)
                     {
-                        Dsh.Interaction.InteractionEventTypes.Register();
+                        Harness.Interaction.InteractionEventTypes.Register();
                         var id = Guid.NewGuid().ToString("D");
-                        exec.Session.Append(new Dsh.Interaction.ApprovalAskedEvent
+                        exec.Session.Append(new Harness.Interaction.ApprovalAskedEvent
                         {
                             Id = id,
                             ToolName = exec.Name,
                             CallId = exec.CallId.Value,
                             Reason = merged.Reason,
                         });
-                        exec.Session.Append(new Dsh.Interaction.ApprovalDecidedEvent
+                        exec.Session.Append(new Harness.Interaction.ApprovalDecidedEvent
                         {
                             Id = id,
-                            Outcome = Dsh.Interaction.ApprovalOutcome.Rejected,
+                            Outcome = Harness.Interaction.ApprovalOutcome.Rejected,
                         });
                     }
                     return new DenyDecision($"the user rejected tool \"{exec.Name}\"");
@@ -182,7 +182,7 @@ public sealed class ClaudeCodeBridge : IDisposable
 
         // Deliver post-tool contexts once the durable tool/result event commits, so the recorded
         // event order (result, then the next-step context splice) reproduces exactly.
-        _disposers.Add(_ctx.On("session/event", new Action<Dsh.Session.Session, SessionEvent>((session, evt) =>
+        _disposers.Add(_ctx.On("session/event", new Action<Harness.Session.Session, SessionEvent>((session, evt) =>
         {
             if (evt is not ToolResultEvent toolResult) return;
             var callId = (toolResult.Message.Source as ToolSource)?.CallId;
@@ -210,7 +210,7 @@ public sealed class ClaudeCodeBridge : IDisposable
     /// fold the results. Writes a <c>hook/invoked</c>/<c>hook/result</c> pair per hook when
     /// <paramref name="turn"/> names an open turn. Detached lifecycle points omit the pair.</summary>
     private async Task<MergedHookOutcome> RunPointAsync(string point, string matchQuery, object payload,
-        Dsh.Session.Session? session, long? turn, CancellationToken signal)
+        Harness.Session.Session? session, long? turn, CancellationToken signal)
     {
         if (!_groups.TryGetValue(point, out var groups)) return NeutralOutcome();
         var outputs = new List<HookOutput>();
@@ -272,22 +272,22 @@ public sealed class ClaudeCodeBridge : IDisposable
         Source = new PluginSource { Plugin = PluginName },
     };
 
-    private void QueueNextStep(Dsh.Session.Session? session, ToolCallId callId, UserMessage? context)
+    private void QueueNextStep(Harness.Session.Session? session, ToolCallId callId, UserMessage? context)
     {
         if (context is null || session is null) return;
         _pendingContext[(session.Id.Value, callId.Value)] = context;
     }
 
-    private void InjectNextStep(Dsh.Session.Session? session, UserMessage? context)
+    private void InjectNextStep(Harness.Session.Session? session, UserMessage? context)
     {
         if (context is null || session is null) return;
         _loop?.GetLoop(session.Id)?.Inject(context);
     }
 
-    private static long LastTurn(Dsh.Session.Session session)
+    private static long LastTurn(Harness.Session.Session session)
         => session.Events.OfType<TurnStartEvent>().Select(evt => evt.Turn).DefaultIfEmpty(0).Last();
 
-    private Dictionary<string, object?> Base(Dsh.Agent.Agent? agent, string eventName)
+    private Dictionary<string, object?> Base(Harness.Agent.Agent? agent, string eventName)
     {
         var session = agent?.Session;
         return new Dictionary<string, object?>
@@ -326,11 +326,11 @@ public sealed class ClaudeCodeBridge : IDisposable
             ["tool_response"] = BlocksToText(result.Content),
         };
 
-    private Dictionary<string, object?> BuildStopPayload(Dsh.Agent.Agent agent)
+    private Dictionary<string, object?> BuildStopPayload(Harness.Agent.Agent agent)
         => new(Base(agent, "Stop")) { ["stop_hook_active"] = false };
 
-    private Dsh.Agent.Agent? AgentOf(Dsh.Session.Session session)
-        => _ctx.Get<Dsh.Agent.AgentRegistry>("agents")?.List().FirstOrDefault(agent => ReferenceEquals(agent.Session, session));
+    private Harness.Agent.Agent? AgentOf(Harness.Session.Session session)
+        => _ctx.Get<Harness.Agent.AgentRegistry>("agents")?.List().FirstOrDefault(agent => ReferenceEquals(agent.Session, session));
 
     private static string BlocksToText(IEnumerable<ContentBlock> content)
         => string.Concat(content.OfType<TextBlock>().Select(block => block.Text));

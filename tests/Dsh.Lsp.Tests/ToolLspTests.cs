@@ -1,10 +1,10 @@
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Tools;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Dsh.Lsp.Tests;
+namespace Harness.Lsp.Tests;
 
 /// <summary>The mounted lsp tool path: routing service, fixture provider, and the recorded render.</summary>
 public static class ToolLspTests

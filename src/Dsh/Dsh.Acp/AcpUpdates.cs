@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Acp;
+namespace Harness.Acp;
 
 /// <summary>
 /// Standard ACP updates derived from committed DSH session events (port of the TS
@@ -38,7 +38,7 @@ public static class AcpUpdates
     /// <param name="evt">the committed DSH tool-call event.</param>
     /// <returns>the standard generic tool-call update.</returns>
     public static SessionUpdate ToolCallUpdate(ToolCallEvent evt)
-        => new Dsh.Acp.ToolCallUpdate(evt.CallId.Value, evt.Name, "other", "in_progress", ParseToolArguments(evt.Arguments));
+        => new Harness.Acp.ToolCallUpdate(evt.CallId.Value, evt.Name, "other", "in_progress", ParseToolArguments(evt.Arguments));
 
     /// <summary>Finish one generic ACP tool lifecycle from its committed model-facing result.</summary>
     /// <param name="evt">the committed DSH tool-result event.</param>

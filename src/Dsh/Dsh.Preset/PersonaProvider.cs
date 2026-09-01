@@ -1,6 +1,6 @@
-using Dsh.SystemPrompt;
+using Harness.SystemPrompt;
 
-namespace Dsh.Preset;
+namespace Harness.Preset;
 
 /// <summary>
 /// Persona text from a selected preset, contributed to the system prompt as an order-0 section

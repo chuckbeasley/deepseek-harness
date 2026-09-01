@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Dsh.Sdk.Protocol;
+using Harness.Sdk.Protocol;
 
-namespace Dsh.Sdk.Client;
+namespace Harness.Sdk.Client;
 
 /// <summary>
 /// The client's wire helpers: outbound prompt normalization and the inbound <c>session.event</c>
@@ -16,7 +16,7 @@ public static class SdkWire
     /// <param name="input">the prompt text.</param>
     /// <returns>the content blocks to send.</returns>
     public static IReadOnlyList<SdkPromptContentBlock> NormalizeInput(string input)
-        => new[] { new SdkPromptContentBlock.Block(new Dsh.Llm.TextBlock(input)) };
+        => new[] { new SdkPromptContentBlock.Block(new Harness.Llm.TextBlock(input)) };
 
     /// <summary>Extract and validate one wire <c>session.event</c> envelope from the notification params.</summary>
     /// <param name="parameters">the <c>session.event</c> notification params.</param>

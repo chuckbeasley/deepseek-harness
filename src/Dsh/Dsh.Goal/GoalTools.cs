@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Llm;
+using Harness.Tools;
 
-namespace Dsh.Goal;
+namespace Harness.Goal;
 
 /// <summary>
 /// Model-facing Consumer of the goal capability: the <c>goal_write</c> tool over

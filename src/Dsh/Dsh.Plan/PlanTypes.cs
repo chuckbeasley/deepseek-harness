@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Plan;
+namespace Harness.Plan;
 
 /// <summary>Lifecycle state of one plan item. Serialized with the TS wire strings.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]

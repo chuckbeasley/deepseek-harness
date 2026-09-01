@@ -1,6 +1,6 @@
-using Cordis.Plugin.Loader;
+using Harness.Cordis.Plugin.Loader;
 
-namespace Dsh.Preset;
+namespace Harness.Preset;
 
 /// <summary>
 /// Where a preset's composition came from (port of the TS <c>PresetTrust</c>). A <see cref="System"/>

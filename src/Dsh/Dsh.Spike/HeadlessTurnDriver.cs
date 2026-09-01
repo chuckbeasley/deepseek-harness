@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.Spike;
+namespace Harness.Spike;
 
 /// <summary>
 /// Straight-line one-turn driver (spike-design.md section 6): turn/start -> step/start ->
@@ -18,7 +18,7 @@ public static class HeadlessTurnDriver
     /// <summary>Fixed system prompt for the smoke (pinned fixture literal).</summary>
     public const string SystemPrompt = "You are the Dsh port spike assistant.";
 
-    public static async Task RunOneTurnAsync(Dsh.Session.Session session, LlmRuntime llm, ToolRuntime tools, UserMessage userMessage)
+    public static async Task RunOneTurnAsync(Harness.Session.Session session, LlmRuntime llm, ToolRuntime tools, UserMessage userMessage)
     {
         const long turn = 1;
         const long step = 1;

@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Shell;
+using Harness.Cordis.Core;
+using Harness.Shell;
 
-namespace Dsh.Sandbox.Tests;
+namespace Harness.Sandbox.Tests;
 
 /// <summary>
 /// One booted sandbox spine: context, the unsandboxed provider (ctx.sandbox), and a local shell

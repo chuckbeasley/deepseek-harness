@@ -1,6 +1,6 @@
-using Dsh.Credentials;
+using Harness.Credentials;
 
-namespace Dsh.Authorization;
+namespace Harness.Authorization;
 
 /// <summary>Stable error taxonomy for authorization failures.</summary>
 public class AuthorizationError : Exception

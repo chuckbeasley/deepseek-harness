@@ -1,8 +1,8 @@
 using System.Runtime.CompilerServices;
-using Cordis.Core;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Session;
 
-namespace Dsh.Plan;
+namespace Harness.Plan;
 
 /// <summary>
 /// ctx.plan: the plan-mode service. It registers the plugin-merged <see cref="PlanWriteEvent"/> in
@@ -13,7 +13,7 @@ namespace Dsh.Plan;
 /// </summary>
 public sealed class SessionPlanService : Service, IPlanService
 {
-    private readonly ConditionalWeakTable<Dsh.Session.Session, Cell> _cells = new();
+    private readonly ConditionalWeakTable<Harness.Session.Session, Cell> _cells = new();
 
     /// <summary>Create and install the service as <c>plan</c>.</summary>
     /// <param name="ctx">the owner context whose <c>session/event</c> stream is observed.</param>
@@ -23,21 +23,21 @@ public sealed class SessionPlanService : Service, IPlanService
         // Plugin-boot equivalent of the TS event-type registration: the JSONL backend must
         // serialize and replay this plugin-merged event.
         SessionEventTypes.Register(PlanWriteEvent.EventTypeName, typeof(PlanWriteEvent));
-        ctx.On("session/event", (Delegate)(Action<Dsh.Session.Session, SessionEvent>)Drive);
+        ctx.On("session/event", (Delegate)(Action<Harness.Session.Session, SessionEvent>)Drive);
     }
 
     /// <summary>Read the plan service from a context, failing explicitly when it is absent.</summary>
     public static SessionPlanService Require(Context ctx) => ctx.Require<SessionPlanService>("plan");
 
     /// <inheritdoc />
-    public PlanState Current(Dsh.Session.Session session)
+    public PlanState Current(Harness.Session.Session session)
     {
         ArgumentNullException.ThrowIfNull(session);
         return _cells.GetValue(session, BuildCell).State;
     }
 
     /// <summary>Eager drive: fold one committed <c>plan/write</c> into its session's cell.</summary>
-    private void Drive(Dsh.Session.Session session, SessionEvent evt)
+    private void Drive(Harness.Session.Session session, SessionEvent evt)
     {
         if (evt is not PlanWriteEvent write) return;
         var cell = _cells.GetValue(session, BuildCell);
@@ -47,7 +47,7 @@ public sealed class SessionPlanService : Service, IPlanService
     }
 
     /// <summary>Fold one session's committed log into the current plan state (last write wins).</summary>
-    private static Cell BuildCell(Dsh.Session.Session session)
+    private static Cell BuildCell(Harness.Session.Session session)
     {
         IReadOnlyList<PlanItem> items = Array.Empty<PlanItem>();
         long observed = -1;

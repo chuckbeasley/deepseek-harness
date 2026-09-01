@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using Cordis.Schemastery;
+using Harness.Cordis.Schemastery;
 
-namespace Dsh.Settings;
+namespace Harness.Settings;
 
 /// <summary>Nominal id of one registered settings namespace (the TS SettingsNamespace brand).</summary>
 public readonly record struct SettingsNamespace(string Value)

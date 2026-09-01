@@ -1,4 +1,4 @@
-namespace Cordis.Core;
+namespace Harness.Cordis.Core;
 
 /// <summary>
 /// Root dependency container for Cordis plugins (C# port of the vendored Cordis Context).

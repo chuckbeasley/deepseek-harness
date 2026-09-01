@@ -1,7 +1,7 @@
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Compaction;
+namespace Harness.Compaction;
 
 /// <summary>Opaque identity shared by one compaction transaction's durable markers (port of the TS CompactionId brand).</summary>
 public readonly record struct CompactionId(string Value)
@@ -105,7 +105,7 @@ public sealed record SurfaceSelection(
 /// </summary>
 public sealed record CompactionRequest(
     /// <summary>The session whose surface is compacted.</summary>
-    Dsh.Session.Session Session,
+    Harness.Session.Session Session,
     /// <summary>Adapter-owned model context capacity, a positive integer.</summary>
     long ContextWindow,
     /// <summary>Summarization provider route.</summary>
@@ -209,14 +209,14 @@ public sealed record SummaryResult(
 public static class SessionSurface
 {
     /// <summary>The current surface node seqs, in log order (events that derive a non-null message).</summary>
-    public static IReadOnlyList<long> Nodes(Dsh.Session.Session session)
+    public static IReadOnlyList<long> Nodes(Harness.Session.Session session)
     {
         ArgumentNullException.ThrowIfNull(session);
         return Surface.Fold(session.Events).Select(node => node.Seq).ToArray();
     }
 
     /// <summary>Index of a seq in the current surface, or -1 when absent.</summary>
-    public static int IndexOf(Dsh.Session.Session session, long seq) => IndexOfSeq(Nodes(session), seq);
+    public static int IndexOf(Harness.Session.Session session, long seq) => IndexOfSeq(Nodes(session), seq);
 
     /// <summary>Index of a value in a seq list, or -1 when absent.</summary>
     public static int IndexOfSeq(IReadOnlyList<long> seqs, long seq)

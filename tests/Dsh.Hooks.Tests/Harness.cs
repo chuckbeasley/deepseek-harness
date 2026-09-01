@@ -1,19 +1,19 @@
 using System.Runtime.CompilerServices;
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Hooks;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Session.Persistence;
-using Dsh.Shell;
-using Dsh.Spike;
-using Dsh.Subprocess;
-using Dsh.SystemPrompt;
-using Dsh.Todo;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Hooks;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Session.Persistence;
+using Harness.Shell;
+using Harness.Spike;
+using Harness.Subprocess;
+using Harness.SystemPrompt;
+using Harness.Todo;
+using Harness.Tools;
 
-namespace Dsh.Hooks.Tests;
+namespace Harness.Hooks.Tests;
 
 /// <summary>One disposable temp directory used for hook configs, captures, and the persistence root.</summary>
 internal sealed class TempDir : IDisposable
@@ -44,7 +44,7 @@ internal sealed class Harness : IDisposable
 {
     public required Context Ctx { get; init; }
     public required SessionStore Sessions { get; init; }
-    public required Dsh.AgentLoop.AgentLoop Loop { get; init; }
+    public required global::Harness.AgentLoop.AgentLoop Loop { get; init; }
     public required CapturingAdapter Llm { get; init; }
     public required TempDir Temp { get; init; }
 
@@ -65,7 +65,7 @@ internal sealed class Harness : IDisposable
         llm.RegisterAdapter(new[] { MockLlmProvider.Provider }, capturing);
         _ = new TodoService(ctx, allowParallelInProgress: false);
         tools.Register(TodoTool.Definition(ctx, allowParallelInProgress: false));
-        var loop = new Dsh.AgentLoop.AgentLoop(ctx);
+        var loop = new global::Harness.AgentLoop.AgentLoop(ctx);
         return new Harness
         {
             Ctx = ctx,
@@ -83,7 +83,7 @@ internal sealed class Harness : IDisposable
     }
 
     /// <summary>Create one mock-route session and run one prompt to idle.</summary>
-    public Dsh.Session.Session RunTurn(string sessionId, string prompt)
+    public global::Harness.Session.Session RunTurn(string sessionId, string prompt)
     {
         var handle = Loop.Create(new SessionId(sessionId), new AgentOptions { Provider = MockLlmProvider.Provider, Model = MockLlmProvider.Model });
         var driver = Loop.GetLoop(new SessionId(sessionId))!;

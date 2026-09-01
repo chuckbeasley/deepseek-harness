@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Lsp.Tests;
+namespace Harness.Lsp.Tests;
 
 /// <summary>The pure protocol translation layer (mirrors translate.spec.ts).</summary>
 public static class TranslateTests

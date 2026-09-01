@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Subagent;
+using Harness.Cordis.Core;
+using Harness.Subagent;
 
-namespace Dsh.Subagent.Tests;
+namespace Harness.Subagent.Tests;
 
 /// <summary>The in-process provider's delegate/settle/cancel/teardown lifecycle.</summary>
 public static class SubagentTests

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Reflection;
 using System.Text.Json;
 
-namespace Dsh.Llm.DeepSeek.Tests;
+namespace Harness.Llm.DeepSeek.Tests;
 
 /// <summary>Thrown by <see cref="Assert"/> when a check fails; aborts the current test.</summary>
 public sealed class AssertionException : Exception

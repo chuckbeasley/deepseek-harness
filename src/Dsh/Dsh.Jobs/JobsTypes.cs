@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Jobs;
+namespace Harness.Jobs;
 
 /// <summary>Identifies one background job. The registry mints `&lt;kind&gt;-N`; predictable ids rely on owner authorization, not secrecy.</summary>
 [JsonConverter(typeof(StringIdJsonConverter<JobId>))]

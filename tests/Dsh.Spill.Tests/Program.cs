@@ -1,4 +1,4 @@
-namespace Dsh.Spill.Tests;
+namespace Harness.Spill.Tests;
 
 /// <summary>Zero-dependency console test runner for the spill capability seam.</summary>
 public static class Program

@@ -1,4 +1,4 @@
-namespace Dsh.Hooks;
+namespace Harness.Hooks;
 
 /// <summary>
 /// Quiescence tracking for emit-shaped hook runs that no extension point awaits (port of the TS

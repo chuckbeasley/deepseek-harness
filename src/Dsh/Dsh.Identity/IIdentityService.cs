@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Identity;
+namespace Harness.Identity;
 
 /// <summary>
 /// The harness's user identity (port of the TS branded <c>UserId</c>): an opaque per-user key,

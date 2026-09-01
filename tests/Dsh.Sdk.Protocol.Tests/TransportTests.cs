@@ -1,8 +1,8 @@
 using System.IO.Pipelines;
 using System.Text.Json;
-using Dsh.Sdk.Protocol;
+using Harness.Sdk.Protocol;
 
-namespace Dsh.Sdk.Protocol.Tests;
+namespace Harness.Sdk.Protocol.Tests;
 
 /// <summary>
 /// The newline-delimited JSON-RPC transport: request/response correlation, error frames, handler

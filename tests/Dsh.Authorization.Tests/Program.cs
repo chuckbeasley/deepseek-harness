@@ -1,4 +1,4 @@
-namespace Dsh.Authorization.Tests;
+namespace Harness.Authorization.Tests;
 
 /// <summary>
 /// Zero-dependency console test runner for the authorization capability seam. The host sandbox
@@ -15,7 +15,7 @@ public static class Program
     /// <summary>Runs every registered test and returns the process exit code.</summary>
     public static int Main()
     {
-        Console.WriteLine("Dsh.Authorization - console assertions");
+        Console.WriteLine("Harness.Authorization - console assertions");
         Console.WriteLine();
 
         Run("Registry: registration projects an entry and disposal removes the flow", AuthorizationTests.Registration_ProjectsEntry_AndDisposalRemovesTheFlow);

@@ -1,4 +1,4 @@
-namespace Dsh.Preset.Tests;
+namespace Harness.Preset.Tests;
 
 /// <summary>Coverage for the persona contribution of the preset seam.</summary>
 public static class PersonaTests

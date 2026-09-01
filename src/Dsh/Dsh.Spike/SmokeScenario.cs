@@ -3,13 +3,13 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Todo;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Todo;
+using Harness.Tools;
 
-namespace Dsh.Spike;
+namespace Harness.Spike;
 
 /// <summary>
 /// The headless smoke (spike-design.md section 6): boot a Cordis context, register the
@@ -33,9 +33,9 @@ public static class SmokeScenario
         var context = new Context();
         int created = 0, disposed = 0, events = 0, toolsChange = 0, adaptersUpdated = 0;
 
-        context.On("session/created", (Dsh.Session.Session _) => created++);
-        context.On("session/disposed", (Dsh.Session.Session _) => disposed++);
-        context.On("session/event", (Dsh.Session.Session _, SessionEvent _) => events++);
+        context.On("session/created", (Harness.Session.Session _) => created++);
+        context.On("session/disposed", (Harness.Session.Session _) => disposed++);
+        context.On("session/event", (Harness.Session.Session _, SessionEvent _) => events++);
         context.On("tools/change", () => toolsChange++);
         context.On("llm/adapters-updated", () => adaptersUpdated++);
 
@@ -48,7 +48,7 @@ public static class SmokeScenario
         var todoService = new TodoService(context, allowParallelInProgress: false);
         tools.Register(TodoTool.Definition(context, allowParallelInProgress: false));
 
-        output.WriteLine("== Dsh.Spike headless smoke ==");
+        output.WriteLine("== Harness.Spike headless smoke ==");
         output.WriteLine($"context booted; services: {string.Join(", ", context.Registry.ServiceKeys)}");
 
         var session = sessions.Create();

@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Todo;
+namespace Harness.Todo;
 
 /// <summary>
 /// In-memory todo provider (ctx.todo): the whole-list state the todo_write consumer replaces on

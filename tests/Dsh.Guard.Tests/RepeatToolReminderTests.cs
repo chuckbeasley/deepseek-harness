@@ -1,4 +1,4 @@
-namespace Dsh.Guard.Tests;
+namespace Harness.Guard.Tests;
 
 /// <summary>
 /// Behavior suite for the repeat-tool-call guard (ported from the TS spec): chain semantics

@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Session;
 
-namespace Dsh.Interaction;
+namespace Harness.Interaction;
 
 /// <summary>
 /// The approval capability seam (port of the TS <c>user-approval</c>): session policy applied
@@ -73,7 +73,7 @@ public sealed class ApprovalService : Service
     /// Switch one live agent's session override. The last <see cref="ApprovalPolicyEvent"/> in the
     /// log is the session's effective policy; an unchanged value appends nothing.
     /// </summary>
-    public void SetPolicy(Dsh.Agent.Agent agent, ApprovalPolicy policy)
+    public void SetPolicy(Harness.Agent.Agent agent, ApprovalPolicy policy)
     {
         ArgumentNullException.ThrowIfNull(agent);
         if (EffectivePolicy(agent.Session) == policy) return;
@@ -81,7 +81,7 @@ public sealed class ApprovalService : Service
     }
 
     /// <summary>The session's effective policy: its own override fold, else the configured default.</summary>
-    public ApprovalPolicy EffectivePolicy(Dsh.Session.Session session)
+    public ApprovalPolicy EffectivePolicy(Harness.Session.Session session)
     {
         ArgumentNullException.ThrowIfNull(session);
         for (var index = session.Events.Count - 1; index >= 0; index--)
@@ -92,7 +92,7 @@ public sealed class ApprovalService : Service
     }
 
     /// <summary>Whether the log currently sits inside an open turn (a turn/start not yet closed).</summary>
-    private static bool HasOpenTurn(IReadOnlyList<Dsh.Session.SessionEvent> events)
+    private static bool HasOpenTurn(IReadOnlyList<Harness.Session.SessionEvent> events)
     {
         for (var index = events.Count - 1; index >= 0; index--)
         {
@@ -102,7 +102,7 @@ public sealed class ApprovalService : Service
         return false;
     }
 
-    private async Task<ApprovalOutcome> DecideAsync(ApprovalRequest request, Dsh.Session.Session session)
+    private async Task<ApprovalOutcome> DecideAsync(ApprovalRequest request, Harness.Session.Session session)
     {
         if (request.CancellationToken is { IsCancellationRequested: true }) return ApprovalOutcome.Cancelled;
         // The 'never' policy is decided HERE, before any dispatch: a listener registered after

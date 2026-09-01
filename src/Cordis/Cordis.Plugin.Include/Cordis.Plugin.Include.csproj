@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>default</LangVersion>
-    <RootNamespace>Cordis.Plugin.Include</RootNamespace>
+    <RootNamespace>Harness.Cordis.Plugin.Include</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 

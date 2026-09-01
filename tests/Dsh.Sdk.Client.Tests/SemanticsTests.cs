@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Dsh.Sdk.Protocol;
+using Harness.Sdk.Protocol;
 
-namespace Dsh.Sdk.Client.Tests;
+namespace Harness.Sdk.Client.Tests;
 
 /// <summary>Pure wire-semantics tests (port of the TS client's helpers): prompt normalization,
 /// event validation, the inbox receipt, final-response selection, and the lineage map.</summary>
@@ -18,7 +18,7 @@ public static class SemanticsTests
         var wire = JsonSerializer.SerializeToElement(blocks, wireOptions);
         var roundTrip = wire.Deserialize<IReadOnlyList<SdkPromptContentBlock>>(wireOptions);
         Assert.Equal(1, roundTrip.Count, "the wire round-trips one block");
-        if (roundTrip[0] is not SdkPromptContentBlock.Block(var content) || content is not Dsh.Llm.TextBlock text)
+        if (roundTrip[0] is not SdkPromptContentBlock.Block(var content) || content is not global::Harness.Llm.TextBlock text)
         {
             throw new AssertionException("the round trip did not yield a text block");
         }

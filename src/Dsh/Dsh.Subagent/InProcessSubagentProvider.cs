@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Subagent;
+namespace Harness.Subagent;
 
 /// <summary>
 /// The subagent runtime (ctx.subagent): the in-process driver plus the provider registry the

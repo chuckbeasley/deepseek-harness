@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Tui;
+namespace Harness.Tui;
 
 /// <summary>Deployment choices of one TUI run.</summary>
 public sealed record TuiOptions
@@ -94,7 +94,7 @@ public static class TuiApp
         var todoService = new TodoService(ctx, allowParallelInProgress: false);
         tools.Register(TodoTool.Definition(ctx, allowParallelInProgress: false));
         persistence.Attach(sessions);
-        var loop = new Dsh.AgentLoop.AgentLoop(ctx);
+        var loop = new Harness.AgentLoop.AgentLoop(ctx);
 
         var key = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
         var provider = MockLlmProvider.Provider;
@@ -212,7 +212,7 @@ public static class TuiApp
     /// <summary>Subscribe the session log to the view models and re-render on the UI thread.</summary>
     private static void WireModels(UiState state)
     {
-        state.Ctx.On("session/event", (Delegate)(Action<Dsh.Session.Session, SessionEvent>)((_, evt) =>
+        state.Ctx.On("session/event", (Delegate)(Action<Harness.Session.Session, SessionEvent>)((_, evt) =>
         {
             state.Transcript.Apply(evt);
             if (evt is TodoWriteEvent todo) state.Todos.Apply(todo);

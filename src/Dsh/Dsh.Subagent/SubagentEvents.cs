@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Subagent;
+namespace Harness.Subagent;
 
 /// <summary>
 /// The durable descriptor of a structured child session (port of the TS

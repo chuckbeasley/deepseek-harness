@@ -1,12 +1,12 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Cordis.Core;
-using Dsh.Code;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Code;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.CordisRunner.Tests;
+namespace Harness.CordisRunner.Tests;
 
 /// <summary>
 /// The dynamic Cordis tool family over a real ToolRuntime: define/run/inspect/undefine produce the
@@ -210,7 +210,7 @@ public static class CordisToolsTests
         Assert.True(toolNames.Contains("cordis_inspect_query"), "cordis_inspect_query is visible through the Tool provider");
     }
 
-    private static async Task<string> RunFailureAsync(ToolRuntime tools, string name, JsonElement args, Dsh.Session.Session session)
+    private static async Task<string> RunFailureAsync(ToolRuntime tools, string name, JsonElement args, global::Harness.Session.Session session)
     {
         var tool = tools.Get(name) ?? throw new InvalidOperationException($"tool {name} is not registered");
         var execution = await tools.ExecuteAsync(
@@ -242,7 +242,7 @@ public static class CordisToolsTests
         return dir?.FullName ?? throw new InvalidOperationException("repository root not found");
     }
 
-    private static (ToolRuntime Tools, DynamicCordisRunner Runner, Dsh.Session.Session Session) CreateHarness()
+    private static (ToolRuntime Tools, DynamicCordisRunner Runner, global::Harness.Session.Session Session) CreateHarness()
     {
         var ctx = new Context();
         var runner = new DynamicCordisRunner();
@@ -254,7 +254,7 @@ public static class CordisToolsTests
     }
 
     private static async Task<(JsonElement Value, ToolExecutionSuccess Result)> RunAsync(
-        ToolRuntime tools, string name, JsonElement args, Dsh.Session.Session session)
+        ToolRuntime tools, string name, JsonElement args, global::Harness.Session.Session session)
     {
         var tool = tools.Get(name) ?? throw new InvalidOperationException($"tool {name} is not registered");
         var execution = await tools.ExecuteAsync(

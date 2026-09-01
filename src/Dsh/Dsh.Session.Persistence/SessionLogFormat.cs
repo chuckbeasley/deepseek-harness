@@ -1,9 +1,9 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Session.Persistence;
+namespace Harness.Session.Persistence;
 
 /// <summary>
 /// The TS-compatible session-log storage spelling: one event per JSON line as

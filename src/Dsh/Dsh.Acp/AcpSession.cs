@@ -1,12 +1,12 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Llm;
-using Dsh.Sdk.Protocol;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Llm;
+using Harness.Sdk.Protocol;
+using Harness.Session;
 
-namespace Dsh.Acp;
+namespace Harness.Acp;
 
 /// <summary>One in-flight ACP prompt's correlation and settlement state.</summary>
 internal sealed class InflightPrompt
@@ -72,10 +72,10 @@ public sealed class AcpSession
     }
 
     /// <summary>The exact top-level Agent owned by this ACP session.</summary>
-    public Dsh.Agent.Agent Agent => _handle.Agent;
+    public Harness.Agent.Agent Agent => _handle.Agent;
 
     /// <summary>The exact Session owned by this ACP session.</summary>
-    public Dsh.Session.Session Session => _handle.Agent.Session;
+    public Harness.Session.Session Session => _handle.Agent.Session;
 
     /// <summary>Compose a fresh Agent and driver on the ported loop.</summary>
     /// <param name="ctx">the owner context.</param>
@@ -85,7 +85,7 @@ public sealed class AcpSession
     /// <param name="modelControl">the session's model configuration state.</param>
     /// <param name="notify">delivers one ordered standard update to the client.</param>
     /// <returns>the session module.</returns>
-    public static AcpSession Create(Context ctx, Dsh.AgentLoop.AgentLoop loop, string sessionId, AgentOptions? options,
+    public static AcpSession Create(Context ctx, Harness.AgentLoop.AgentLoop loop, string sessionId, AgentOptions? options,
         AcpModelControl modelControl, Func<SessionUpdate, Task> notify)
     {
         var id = new SessionId(sessionId);
@@ -103,7 +103,7 @@ public sealed class AcpSession
     /// <param name="modelControl">the session's model configuration state.</param>
     /// <param name="notify">delivers one ordered standard update to the client.</param>
     /// <returns>the session module.</returns>
-    public static AcpSession Resume(Context ctx, Dsh.AgentLoop.AgentLoop loop, string sessionId, AgentOptions? options,
+    public static AcpSession Resume(Context ctx, Harness.AgentLoop.AgentLoop loop, string sessionId, AgentOptions? options,
         AcpModelControl modelControl, Func<SessionUpdate, Task> notify)
     {
         var id = new SessionId(sessionId);
@@ -116,12 +116,12 @@ public sealed class AcpSession
     /// <summary>Whether this module owns an exact Agent reference.</summary>
     /// <param name="agent">the Agent observed on a scoped runtime event.</param>
     /// <returns><c>true</c> only for this session's owned Agent.</returns>
-    public bool Owns(Dsh.Agent.Agent agent) => ReferenceEquals(Agent, agent);
+    public bool Owns(Harness.Agent.Agent agent) => ReferenceEquals(Agent, agent);
 
     /// <summary>Whether this module owns an exact Session reference.</summary>
     /// <param name="session">the Session observed on a durable event.</param>
     /// <returns><c>true</c> only for this session's owned Session.</returns>
-    public bool OwnsSession(Dsh.Session.Session session) => ReferenceEquals(Session, session);
+    public bool OwnsSession(Harness.Session.Session session) => ReferenceEquals(Session, session);
 
     /// <summary>Return the complete standard model configuration state.</summary>
     /// <returns>the provider-grouped model option.</returns>
@@ -166,7 +166,7 @@ public sealed class AcpSession
         }
         try
         {
-            if (!ReferenceEquals(_ctx.Get<Dsh.Agent.AgentRegistry>("agents")?.Get(Agent.Id), Agent))
+            if (!ReferenceEquals(_ctx.Get<Harness.Agent.AgentRegistry>("agents")?.Get(Agent.Id), Agent))
             {
                 throw new JsonRpcResponseError(-32603, "prompt was not queued: the agent was disposed outside the bridge");
             }
@@ -216,7 +216,7 @@ public sealed class AcpSession
     /// </summary>
     /// <param name="session">the exact event-owning Session.</param>
     /// <param name="evt">the committed durable event.</param>
-    public void OnSessionEvent(Dsh.Session.Session session, SessionEvent evt)
+    public void OnSessionEvent(Harness.Session.Session session, SessionEvent evt)
     {
         try
         {

@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Storage.Tests;
+namespace Harness.Storage.Tests;
 
 /// <summary>Behavior tests for the storage capability seam (ports the storage-json contract suite).</summary>
 public static class StorageTests

@@ -1,4 +1,4 @@
-﻿namespace Dsh.Web.App;
+namespace Harness.Web.App;
 
 /// <summary>
 /// The shell's shared viewing state (scoped per circuit): the selected session entry. The chat

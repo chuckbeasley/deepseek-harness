@@ -1,13 +1,13 @@
 using System.Text.Json;
-using Dsh.Acp;
-using Dsh.Agent;
-using Dsh.Llm;
-using Dsh.Sdk.Client;
-using Dsh.Sdk.Protocol;
-using Dsh.Session;
-using Dsh.Spike;
+using Harness.Acp;
+using Harness.Agent;
+using Harness.Llm;
+using Harness.Sdk.Client;
+using Harness.Sdk.Protocol;
+using Harness.Session;
+using Harness.Spike;
 
-namespace Dsh.Acp.Tests;
+namespace Harness.Acp.Tests;
 
 /// <summary>Pure codec and model-control tests (ports of the TS codec and model-control specs).</summary>
 public static class AcpCodecTests

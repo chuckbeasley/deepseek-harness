@@ -1,4 +1,4 @@
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>Typed LSP failure carrying a stable machine-readable code (port of the TS <c>LspError</c>).</summary>
 public sealed class LspError : Exception

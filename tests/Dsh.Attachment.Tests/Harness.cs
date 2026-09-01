@@ -1,4 +1,4 @@
-namespace Dsh.Attachment.Tests;
+namespace Harness.Attachment.Tests;
 
 /// <summary>
 /// One booted attachment spine: a context with the local attachment provider over a fresh temp

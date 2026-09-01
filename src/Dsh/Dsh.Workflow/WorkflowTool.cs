@@ -2,15 +2,15 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Subagent;
-using Dsh.Tools;
-using AgentLoopService = Dsh.AgentLoop.AgentLoop;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Subagent;
+using Harness.Tools;
+using AgentLoopService = Harness.AgentLoop.AgentLoop;
 
-namespace Dsh.Workflow;
+namespace Harness.Workflow;
 
 /// <summary>
 /// The model-facing <c>workflow</c> tool (port of tool-workflow with the recorded script subset
@@ -101,13 +101,13 @@ public static class WorkflowTool
     private sealed class Interpreter
     {
         private readonly AgentLoopService _loop;
-        private readonly Dsh.Session.Session _session;
+        private readonly Harness.Session.Session _session;
         private readonly ToolRunContext _context;
         private readonly string _runId;
         private readonly Dictionary<string, JsonNode?> _variables = new(StringComparer.Ordinal);
         private string? _phase;
 
-        public Interpreter(AgentLoopService loop, Dsh.Session.Session session, ToolRunContext context, string runId)
+        public Interpreter(AgentLoopService loop, Harness.Session.Session session, ToolRunContext context, string runId)
         {
             _loop = loop;
             _session = session;

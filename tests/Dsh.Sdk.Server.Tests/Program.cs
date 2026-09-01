@@ -1,4 +1,4 @@
-﻿namespace Dsh.Sdk.Server.Tests;
+namespace Harness.Sdk.Server.Tests;
 
 /// <summary>Zero-dependency console test runner for the SDK runtime server.</summary>
 public static class Program

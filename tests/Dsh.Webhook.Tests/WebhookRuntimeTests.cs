@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Webhook;
+using Harness.Cordis.Core;
+using Harness.Webhook;
 
-namespace Dsh.Webhook.Tests;
+namespace Harness.Webhook.Tests;
 
 /// <summary>One booted webhook spine: context and runtime.</summary>
 public sealed class Harness : IDisposable

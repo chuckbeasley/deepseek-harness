@@ -1,6 +1,6 @@
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Session;
+namespace Harness.Session;
 
 /// <summary>
 /// Surface layer over the session event log: which events produce LLM messages and how each one

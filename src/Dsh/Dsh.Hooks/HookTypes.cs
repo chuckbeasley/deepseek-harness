@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Dsh.Hooks;
+namespace Harness.Hooks;
 
 /// <summary>The bridge dialect that ran a hook.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -66,7 +66,7 @@ public sealed record HookOutput
 /// Log-only hook invocation record (port of the TS hook/invoked session event; registered into the
 /// session event-type registry so the JSONL backend round-trips it).
 /// </summary>
-public sealed record HookInvokedEvent : Dsh.Session.SessionEvent
+public sealed record HookInvokedEvent : Harness.Session.SessionEvent
 {
     public const string EventTypeName = "hook/invoked";
 
@@ -84,7 +84,7 @@ public sealed record HookInvokedEvent : Dsh.Session.SessionEvent
 }
 
 /// <summary>Log-only hook outcome record (port of the TS hook/result session event).</summary>
-public sealed record HookResultEvent : Dsh.Session.SessionEvent
+public sealed record HookResultEvent : Harness.Session.SessionEvent
 {
     public const string EventTypeName = "hook/result";
 
@@ -114,7 +114,7 @@ public static class HookEvents
     public static void RegisterEventTypes()
     {
         if (Interlocked.Exchange(ref _registered, 1) != 0) return;
-        Dsh.Session.SessionEventTypes.Register(HookInvokedEvent.EventTypeName, typeof(HookInvokedEvent));
-        Dsh.Session.SessionEventTypes.Register(HookResultEvent.EventTypeName, typeof(HookResultEvent));
+        Harness.Session.SessionEventTypes.Register(HookInvokedEvent.EventTypeName, typeof(HookInvokedEvent));
+        Harness.Session.SessionEventTypes.Register(HookResultEvent.EventTypeName, typeof(HookResultEvent));
     }
 }

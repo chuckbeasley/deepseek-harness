@@ -1,4 +1,4 @@
-namespace Dsh.Web.Tests;
+namespace Harness.Web.Tests;
 
 /// <summary>The turndown port reproduces the recorded corpus page and the oracle cases.</summary>
 public static class TurndownTests

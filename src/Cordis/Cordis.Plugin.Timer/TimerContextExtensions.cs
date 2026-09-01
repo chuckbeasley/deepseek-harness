@@ -1,5 +1,5 @@
-using Cordis.Core;
-namespace Cordis.Plugin.Timer;
+using Harness.Cordis.Core;
+namespace Harness.Cordis.Plugin.Timer;
 
 /// <summary>
 /// Timer surface mixed into contexts by the plugin (the C# counterpart of the TS

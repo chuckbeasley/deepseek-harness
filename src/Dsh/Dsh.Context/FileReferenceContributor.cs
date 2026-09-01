@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Context;
+namespace Harness.Context;
 
 /// <summary>
 /// Browser-safe <c>@file</c> mention grammar (port of grammar.ts): quoted <c>@"path"</c> and plain
@@ -33,7 +33,7 @@ public static class FileReferenceGrammar
 /// <summary>
 /// Local file-reference contributor (port of file-reference-local discovery plus resolution):
 /// every <c>@path</c> mention in the session's user messages is resolved within the workspace root
-/// and its content (or directory listing) contributed. Containment is enforced locally — Dsh.Fs
+/// and its content (or directory listing) contributed. Containment is enforced locally — Harness.Fs
 /// pins every path inside a workspace root too, but referencing it would drag the fs tool chain
 /// into the context assembly, so the port repeats the containment rule with its own resolver
 /// (documented port choice). References outside the root, absolute paths, traversal segments, and
@@ -79,7 +79,7 @@ public sealed class FileReferenceContributor : IContextContributor
     public string Key => DefaultKey;
 
     /// <inheritdoc />
-    public Task<ContextSection?> ContributeAsync(Dsh.Session.Session session, CancellationToken cancellationToken = default)
+    public Task<ContextSection?> ContributeAsync(Harness.Session.Session session, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(session);
         cancellationToken.ThrowIfCancellationRequested();

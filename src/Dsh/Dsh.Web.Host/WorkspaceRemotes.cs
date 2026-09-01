@@ -1,11 +1,11 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text.Json;
 using System.Threading.Channels;
-using Cordis.Core;
-using Dsh.Session;
-using Dsh.Workspace;
+using Harness.Cordis.Core;
+using Harness.Session;
+using Harness.Workspace;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The workspace remote methods (port of the TS WorkspaceController commands + follow feed), all
@@ -216,7 +216,7 @@ public static class WorkspaceRemotes
         });
         // Subscribe first, then baseline, so mutations during the baseline read queue behind it.
         using var cancel = ct.Register(() => channel.Writer.TryComplete());
-        using var upserted = ctx.On<Dsh.Workspace.Workspace>("workspace/upserted",
+        using var upserted = ctx.On<Harness.Workspace.Workspace>("workspace/upserted",
             workspace => Emit(ctx, channel, new { type = "upsert", workspace = WorkspaceView(workspace) }));
         using var removed = ctx.On<WorkspaceId>("workspace/removed",
             id => Emit(ctx, channel, new { type = "remove", workspaceId = id.Value }));
@@ -255,7 +255,7 @@ public static class WorkspaceRemotes
     }
 
     /// <summary>Project one workspace onto its wire view with its accounted session membership.</summary>
-    private static object WorkspaceView(Dsh.Workspace.Workspace workspace)
+    private static object WorkspaceView(Harness.Workspace.Workspace workspace)
         => new
         {
             workspaceId = workspace.Id.Value,

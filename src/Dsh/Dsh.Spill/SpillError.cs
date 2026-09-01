@@ -1,4 +1,4 @@
-namespace Dsh.Spill;
+namespace Harness.Spill;
 
 /// <summary>Stable, machine-routable codes for spill storage failures.</summary>
 public static class SpillErrorCodes

@@ -1,6 +1,6 @@
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Llm.Replay;
+namespace Harness.Llm.Replay;
 
 /// <summary>One recorded model call in a replay script.</summary>
 public abstract record ReplayEntry;

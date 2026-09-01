@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Cordis.Cosmokit;
+namespace Harness.Cordis.Cosmokit;
 
 /// <summary>Shared nullability, object, and dictionary helpers (port of cosmokit <c>misc.ts</c>).</summary>
 public static class Misc

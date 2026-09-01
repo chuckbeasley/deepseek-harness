@@ -1,6 +1,6 @@
-﻿using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Interaction;
+namespace Harness.Interaction;
 
 /// <summary>
 /// The user-questions capability seam (port of the TS <c>user-questions</c>): pause an agent tool

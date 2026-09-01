@@ -1,18 +1,18 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Spike;
-using Dsh.Todo;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Spike;
+using Harness.Todo;
+using Harness.Tools;
 
-namespace Dsh.Spike.Tests;
+namespace Harness.Spike.Tests;
 
 /// <summary>Phase 0 part-2 smoke tests: the 22-event turn, the waterfall probe, and the exact stdout.</summary>
 public static class SmokeTests
 {
-    private static (Context Context, LlmRuntime Llm, ToolRuntime Tools, MockLlmProvider Mock, Dsh.Session.Session Session) Boot()
+    private static (Context Context, LlmRuntime Llm, ToolRuntime Tools, MockLlmProvider Mock, global::Harness.Session.Session Session) Boot()
     {
         var context = new Context();
         var sessions = new SessionStore(context);
@@ -141,7 +141,7 @@ public static class SmokeTests
     /// <summary>The pinned smoke stdout (spike-design.md section 6.2, probe counts corrected for the two-call turn).</summary>
     private const string ExpectedStdout =
 """
-== Dsh.Spike headless smoke ==
+== Harness.Spike headless smoke ==
 context booted; services: sessions, llm, tools, todo
 session created: session-1
 [00] turn/start {"turn":1}

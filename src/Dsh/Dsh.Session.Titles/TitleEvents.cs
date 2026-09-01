@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Session.Titles;
+namespace Harness.Session.Titles;
 
 /// <summary>Who supplied an accepted session title (port of the TS SessionTitleSource).</summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]

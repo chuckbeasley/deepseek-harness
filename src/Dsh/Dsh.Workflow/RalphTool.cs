@@ -1,16 +1,16 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using AgentLoopService = Dsh.AgentLoop.AgentLoop;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Subagent;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using AgentLoopService = Harness.AgentLoop.AgentLoop;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Subagent;
+using Harness.Tools;
 
-namespace Dsh.Workflow;
+namespace Harness.Workflow;
 
 /// <summary>
 /// The model-facing Ralph consumer plus the structured-output child tool (port of

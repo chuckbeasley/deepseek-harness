@@ -1,11 +1,11 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Todo;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Todo;
+using Harness.Tools;
 
-namespace Dsh.Todo.Tests;
+namespace Harness.Todo.Tests;
 
 /// <summary>The todo service semantics, the todo_write consumer, and the durable event round-trip.</summary>
 public static class TodoTests

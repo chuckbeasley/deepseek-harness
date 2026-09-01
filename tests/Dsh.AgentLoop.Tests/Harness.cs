@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop.Tests;
+namespace Harness.AgentLoop.Tests;
 
 /// <summary>
 /// One booted headless spine: context, sessions, llm (mock adapter), tools (todo_write), system
@@ -63,7 +63,7 @@ public sealed class Harness : IAsyncDisposable
         => Messages.CreateUserMessage(new ContentBlock[] { new TextBlock(text) });
 
     /// <summary>Create and publish an agent on the mock route; returns handle, agent, and its loop driver.</summary>
-    public (AgentHandle Handle, Dsh.Agent.Agent Agent, LoopAgent Loop) CreateAgent(string id)
+    public (AgentHandle Handle, global::Harness.Agent.Agent Agent, LoopAgent Loop) CreateAgent(string id)
     {
         var handle = Loop.Create(new SessionId(id), new AgentOptions { Provider = MockLlmProvider.Provider, Model = MockLlmProvider.Model });
         var loop = Loop.GetLoop(new SessionId(id)) ?? throw new InvalidOperationException($"no loop published for \"{id}\"");

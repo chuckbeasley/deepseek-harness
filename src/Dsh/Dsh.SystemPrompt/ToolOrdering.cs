@@ -1,6 +1,6 @@
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.SystemPrompt;
+namespace Harness.SystemPrompt;
 
 /// <summary>Configured tool-order validation and application (TS orderTools semantics).</summary>
 public static class ToolOrdering

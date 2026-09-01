@@ -5,7 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Dsh.Lsp.Tests</RootNamespace>
+    <RootNamespace>Harness.Lsp.Tests</RootNamespace>
     <!-- Test methods mirror the TS spec names (underscore-separated); CA1707 is naming noise here. -->
     <NoWarn>$(NoWarn);CA1707</NoWarn>
   </PropertyGroup>

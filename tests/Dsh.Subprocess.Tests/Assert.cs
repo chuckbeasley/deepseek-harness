@@ -1,5 +1,5 @@
-using Cordis.Core;
-namespace Dsh.Subprocess.Tests;
+using Harness.Cordis.Core;
+namespace Harness.Subprocess.Tests;
 
 /// <summary>Test failure carrying one assertion message.</summary>
 public sealed class AssertionException : Exception

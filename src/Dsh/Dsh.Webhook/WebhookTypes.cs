@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
-namespace Dsh.Webhook;
+namespace Harness.Webhook;
 
 /// <summary>Identifies one programmatic webhook rule.</summary>
 public readonly record struct WebhookRuleId(string Value)

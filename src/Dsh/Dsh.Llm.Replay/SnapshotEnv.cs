@@ -1,4 +1,4 @@
-namespace Dsh.Llm.Replay;
+namespace Harness.Llm.Replay;
 
 /// <summary>
 /// Snapshot-run environment resolution (port of the TS <c>DSH_SNAPSHOT_*</c> contract): the

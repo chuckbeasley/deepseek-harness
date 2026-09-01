@@ -1,4 +1,4 @@
-namespace Dsh.Todo.Tests;
+namespace Harness.Todo.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

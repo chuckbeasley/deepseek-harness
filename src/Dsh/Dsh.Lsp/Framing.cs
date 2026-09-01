@@ -4,7 +4,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>
 /// LSP base-protocol framing (port of <c>framing.ts</c>): the encoder produces one Content-Length-delimited

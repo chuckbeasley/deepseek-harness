@@ -1,11 +1,11 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Credentials;
-using Dsh.Webhook;
+using Harness.Cordis.Core;
+using Harness.Credentials;
+using Harness.Webhook;
 
-namespace Dsh.Webhook.Tests;
+namespace Harness.Webhook.Tests;
 
 /// <summary>
 /// Protocol behavior of <see cref="GitHubWebhookHandler"/>: method, content type, bounded body,

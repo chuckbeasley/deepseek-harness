@@ -1,6 +1,6 @@
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Llm.Replay;
+namespace Harness.Llm.Replay;
 
 /// <summary>
 /// Replay adapter that serves one recorded stream per model call (port of the TS replay adapter),

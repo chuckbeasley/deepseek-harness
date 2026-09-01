@@ -1,9 +1,9 @@
-using Cordis.Core;
-using Cordis.Plugin.Loader;
-using Dsh.Interaction;
-using Dsh.Sandbox;
+using Harness.Cordis.Core;
+using Harness.Cordis.Plugin.Loader;
+using Harness.Interaction;
+using Harness.Sandbox;
 
-namespace Dsh.Cli;
+namespace Harness.Cli;
 
 /// <summary>
 /// The session policy baseline: every session's log opens with its effective permission preset,
@@ -48,7 +48,7 @@ public static class PolicyBaseline
 public sealed class PolicyBaselinePlugin : ILoaderPlugin
 {
     /// <inheritdoc />
-    public ValueTask<IDisposable?> ApplyAsync(Cordis.Core.Context ctx, object? config)
+    public ValueTask<IDisposable?> ApplyAsync(Harness.Cordis.Core.Context ctx, object? config)
     {
         // The permission preset comes from $DSH_PERMISSION_MODE when set (the TS headless
         // contract); the sandbox mode and approval policy derive from the preset exactly like the
@@ -61,9 +61,9 @@ public sealed class PolicyBaselinePlugin : ILoaderPlugin
             ? preset
             : SpineRegistry.ConfigString(config, "sandboxMode") ?? PolicyBaseline.DefaultSandboxMode;
         var policy = preset == "danger-full-access" ? "never" : "ask";
-        Dsh.Interaction.InteractionEventTypes.Register();
-        Dsh.Sandbox.SandboxEventTypes.Register();
-        var subscription = ctx.On("session/created", (Delegate)(Action<Dsh.Session.Session>)(session =>
+        Harness.Interaction.InteractionEventTypes.Register();
+        Harness.Sandbox.SandboxEventTypes.Register();
+        var subscription = ctx.On("session/created", (Delegate)(Action<Harness.Session.Session>)(session =>
         {
             session.Append(new PermissionPresetEvent { Preset = preset });
             session.Append(new SandboxModeEvent { Mode = ParseSandboxMode(mode) });
@@ -96,9 +96,9 @@ public sealed class PolicyBaselinePlugin : ILoaderPlugin
 public sealed class PolicyContextPlugin : ILoaderPlugin
 {
     /// <inheritdoc />
-    public ValueTask<IDisposable?> ApplyAsync(Cordis.Core.Context ctx, object? config)
+    public ValueTask<IDisposable?> ApplyAsync(Harness.Cordis.Core.Context ctx, object? config)
     {
-        var loop = ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
+        var loop = ctx.Get<Harness.AgentLoop.AgentLoop>("agentLoop")
             ?? throw new InvalidOperationException("policyContext requires the \"agentLoop\" row");
         var preset = Environment.GetEnvironmentVariable("DSH_PERMISSION_MODE") is { Length: > 0 } envPreset
             ? envPreset
@@ -111,9 +111,9 @@ public sealed class PolicyContextPlugin : ILoaderPlugin
         var sandboxText = PolicyBaseline.SandboxPolicyText(mode, workspaceRoot);
         var approvalText = PolicyBaseline.ApprovalPolicyText(policy);
         var sandboxProvider = loop.RegisterContextProvider(() => Task.FromResult(
-            new Dsh.AgentLoop.RuntimeContextPart(sandboxText, new[] { new Dsh.Llm.NamedSection("sandbox:policy", sandboxText) })));
+            new Harness.AgentLoop.RuntimeContextPart(sandboxText, new[] { new Harness.Llm.NamedSection("sandbox:policy", sandboxText) })));
         var approvalProvider = loop.RegisterContextProvider(() => Task.FromResult(
-            new Dsh.AgentLoop.RuntimeContextPart(approvalText, new[] { new Dsh.Llm.NamedSection("approval:policy", approvalText) })));
+            new Harness.AgentLoop.RuntimeContextPart(approvalText, new[] { new Harness.Llm.NamedSection("approval:policy", approvalText) })));
         return ValueTask.FromResult<IDisposable?>(new SpineDisposables(sandboxProvider, approvalProvider));
     }
 }

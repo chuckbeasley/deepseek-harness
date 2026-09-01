@@ -1,4 +1,4 @@
-namespace Dsh.Llm.DeepSeek;
+namespace Harness.Llm.DeepSeek;
 
 /// <summary>Thinking-effort levels accepted by the DeepSeek chat-completions endpoint.</summary>
 public enum DeepSeekReasoningEffort

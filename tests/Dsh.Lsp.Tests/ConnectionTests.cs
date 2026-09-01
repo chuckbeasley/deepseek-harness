@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Dsh.Lsp.Tests;
+namespace Harness.Lsp.Tests;
 
 /// <summary>The JSON-RPC connection over a spawned fixture process (mirrors connection.spec.ts).</summary>
 public static class ConnectionTests

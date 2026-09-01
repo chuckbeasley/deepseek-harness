@@ -1,4 +1,4 @@
-namespace Dsh.Spill;
+namespace Harness.Spill;
 
 /// <summary>
 /// The spill storage capability Service Definition (C# port of the spill seam of

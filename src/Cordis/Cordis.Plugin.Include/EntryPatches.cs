@@ -1,6 +1,6 @@
-using Cordis.Plugin.Loader;
+using Harness.Cordis.Plugin.Loader;
 
-namespace Cordis.Plugin.Include;
+namespace Harness.Cordis.Plugin.Include;
 
 /// <summary>Parsed form of one runtime patch layer row (port of the vendored PatchOptions).</summary>
 public sealed class EntryPatchOptions
@@ -35,7 +35,7 @@ public sealed class EntryPatchOptions
 /// plain dictionaries until conversion to <see cref="EntryOptions"/>; <c>!!js</c> values evaluate
 /// through the restricted <see cref="ConfigExpression"/> language at conversion time (the vendored
 /// loader resolves them lazily per entry fiber; the port evaluates once per apply because
-/// Cordis.Core keeps one fiber per context — documented deviation).
+/// Harness.Cordis.Core keeps one fiber per context — documented deviation).
 /// </summary>
 public static class EntryPatches
 {

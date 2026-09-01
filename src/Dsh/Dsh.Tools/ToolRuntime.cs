@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Llm;
+using Harness.Cordis.Core;
+using Harness.Llm;
 
-namespace Dsh.Tools;
+namespace Harness.Tools;
 
 /// <summary>
 /// Tool registry and execution pipeline (ctx.tools). Registrations are effects: disposing the

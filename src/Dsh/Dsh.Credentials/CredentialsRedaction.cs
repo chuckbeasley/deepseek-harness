@@ -1,4 +1,4 @@
-namespace Dsh.Credentials;
+namespace Harness.Credentials;
 
 /// <summary>
 /// Redaction helpers for secret values. The local provider itself never emits values — this

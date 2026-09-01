@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Storage;
+namespace Harness.Storage;
 
 /// <summary>
 /// Static identity and shape of one scoped key-value store (port of the TS <c>KvUnitDescriptor</c>).

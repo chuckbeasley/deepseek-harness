@@ -1,8 +1,8 @@
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Spill;
+namespace Harness.Spill;
 
 /// <summary>Configuration for the local spill backend: the root directory holding every spill file.</summary>
 /// <remarks>

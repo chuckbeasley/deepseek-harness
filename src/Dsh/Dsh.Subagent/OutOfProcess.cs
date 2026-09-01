@@ -1,6 +1,6 @@
-﻿using System.Text;
+using System.Text;
 
-namespace Dsh.Subagent;
+namespace Harness.Subagent;
 
 /// <summary>
 /// Shared helpers of the out-of-process driver family (port of the TS <c>out-of-process.ts</c>):

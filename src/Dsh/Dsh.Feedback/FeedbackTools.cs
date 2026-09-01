@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Llm;
+using Harness.Tools;
 
-namespace Dsh.Feedback;
+namespace Harness.Feedback;
 
 /// <summary>
 /// Model-facing Consumer of the feedback capability: the <c>message_feedback</c> tool over

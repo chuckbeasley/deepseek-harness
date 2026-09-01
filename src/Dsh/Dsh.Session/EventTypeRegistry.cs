@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace Dsh.Session;
+namespace Harness.Session;
 
 /// <summary>
 /// Registry of plugin-merged session event types beyond the spine vocabulary (port of the TS

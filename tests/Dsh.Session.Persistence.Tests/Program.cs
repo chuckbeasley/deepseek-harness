@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Session.Persistence.Tests;
+namespace Harness.Session.Persistence.Tests;
 
 /// <summary>Zero-dependency console runner for the Phase 2 session spine tests.</summary>
 public static class Program

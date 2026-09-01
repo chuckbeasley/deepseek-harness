@@ -1,4 +1,4 @@
-﻿namespace Dsh.Subagent.Tests;
+namespace Harness.Subagent.Tests;
 
 /// <summary>Thrown by <see cref="Assert"/> when a check fails; aborts the current test.</summary>
 public sealed class AssertionException : Exception

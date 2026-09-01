@@ -1,6 +1,6 @@
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Llm.DeepSeek.Tests;
+namespace Harness.Llm.DeepSeek.Tests;
 
 /// <summary>Payload-to-StreamChunk translation tests: block opening, finish reasons, usage, and failures.</summary>
 public static class TranslateTests

@@ -1,6 +1,6 @@
-using Cordis.Cosmokit;
+using Harness.Cordis.Cosmokit;
 
-namespace Cordis.Schemastery;
+namespace Harness.Cordis.Schemastery;
 
 /// <summary>
 /// A structured validation failure. The message carries a path prefix such as

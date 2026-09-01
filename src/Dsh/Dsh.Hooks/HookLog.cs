@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Hooks;
+namespace Harness.Hooks;
 
 /// <summary>
 /// Append helpers for durable, log-only hook events (port of the TS <c>appendHookInvoked</c> /
@@ -34,7 +34,7 @@ public static class HookLog
     /// <param name="dialect">the bridge dialect that ran it.</param>
     /// <param name="handlerId">a stable id correlating the invoked event with its result.</param>
     /// <param name="matcher">the matcher-group pattern that selected it (absent for match-all).</param>
-    public static void AppendInvoked(Dsh.Session.Session session, long turn, string point, HookDialect dialect, string handlerId, string? matcher = null)
+    public static void AppendInvoked(Harness.Session.Session session, long turn, string point, HookDialect dialect, string handlerId, string? matcher = null)
     {
         ArgumentNullException.ThrowIfNull(session);
         session.Append(new HookInvokedEvent
@@ -55,7 +55,7 @@ public static class HookLog
     /// <param name="output">the decoded outcome the run produced.</param>
     /// <param name="stderrSummaryMaxChars">character cap for the derived stderr summary.</param>
     /// <param name="durationMs">wall-clock duration of the run — durable audit timing.</param>
-    public static void AppendResult(Dsh.Session.Session session, long turn, string point, string handlerId, HookOutput output, int stderrSummaryMaxChars, long durationMs)
+    public static void AppendResult(Harness.Session.Session session, long turn, string point, string handlerId, HookOutput output, int stderrSummaryMaxChars, long durationMs)
     {
         ArgumentNullException.ThrowIfNull(session);
         var decision = output.Decision ?? (output.Continue == false ? "stop" : "pass");

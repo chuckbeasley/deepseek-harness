@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Spike.Tests;
+namespace Harness.Spike.Tests;
 
 public static class SessionEventTests
 {

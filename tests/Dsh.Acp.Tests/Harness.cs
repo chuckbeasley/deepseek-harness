@@ -1,20 +1,20 @@
 using System.IO.Pipelines;
-using Cordis.Core;
-using Dsh.Acp;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Interaction;
-using Dsh.Llm;
-using Dsh.Sdk.Client;
-using Dsh.Sdk.Protocol;
-using Dsh.Session;
-using Dsh.Session.Persistence;
-using Dsh.Spike;
-using Dsh.SystemPrompt;
-using Dsh.Todo;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Acp;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Interaction;
+using Harness.Llm;
+using Harness.Sdk.Client;
+using Harness.Sdk.Protocol;
+using Harness.Session;
+using Harness.Session.Persistence;
+using Harness.Spike;
+using Harness.SystemPrompt;
+using Harness.Todo;
+using Harness.Tools;
 
-namespace Dsh.Acp.Tests;
+namespace Harness.Acp.Tests;
 
 /// <summary>One in-process ACP server over a real transport, with the approval gate mounted.</summary>
 internal sealed class Harness : IDisposable
@@ -22,7 +22,7 @@ internal sealed class Harness : IDisposable
     public required Context Ctx { get; init; }
     public required LlmRuntime Llm { get; init; }
     public required SessionStore Sessions { get; init; }
-    public required Dsh.AgentLoop.AgentLoop Loop { get; init; }
+    public required global::Harness.AgentLoop.AgentLoop Loop { get; init; }
     public required ApprovalService Approval { get; init; }
     public required JsonRpcLineTransport Client { get; init; }
     public required JsonRpcLineTransport Server { get; init; }
@@ -54,7 +54,7 @@ internal sealed class Harness : IDisposable
         }
         _ = new TodoService(ctx, allowParallelInProgress: false);
         tools.Register(TodoTool.Definition(ctx, allowParallelInProgress: false));
-        var loop = new Dsh.AgentLoop.AgentLoop(ctx);
+        var loop = new global::Harness.AgentLoop.AgentLoop(ctx);
         var pipes = new[] { new Pipe(), new Pipe() };
         var serverTransport = new JsonRpcLineTransport(pipes[0].Reader.AsStream(), pipes[1].Writer.AsStream());
         var clientTransport = new JsonRpcLineTransport(pipes[1].Reader.AsStream(), pipes[0].Writer.AsStream());

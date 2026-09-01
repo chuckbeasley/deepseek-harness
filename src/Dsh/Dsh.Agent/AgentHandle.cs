@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Agent;
+namespace Harness.Agent;
 
 /// <summary>
 /// An owned agent plus its disposer, returned by <see cref="AgentRegistry.Register"/> (port of the

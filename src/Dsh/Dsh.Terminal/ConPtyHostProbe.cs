@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Dsh.Terminal;
+namespace Harness.Terminal;
 
 /// <summary>
 /// Environment probe for ConPTY console children. Some Windows hosts (observed on Windows 11

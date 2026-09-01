@@ -1,14 +1,14 @@
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.SessionQuery;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
+using Harness.SessionQuery;
 
-namespace Dsh.SessionQuery.Tests;
+namespace Harness.SessionQuery.Tests;
 
 public static class SessionQueryTests
 {
     /// <summary>Seed a two-turn session with a tool round trip.</summary>
-    private static Dsh.Session.Session Seed(SessionStore store)
+    private static global::Harness.Session.Session Seed(SessionStore store)
     {
         var session = store.Create();
         session.Append(new TurnStartEvent { Turn = 1 });
@@ -177,14 +177,14 @@ public static class SessionQueryTests
 
     // --- seeding helpers ---
 
-    private static void User(Dsh.Session.Session session, string text)
+    private static void User(global::Harness.Session.Session session, string text)
         => session.Append(new UserMessageEvent
         {
             Message = Messages.CreateUserMessage(new ContentBlock[] { new TextBlock(text) }),
             SurfaceOp = SurfaceOp.Append,
         });
 
-    private static void Assistant(Dsh.Session.Session session, long turn, long step, string text)
+    private static void Assistant(global::Harness.Session.Session session, long turn, long step, string text)
         => session.Append(new AssistantMessageEvent
         {
             Turn = turn,
@@ -193,7 +193,7 @@ public static class SessionQueryTests
             SurfaceOp = SurfaceOp.Append,
         });
 
-    private static void ToolResult(Dsh.Session.Session session, ToolCallId callId, string text)
+    private static void ToolResult(global::Harness.Session.Session session, ToolCallId callId, string text)
         => session.Append(new ToolResultEvent
         {
             Turn = 1,

@@ -1,4 +1,4 @@
-﻿@inject Cordis.Core.Context Ctx
+@inject Harness.Cordis.Core.Context Ctx
 @inject WebLocale Locale
 @implements IDisposable
 
@@ -33,14 +33,14 @@
 @code {
     private sealed class PendingApproval
     {
-        public required Dsh.Interaction.ApprovalRequest Request { get; init; }
-        public required TaskCompletionSource<Dsh.Interaction.ApprovalOutcome> Completion { get; init; }
+        public required Harness.Interaction.ApprovalRequest Request { get; init; }
+        public required TaskCompletionSource<Harness.Interaction.ApprovalOutcome> Completion { get; init; }
     }
 
     private sealed class PendingQuestion
     {
-        public required Dsh.Interaction.UserQuestionRequest Request { get; init; }
-        public required TaskCompletionSource<Dsh.Interaction.UserQuestionAnswer> Completion { get; init; }
+        public required Harness.Interaction.UserQuestionRequest Request { get; init; }
+        public required TaskCompletionSource<Harness.Interaction.UserQuestionAnswer> Completion { get; init; }
     }
 
     private PendingApproval? _approval;
@@ -54,9 +54,9 @@
         // and waits for the operator (the $events bridge answers remote clients; this answers the
         // shell's own circuit).
         _subscriptions.Add(Ctx.On("approval/request",
-            new Func<Dsh.Interaction.ApprovalRequest, Func<Task<Dsh.Interaction.ApprovalOutcome>>, Task<Dsh.Interaction.ApprovalOutcome>>(async (request, next) =>
+            new Func<Harness.Interaction.ApprovalRequest, Func<Task<Harness.Interaction.ApprovalOutcome>>, Task<Harness.Interaction.ApprovalOutcome>>(async (request, next) =>
             {
-                var tcs = new TaskCompletionSource<Dsh.Interaction.ApprovalOutcome>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource<Harness.Interaction.ApprovalOutcome>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _approval = new PendingApproval { Request = request, Completion = tcs };
                 StateHasChanged();
                 try
@@ -71,9 +71,9 @@
             })));
         // The ask_user_question tool's questions land here: one text answer per question.
         _subscriptions.Add(Ctx.On("user-questions/ask",
-            new Func<Dsh.Interaction.UserQuestionRequest, Func<Task<Dsh.Interaction.UserQuestionAnswer>>, Task<Dsh.Interaction.UserQuestionAnswer>>(async (request, next) =>
+            new Func<Harness.Interaction.UserQuestionRequest, Func<Task<Harness.Interaction.UserQuestionAnswer>>, Task<Harness.Interaction.UserQuestionAnswer>>(async (request, next) =>
             {
-                var tcs = new TaskCompletionSource<Dsh.Interaction.UserQuestionAnswer>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource<Harness.Interaction.UserQuestionAnswer>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _question = new PendingQuestion { Request = request, Completion = tcs };
                 _answerText = "";
                 StateHasChanged();
@@ -91,17 +91,17 @@
         // dialog instead of running unapproved. The TUI keeps its own dialog on its own profile;
         // the headless profile composes no approval UI, so its loop stays unapproved.
         _subscriptions.Add(Ctx.On("tools/pre-execute",
-            new Func<Dsh.Tools.ToolRunContext, Func<Task<Dsh.Tools.PreToolDecision>>, Task<Dsh.Tools.PreToolDecision>>(async (exec, next) =>
+            new Func<Harness.Tools.ToolRunContext, Func<Task<Harness.Tools.PreToolDecision>>, Task<Harness.Tools.PreToolDecision>>(async (exec, next) =>
             {
-                var approval = Ctx.Get<Dsh.Interaction.ApprovalService>("approval");
+                var approval = Ctx.Get<Harness.Interaction.ApprovalService>("approval");
                 if (approval is null || exec.Session is null) return await next();
-                var agent = Ctx.Get<Dsh.Agent.AgentRegistry>("agents")?.Get(exec.Session.Id);
+                var agent = Ctx.Get<Harness.Agent.AgentRegistry>("agents")?.Get(exec.Session.Id);
                 if (agent is null) return await next();
-                var outcome = await approval.AskAsync(new Dsh.Interaction.ApprovalRequest(
+                var outcome = await approval.AskAsync(new Harness.Interaction.ApprovalRequest(
                     agent, exec.Name, exec.CallId.Value, CancellationToken: exec.CancellationToken));
-                return outcome == Dsh.Interaction.ApprovalOutcome.AllowedOnce
-                    ? new Dsh.Tools.AllowDecision()
-                    : new Dsh.Tools.DenyDecision("the operator denied the tool call");
+                return outcome == Harness.Interaction.ApprovalOutcome.AllowedOnce
+                    ? new Harness.Tools.AllowDecision()
+                    : new Harness.Tools.DenyDecision("the operator denied the tool call");
             })));
     }
 
@@ -116,7 +116,7 @@
         var pending = _approval;
         if (pending is null) return;
         _approval = null;
-        pending.Completion.TrySetResult(allow ? Dsh.Interaction.ApprovalOutcome.AllowedOnce : Dsh.Interaction.ApprovalOutcome.Rejected);
+        pending.Completion.TrySetResult(allow ? Harness.Interaction.ApprovalOutcome.AllowedOnce : Harness.Interaction.ApprovalOutcome.Rejected);
         StateHasChanged();
     }
 
@@ -127,9 +127,9 @@
         var first = pending.Request.Questions[0];
         _question = null;
         var text = _answerText.Trim();
-        pending.Completion.TrySetResult(new Dsh.Interaction.UserQuestionAnswer(new[]
+        pending.Completion.TrySetResult(new Harness.Interaction.UserQuestionAnswer(new[]
         {
-            new Dsh.Interaction.UserQuestionAnswerItem(first.Id, Array.Empty<string>(), text.Length == 0 ? null : text),
+            new Harness.Interaction.UserQuestionAnswerItem(first.Id, Array.Empty<string>(), text.Length == 0 ? null : text),
         }));
         StateHasChanged();
     }

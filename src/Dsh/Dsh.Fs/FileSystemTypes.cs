@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Dsh.Tools;
+using Harness.Tools;
 
-namespace Dsh.Fs;
+namespace Harness.Fs;
 
 /// <summary>
 /// Opaque key for stale guards and target lookup (port of the TS <c>FsTargetKey</c> brand).

@@ -1,10 +1,10 @@
-using Cordis.Core;
-using Dsh.CordisRunner;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.CordisRunner;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.CordisRunner.Tests;
+namespace Harness.CordisRunner.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

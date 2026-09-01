@@ -1,4 +1,4 @@
-namespace Dsh.SessionQuery;
+namespace Harness.SessionQuery;
 
 /// <summary>Stable machine codes for session-query failures (port of the TS SessionQueryErrorCode vocabulary).</summary>
 public static class SessionQueryErrorCodes

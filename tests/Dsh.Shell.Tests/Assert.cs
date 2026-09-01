@@ -1,5 +1,5 @@
-using Cordis.Core;
-namespace Dsh.Shell.Tests;
+using Harness.Cordis.Core;
+namespace Harness.Shell.Tests;
 
 /// <summary>Test failure carrying one assertion message.</summary>
 public sealed class AssertionException : Exception
@@ -35,24 +35,24 @@ public sealed class ShellHarness : IDisposable
     public ShellHarness(string? shellPath = null)
     {
         Ctx = new Context();
-        Subprocess = new Dsh.Subprocess.LocalSubprocessProvider(Ctx);
-        Shell = new Dsh.Shell.LocalShellProvider(Ctx, new Dsh.Shell.ShellConfig
+        Subprocess = new global::Harness.Subprocess.LocalSubprocessProvider(Ctx);
+        Shell = new global::Harness.Shell.LocalShellProvider(Ctx, new global::Harness.Shell.ShellConfig
         {
             ShellPath = shellPath ?? "cmd.exe",
             TimeoutMs = 120000,
         });
-        Tools = new Dsh.Tools.ToolRuntime(Ctx);
-        var tool = Dsh.Shell.ShellTools.Definition(Ctx);
+        Tools = new global::Harness.Tools.ToolRuntime(Ctx);
+        var tool = global::Harness.Shell.ShellTools.Definition(Ctx);
         ToolRegistration = Tools.Register(tool);
     }
 
-    public Cordis.Core.Context Ctx { get; }
+    public global::Harness.Cordis.Core.Context Ctx { get; }
 
-    public Dsh.Subprocess.LocalSubprocessProvider Subprocess { get; }
+    public global::Harness.Subprocess.LocalSubprocessProvider Subprocess { get; }
 
-    public Dsh.Shell.LocalShellProvider Shell { get; }
+    public global::Harness.Shell.LocalShellProvider Shell { get; }
 
-    public Dsh.Tools.ToolRuntime Tools { get; }
+    public global::Harness.Tools.ToolRuntime Tools { get; }
 
     public IDisposable ToolRegistration { get; }
 

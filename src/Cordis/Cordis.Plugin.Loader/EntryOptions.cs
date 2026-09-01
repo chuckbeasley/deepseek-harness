@@ -1,4 +1,4 @@
-namespace Cordis.Plugin.Loader;
+namespace Harness.Cordis.Plugin.Loader;
 
 /// <summary>
 /// Serialized plugin entry options (C# port of the vendored loader <c>EntryOptions</c>). One value

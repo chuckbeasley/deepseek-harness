@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text;
 
-namespace Dsh.Web.Tests;
+namespace Harness.Web.Tests;
 
 /// <summary>One request's facts, captured at send time so nothing is read after the provider disposes the request.</summary>
 internal sealed record CapturedRequest(string Method, string? Url, IReadOnlyDictionary<string, string> Headers);

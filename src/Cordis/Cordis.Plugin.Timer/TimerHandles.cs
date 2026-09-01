@@ -1,7 +1,7 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 using NativeTimer = System.Threading.Timer;
 
-namespace Cordis.Plugin.Timer;
+namespace Harness.Cordis.Plugin.Timer;
 
 /// <summary>Minimal <see cref="IDisposable"/> wrapping one action; used as an effect cleanup.</summary>
 internal sealed class ActionDisposer : IDisposable

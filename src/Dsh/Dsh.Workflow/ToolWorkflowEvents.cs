@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Workflow;
+namespace Harness.Workflow;
 
 /// <summary>One agent() call established a published child run.</summary>
 public sealed record ToolWorkflowAgentStartEvent : SessionEvent

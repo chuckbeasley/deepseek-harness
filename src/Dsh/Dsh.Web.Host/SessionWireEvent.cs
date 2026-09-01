@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The wire projection of one session event (port of the TS <c>SessionWireEvent</c>): the
@@ -19,13 +19,13 @@ public static class SessionWireEvent
     /// </summary>
     private static JsonSerializerOptions SessionEventJson()
     {
-        var revision = Dsh.Session.SessionEventTypes.Revision;
+        var revision = Harness.Session.SessionEventTypes.Revision;
         if (_sessionEventJson is null || _sessionEventRevision != revision)
         {
             _sessionEventJson = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                TypeInfoResolver = Dsh.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
+                TypeInfoResolver = Harness.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
             };
             _sessionEventRevision = revision;
         }
@@ -35,7 +35,7 @@ public static class SessionWireEvent
     /// <summary>Project one committed session event to its wire spelling.</summary>
     /// <param name="evt">the committed event.</param>
     /// <returns>the <c>{ type, seq, time, data }</c> wire object.</returns>
-    public static JsonElement Project(Dsh.Session.SessionEvent evt)
+    public static JsonElement Project(Harness.Session.SessionEvent evt)
     {
         var json = JsonSerializer.SerializeToElement(evt, SessionEventJson());
         var data = new Dictionary<string, JsonElement>(StringComparer.Ordinal);

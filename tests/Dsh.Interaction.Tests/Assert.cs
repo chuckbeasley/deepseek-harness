@@ -1,4 +1,4 @@
-﻿namespace Dsh.Interaction.Tests;
+namespace Harness.Interaction.Tests;
 
 /// <summary>Test failure carrying one assertion message.</summary>
 public sealed class AssertionException : Exception

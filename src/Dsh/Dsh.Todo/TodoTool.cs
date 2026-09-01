@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.Todo;
+namespace Harness.Todo;
 
 /// <summary>
 /// Model-facing Consumer of the todo capability: the <c>todo_write</c> tool over

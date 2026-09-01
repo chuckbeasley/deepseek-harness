@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Dsh.Lsp.Tests;
+namespace Harness.Lsp.Tests;
 
 /// <summary>The Content-Length framing and the JSON-RPC client dispatch over in-memory duplexes.</summary>
 public static class LspTests

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Zero-dependency console assertion suite (runs as a plain console app; the csproj stays the
        source of truth for unrestricted hosts). -->
@@ -7,7 +7,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Dsh.Webhook.Tests</RootNamespace>
+    <RootNamespace>Harness.Webhook.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

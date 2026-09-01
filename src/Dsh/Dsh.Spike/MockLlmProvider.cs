@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Spike;
+namespace Harness.Spike;
 
 /// <summary>
 /// Canned two-phase adapter: call 1 streams exactly one todo_write tool call; later calls stream a

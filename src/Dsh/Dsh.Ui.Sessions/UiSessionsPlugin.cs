@@ -1,12 +1,12 @@
-﻿using Dsh.Web.App.Slots;
+using Harness.Web.App.Slots;
 using Microsoft.AspNetCore.Components;
 
-namespace Dsh.Ui.Sessions;
+namespace Harness.Ui.Sessions;
 
 /// <summary>
 /// The session-list contribution (port of the TS ui-session list): every live session with its
 /// running/queued state, rendered into the shell's <c>sessions</c> slot. Selection travels
-/// through the shared <see cref="Dsh.Web.App.ShellState"/>, so the list and the transcript agree.
+/// through the shared <see cref="Harness.Web.App.ShellState"/>, so the list and the transcript agree.
 /// </summary>
 public static class UiSessionsPlugin
 {

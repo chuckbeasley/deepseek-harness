@@ -1,12 +1,12 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Jobs;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Subagent;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Jobs;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Subagent;
+using Harness.Tools;
 
-namespace Dsh.Subagent.Tests;
+namespace Harness.Subagent.Tests;
 
 /// <summary>
 /// The deterministic snapshot providers and the subagent tool over them: the recorded
@@ -98,7 +98,7 @@ public static class SubagentToolTests
         }
     }
 
-    private static (ToolRuntime Tools, Dsh.Session.Session Session) CreateHarness(out InProcessSubagentProvider service, out LocalJobsProvider jobs)
+    private static (ToolRuntime Tools, global::Harness.Session.Session Session) CreateHarness(out InProcessSubagentProvider service, out LocalJobsProvider jobs)
     {
         var ctx = new Context();
         service = new InProcessSubagentProvider(ctx);
@@ -109,7 +109,7 @@ public static class SubagentToolTests
         return (tools, session);
     }
 
-    private static async Task<ToolExecutionResult> Call(ToolRuntime tools, string name, object args, Dsh.Session.Session session)
+    private static async Task<ToolExecutionResult> Call(ToolRuntime tools, string name, object args, global::Harness.Session.Session session)
     {
         var tool = tools.Get(name) ?? throw new InvalidOperationException($"tool {name} is not registered");
         return await tools.ExecuteAsync(

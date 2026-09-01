@@ -1,4 +1,4 @@
-namespace Dsh.Attachment;
+namespace Harness.Attachment;
 
 /// <summary>Stable, machine-routable codes for attachment failures (subset of the TS <c>AttachmentErrorCode</c>).</summary>
 public static class AttachmentErrorCodes

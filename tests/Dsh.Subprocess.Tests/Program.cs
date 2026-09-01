@@ -1,4 +1,4 @@
-namespace Dsh.Subprocess.Tests;
+namespace Harness.Subprocess.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

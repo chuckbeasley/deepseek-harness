@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Dsh.Llm.DeepSeek;
+namespace Harness.Llm.DeepSeek;
 
 /// <summary>Request body for <c>POST {baseUrl}/chat/completions</c> (OpenAI-compatible wire).</summary>
 internal sealed record WireRequest(

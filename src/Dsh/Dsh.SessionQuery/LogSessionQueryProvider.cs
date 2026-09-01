@@ -1,9 +1,9 @@
 using System.Text.RegularExpressions;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.SessionQuery;
+namespace Harness.SessionQuery;
 
 /// <summary>
 /// ctx.sessionQuery: the log fold provider. Every query folds Session.Events directly — there is
@@ -25,7 +25,7 @@ public sealed class LogSessionQueryProvider : Service, ISessionQueryService
     public static LogSessionQueryProvider Require(Context ctx) => ctx.Require<LogSessionQueryProvider>("sessionQuery");
 
     /// <inheritdoc />
-    public IReadOnlyList<SessionEvent> EventsByType(Dsh.Session.Session session, string type)
+    public IReadOnlyList<SessionEvent> EventsByType(Harness.Session.Session session, string type)
     {
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(type);
@@ -33,7 +33,7 @@ public sealed class LogSessionQueryProvider : Service, ISessionQueryService
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<SessionEventDocument> FilterEvents(Dsh.Session.Session session, IReadOnlyList<SessionEventFilter> filters)
+    public IReadOnlyList<SessionEventDocument> FilterEvents(Harness.Session.Session session, IReadOnlyList<SessionEventFilter> filters)
     {
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(filters);
@@ -48,7 +48,7 @@ public sealed class LogSessionQueryProvider : Service, ISessionQueryService
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<TurnRecord> Turns(Dsh.Session.Session session)
+    public IReadOnlyList<TurnRecord> Turns(Harness.Session.Session session)
     {
         ArgumentNullException.ThrowIfNull(session);
         var turns = new List<TurnRecord>();
@@ -70,14 +70,14 @@ public sealed class LogSessionQueryProvider : Service, ISessionQueryService
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<Message> Messages(Dsh.Session.Session session)
+    public IReadOnlyList<Message> Messages(Harness.Session.Session session)
     {
         ArgumentNullException.ThrowIfNull(session);
         return session.DeriveMessages();
     }
 
     /// <inheritdoc />
-    public T Fold<T>(Dsh.Session.Session session, T seed, Func<T, SessionEvent, T> folder)
+    public T Fold<T>(Harness.Session.Session session, T seed, Func<T, SessionEvent, T> folder)
     {
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(folder);

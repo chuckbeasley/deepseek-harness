@@ -1,4 +1,4 @@
-namespace Dsh.Spill;
+namespace Harness.Spill;
 
 /// <summary>
 /// One registered spill file (port of the TS <c>SpillRef</c> reduced to its local facts): the

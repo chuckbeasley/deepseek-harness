@@ -1,4 +1,4 @@
-﻿@inject Cordis.Core.Context Ctx
+@inject Harness.Cordis.Core.Context Ctx
 @inject WebLocale Locale
 @implements IDisposable
 
@@ -18,13 +18,13 @@
 
 @code {
     private readonly List<IDisposable> _subscriptions = new();
-    private Dsh.Workspace.WorkspaceRegistry? _registry;
+    private Harness.Workspace.WorkspaceRegistry? _registry;
 
     protected override void OnInitialized()
     {
-        _registry = Ctx.Get<Dsh.Workspace.WorkspaceRegistry>("workspaceRegistry");
+        _registry = Ctx.Get<Harness.Workspace.WorkspaceRegistry>("workspaceRegistry");
         if (_registry is null) return;
-        foreach (var eventName in new[] { Dsh.Workspace.WorkspaceRegistryEvents.Upserted, Dsh.Workspace.WorkspaceRegistryEvents.Removed, Dsh.Workspace.WorkspaceRegistryEvents.Order, Dsh.Workspace.WorkspaceRegistryEvents.Archived })
+        foreach (var eventName in new[] { Harness.Workspace.WorkspaceRegistryEvents.Upserted, Harness.Workspace.WorkspaceRegistryEvents.Removed, Harness.Workspace.WorkspaceRegistryEvents.Order, Harness.Workspace.WorkspaceRegistryEvents.Archived })
         {
             _subscriptions.Add(Ctx.On(eventName, new Action<object>(_ => StateHasChanged())));
         }
@@ -36,6 +36,6 @@
         _subscriptions.Clear();
     }
 
-    private IReadOnlyList<Dsh.Workspace.Workspace> List()
-        => _registry is null ? Array.Empty<Dsh.Workspace.Workspace>() : _registry.List();
+    private IReadOnlyList<Harness.Workspace.Workspace> List()
+        => _registry is null ? Array.Empty<Harness.Workspace.Workspace>() : _registry.List();
 }

@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Dsh.Llm.DeepSeek;
+namespace Harness.Llm.DeepSeek;
 
 /// <summary>
 /// Map DeepSeek HTTP and API-error facts to stable provider-neutral harness codes. Ports the TS

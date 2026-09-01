@@ -1,4 +1,4 @@
-namespace Dsh.Terminal.Tests;
+namespace Harness.Terminal.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

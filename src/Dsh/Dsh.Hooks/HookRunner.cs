@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Text.Json;
-using Dsh.Shell;
+using Harness.Shell;
 
-namespace Dsh.Hooks;
+namespace Harness.Hooks;
 
 /// <summary>
 /// Execute command hooks through the shell service (port of the TS <c>runHook</c>), using its

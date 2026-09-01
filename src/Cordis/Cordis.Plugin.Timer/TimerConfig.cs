@@ -1,4 +1,4 @@
-namespace Cordis.Plugin.Timer;
+namespace Harness.Cordis.Plugin.Timer;
 
 /// <summary>
 /// Plugin configuration for the timer service (the C# counterpart of the plugin Config surface).

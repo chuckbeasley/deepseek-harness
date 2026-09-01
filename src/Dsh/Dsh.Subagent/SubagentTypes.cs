@@ -1,4 +1,4 @@
-namespace Dsh.Subagent;
+namespace Harness.Subagent;
 
 /// <summary>Registry-minted subagent identity.</summary>
 public readonly record struct SubagentId(string Value)

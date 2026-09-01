@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
-namespace Dsh.Lsp.Tests;
+namespace Harness.Lsp.Tests;
 
 /// <summary>The Content-Length encoder and the stateful streaming decoder (mirrors framing.spec.ts).</summary>
 public static class FramingTests

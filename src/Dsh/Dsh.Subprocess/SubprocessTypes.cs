@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Dsh.Subprocess;
+namespace Harness.Subprocess;
 
 /// <summary>Namespace prefix reserved for DeepSeek Harness-managed child environment facts.</summary>
 public static class DshEnv

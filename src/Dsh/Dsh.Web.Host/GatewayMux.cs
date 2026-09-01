@@ -1,12 +1,12 @@
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading.Channels;
-using Cordis.Core;
-using Dsh.Interaction;
+using Harness.Cordis.Core;
+using Harness.Interaction;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The multiplexed WebSocket carrier (port of the TS remote-stream mux): one socket at

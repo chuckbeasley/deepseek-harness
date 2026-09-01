@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 
-namespace Cordis.Core;
+namespace Harness.Cordis.Core;
 
 /// <summary>
 /// Options accepted by <c>On</c> and <c>Once</c> (port of the TS EventOptions).

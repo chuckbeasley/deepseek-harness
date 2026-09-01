@@ -1,9 +1,9 @@
-namespace Dsh.AgentLoop;
+namespace Harness.AgentLoop;
 
 /// <summary>
 /// The default agent driver over queued turns and step-boundary input (port of the TS
 /// ReactLoopAgent). Every request is derived from the session log. One instance drives one
-/// <see cref="Dsh.Agent.Agent"/>: status, step boundaries, and inbox claims go through the
+/// <see cref="Harness.Agent.Agent"/>: status, step boundaries, and inbox claims go through the
 /// agent's own API, while the loop owns the phase machine, the per-activity abort signal, and
 /// the quiescence promise. Disposal quiescence: the activity token links the agent's lifecycle
 /// signal, so the registry's teardown (or a handle disposal) aborts the running turn, whose
@@ -12,7 +12,7 @@ namespace Dsh.AgentLoop;
 public sealed class LoopAgent
 {
     private readonly object _gate = new();
-    private readonly Dsh.Agent.Agent _agent;
+    private readonly Harness.Agent.Agent _agent;
     private readonly LoopRuntime _runtime;
     private readonly RuntimeContextProjection _runtimeContext;
     private readonly IReadOnlyList<Func<Task<RuntimeContextPart>>> _contextProviders;
@@ -33,7 +33,7 @@ public sealed class LoopAgent
     /// <param name="agent">the live agent to drive.</param>
     /// <param name="runtime">the resolved service dependencies.</param>
     /// <param name="contextProviders">dynamic runtime-context contributions evaluated per pre-step (empty by default).</param>
-    public LoopAgent(Context ownerCtx, Dsh.Agent.Agent agent, LoopRuntime runtime, IReadOnlyList<Func<Task<RuntimeContextPart>>>? contextProviders = null)
+    public LoopAgent(Context ownerCtx, Harness.Agent.Agent agent, LoopRuntime runtime, IReadOnlyList<Func<Task<RuntimeContextPart>>>? contextProviders = null)
     {
         _agent = agent ?? throw new ArgumentNullException(nameof(agent));
         _runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
@@ -43,7 +43,7 @@ public sealed class LoopAgent
     }
 
     /// <summary>The driven agent.</summary>
-    public Dsh.Agent.Agent Agent => _agent;
+    public Harness.Agent.Agent Agent => _agent;
 
     /// <summary>Whether a driver is active.</summary>
     public bool IsRunning { get { lock (_gate) return _running; } }
@@ -304,8 +304,8 @@ public sealed class LoopAgent
             var finish = assembler.Finish;
             var streamFailure = finish switch
             {
-                Dsh.Llm.Error error => error.Failure,
-                Dsh.Llm.Aborted aborted => aborted.Failure,
+                Harness.Llm.Error error => error.Failure,
+                Harness.Llm.Aborted aborted => aborted.Failure,
                 _ => null,
             };
             if (streamFailure is not null)

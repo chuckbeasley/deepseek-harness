@@ -1,4 +1,4 @@
-namespace Dsh.Sandbox;
+namespace Harness.Sandbox;
 
 /// <summary>
 /// Service Definition for the same-world process-confinement capability seam (C# port of

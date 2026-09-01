@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Dsh.Session.Titles;
+namespace Harness.Session.Titles;
 
 /// <summary>Title text normalization and UTF-8-safe truncation (port of the TS title normalize module).</summary>
 public static class TitleText

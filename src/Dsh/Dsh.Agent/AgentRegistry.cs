@@ -1,8 +1,8 @@
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Agent;
+namespace Harness.Agent;
 
 /// <summary>
 /// Live agent registry (ctx service "agents", port of the TS AgentRegistry surface relevant to the

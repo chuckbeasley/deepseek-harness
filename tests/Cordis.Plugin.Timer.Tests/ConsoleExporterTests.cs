@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Cordis.Logger.Console;
+using Harness.Cordis.Core;
+using Harness.Cordis.Logger.Console;
 
-namespace Cordis.Plugin.Timer.Tests;
+namespace Harness.Cordis.Plugin.Timer.Tests;
 
 /// <summary>
 /// Behavioral tests for the console exporter port: threshold filtering, effect-based

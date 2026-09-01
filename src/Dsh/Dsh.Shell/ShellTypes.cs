@@ -1,6 +1,6 @@
-using Dsh.Sandbox;
+using Harness.Sandbox;
 
-namespace Dsh.Shell;
+namespace Harness.Shell;
 
 /// <summary>Deployment-varying shell executor config; no tunable is hardcoded.</summary>
 public sealed record ShellConfig

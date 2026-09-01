@@ -1,19 +1,19 @@
-using Cordis.Core;
-using Dsh.Interaction;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Interaction;
+using Harness.Session;
 
-namespace Dsh.Interaction.Tests;
+namespace Harness.Interaction.Tests;
 
 /// <summary>Fixture helpers: a live agent on a fresh session with an open turn.</summary>
 internal static class Fixture
 {
-    public static (Context Ctx, Dsh.Agent.Agent Agent, Dsh.Session.Session Session) OpenTurnAgent(string id = "agent-1")
+    public static (Context Ctx, global::Harness.Agent.Agent Agent, global::Harness.Session.Session Session) OpenTurnAgent(string id = "agent-1")
     {
         var ctx = new Context();
         var store = new SessionStore(ctx);
         var session = store.Create(new SessionId(id));
         session.Append(new TurnStartEvent { Turn = 1 });
-        var agent = new Dsh.Agent.Agent(ctx, session);
+        var agent = new global::Harness.Agent.Agent(ctx, session);
         return (ctx, agent, session);
     }
 }
@@ -31,7 +31,7 @@ public static class ApprovalServiceTests
         {
             var store = new SessionStore(ctx);
             var session = store.Create(new SessionId("idle"));
-            var agent = new Dsh.Agent.Agent(ctx, session);
+            var agent = new global::Harness.Agent.Agent(ctx, session);
             var approval = new ApprovalService(ctx);
             var error = Assert.Throws<InvalidOperationException>(
                 () => approval.AskAsync(new ApprovalRequest(agent, "shell/run")).GetAwaiter().GetResult(),

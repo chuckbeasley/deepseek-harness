@@ -1,4 +1,4 @@
-namespace Dsh.Sdk.Client.Tests;
+namespace Harness.Sdk.Client.Tests;
 
 /// <summary>One disposable temp directory used as the child's DSH_HOME and cwd.</summary>
 internal sealed class TempDir : IDisposable

@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Tools;
+namespace Harness.Tools;
 
 /// <summary>
 /// A registered tool: its model-facing schema plus the execution function. The registry

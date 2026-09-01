@@ -1,4 +1,4 @@
-namespace Dsh.Web.Tests;
+namespace Harness.Web.Tests;
 
 /// <summary>
 /// Zero-dependency console test runner for the web capability seam. The host sandbox blocks
@@ -15,7 +15,7 @@ public static class Program
     /// <summary>Runs every registered test and returns the process exit code.</summary>
     public static int Main()
     {
-        Console.WriteLine("Dsh.Web - console assertions");
+        Console.WriteLine("Harness.Web - console assertions");
         Console.WriteLine();
 
         Run("WebRuntime: registered under the web key", WebRuntimeTests.Registered_UnderWebKey);

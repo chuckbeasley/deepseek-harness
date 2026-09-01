@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop;
+namespace Harness.AgentLoop;
 
 /// <summary>
 /// Concrete agent factory and driver service (ctx.agentLoop; port of the TS AgentLoop service
@@ -98,11 +98,11 @@ public sealed class AgentLoop : Service
     }
 
     /// <summary>Construct the driver, enter the registries, announce, and notify session-start.</summary>
-    private AgentHandle Publish(LoopRuntime runtime, SessionId id, AgentOptions? options, Dsh.Session.Session session, string source)
+    private AgentHandle Publish(LoopRuntime runtime, SessionId id, AgentOptions? options, Harness.Session.Session session, string source)
     {
         var registry = Ctx.Get<AgentRegistry>("agents")
             ?? throw new InvalidOperationException("agentLoop requires the \"agents\" registry");
-        var agent = new Dsh.Agent.Agent(Ctx, session, options);
+        var agent = new Harness.Agent.Agent(Ctx, session, options);
         var loop = new LoopAgent(Ctx, agent, runtime, _contextProviders);
         var handle = registry.Register(agent);
         lock (_loops) _loops[id] = loop;
@@ -118,7 +118,7 @@ public sealed class AgentLoop : Service
     }
 }
 
-/// <summary>Minimal <see cref="IDisposable"/> built from an action (Cordis.Core's is internal).</summary>
+/// <summary>Minimal <see cref="IDisposable"/> built from an action (Harness.Cordis.Core's is internal).</summary>
 internal sealed class LoopDisposable : IDisposable
 {
     private readonly Action _action;

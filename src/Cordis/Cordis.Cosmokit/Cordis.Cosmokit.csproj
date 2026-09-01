@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>Cordis.Cosmokit</RootNamespace>
+    <RootNamespace>Harness.Cordis.Cosmokit</RootNamespace>
     <AssemblyName>Cordis.Cosmokit</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>

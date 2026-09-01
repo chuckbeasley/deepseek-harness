@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Todo;
+namespace Harness.Todo;
 
 /// <summary>Lifecycle state of one todo item. Serialized with the TS wire strings.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]

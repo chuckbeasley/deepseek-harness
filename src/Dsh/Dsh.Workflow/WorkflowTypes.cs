@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Workflow;
+namespace Harness.Workflow;
 
 /// <summary>Identifies one workflow run. The engine mints UUIDs; tests may pass fixtures.</summary>
 [JsonConverter(typeof(StringIdJsonConverter<WorkflowRunId>))]

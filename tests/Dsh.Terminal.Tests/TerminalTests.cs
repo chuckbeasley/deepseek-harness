@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Terminal;
+using Harness.Cordis.Core;
+using Harness.Terminal;
 
-namespace Dsh.Terminal.Tests;
+namespace Harness.Terminal.Tests;
 
 /// <summary>The local provider's open/send/read/close lifecycle.</summary>
 public static class TerminalTests

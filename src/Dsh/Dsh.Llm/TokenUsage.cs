@@ -1,4 +1,4 @@
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>Token accounting for one model call (cache fields are optional).</summary>
 public sealed record TokenUsage(

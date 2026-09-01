@@ -1,6 +1,6 @@
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Agent.Tests;
+namespace Harness.Agent.Tests;
 
 /// <summary>Inbox claim order, notifications, and identity validation.</summary>
 internal static class InboxTests

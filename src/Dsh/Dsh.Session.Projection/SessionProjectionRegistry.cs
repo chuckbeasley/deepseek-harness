@@ -1,8 +1,8 @@
 using System.Runtime.CompilerServices;
-using Cordis.Core;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Session;
 
-namespace Dsh.Session.Projection;
+namespace Harness.Session.Projection;
 
 /// <summary>
 /// ctx.sessionProjections: the projection unit table and its drive. The service subscribes to
@@ -202,7 +202,7 @@ public sealed class SessionProjectionRegistry : Service
     }
 }
 
-/// <summary>Minimal <see cref="IDisposable"/> built from an action (Cordis.Core's is internal).</summary>
+/// <summary>Minimal <see cref="IDisposable"/> built from an action (Harness.Cordis.Core's is internal).</summary>
 internal sealed class DisposableAction : IDisposable
 {
     private readonly Action _action;

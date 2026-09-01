@@ -1,4 +1,4 @@
-namespace Cordis.Plugin.Include;
+namespace Harness.Cordis.Plugin.Include;
 
 /// <summary>
 /// Config for a file-backed loader subtree (port of the vendored Include config). The entry list

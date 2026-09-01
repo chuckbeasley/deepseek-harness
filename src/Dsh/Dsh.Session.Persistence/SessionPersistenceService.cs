@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Session;
 
-namespace Dsh.Session.Persistence;
+namespace Harness.Session.Persistence;
 
 /// <summary>One stored session's immutable metadata and replayed event log.</summary>
 /// <param name="Header">the format envelope parsed from the log's first line.</param>
@@ -292,7 +292,7 @@ public sealed class SessionPersistenceService : Service
     }
 }
 
-/// <summary>Minimal <see cref="IDisposable"/> built from an action (Cordis.Core's is internal).</summary>
+/// <summary>Minimal <see cref="IDisposable"/> built from an action (Harness.Cordis.Core's is internal).</summary>
 internal sealed class DisposableAction : IDisposable
 {
     private readonly Action _action;

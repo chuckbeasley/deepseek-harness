@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Hooks;
+namespace Harness.Hooks;
 
 /// <summary>
 /// Decode hook process outcomes for both dialects (port of codec.ts). Exit 0 may carry structured

@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop.Tests;
+namespace Harness.AgentLoop.Tests;
 
 /// <summary>Resume rehydrates the persisted log and continues turn numbering; the invariant guards dispatch.</summary>
 public static class ResumeAndInvariantTests

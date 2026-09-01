@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Attachment;
+namespace Harness.Attachment;
 
 /// <summary>Configuration for the local attachment backend: the root holding one object file per attachment plus the byte limit.</summary>
 /// <remarks>
@@ -150,7 +150,7 @@ public sealed class LocalAttachmentProvider : Service, IAttachmentService
     }
 
     /// <inheritdoc />
-    public Dsh.Llm.ImageAttachment SaveImage(byte[] data, string mediaType, string name)
+    public Harness.Llm.ImageAttachment SaveImage(byte[] data, string mediaType, string name)
     {
         ArgumentNullException.ThrowIfNull(data);
         if (data.Length > _maxBytes)
@@ -178,7 +178,7 @@ public sealed class LocalAttachmentProvider : Service, IAttachmentService
             }
         }
         var display = SanitizeName(name) ?? $"sha256:{hash}";
-        return new Dsh.Llm.ImageAttachment($"sha256:{hash}", facts.MediaType, data.Length, facts.Width, facts.Height, display);
+        return new Harness.Llm.ImageAttachment($"sha256:{hash}", facts.MediaType, data.Length, facts.Width, facts.Height, display);
     }
 
     /// <summary>The object file path for one attachment id.</summary>

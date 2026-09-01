@@ -1,4 +1,4 @@
-namespace Cordis.Cosmokit;
+namespace Harness.Cordis.Cosmokit;
 
 /// <summary>
 /// Shared filesystem path helpers for DeepSeek Harness user data (port of

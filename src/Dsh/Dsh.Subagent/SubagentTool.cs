@@ -1,10 +1,10 @@
 using System.Text.Json;
-using Dsh.Jobs;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Jobs;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.Subagent;
+namespace Harness.Subagent;
 
 /// <summary>
 /// The subagent delegation consumer (port of <c>@deepseek-ai/dsh-tool-subagent</c>, one-shot

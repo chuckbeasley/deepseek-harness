@@ -1,4 +1,4 @@
-namespace Dsh.Workflow.Tests;
+namespace Harness.Workflow.Tests;
 
 /// <summary>The workflow tool's label rule, interpreter object parsing, and pretty rendering.</summary>
 public static class WorkflowToolTests

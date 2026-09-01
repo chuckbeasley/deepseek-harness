@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Cordis.Schemastery;
+using Harness.Cordis.Core;
+using Harness.Cordis.Schemastery;
 
-namespace Dsh.Settings.Tests;
+namespace Harness.Settings.Tests;
 
 /// <summary>
 /// Settings seam tests (ported from packages/settings/{settings,settings-file}): registration and
@@ -243,7 +243,7 @@ public static class SettingsTests
         {
             var provider = new FileSettingsProvider(ctx, path);
             await provider.StartAsync();
-            Assert.Throws<Cordis.Schemastery.ValidationError>(
+            Assert.Throws<global::Harness.Cordis.Schemastery.ValidationError>(
                 () => provider.Register<Dictionary<string, object?>>("llm-test", schema),
                 "an invalid stored section must fail the registration itself");
         }

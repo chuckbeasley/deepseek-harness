@@ -1,4 +1,4 @@
-namespace Dsh.Sandbox.Tests;
+namespace Harness.Sandbox.Tests;
 
 /// <summary>The escalation ladder, argument-pairing validation, model-facing markers, and root derivation.</summary>
 public static class EscalationTests

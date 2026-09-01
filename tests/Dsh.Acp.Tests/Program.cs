@@ -1,4 +1,4 @@
-namespace Dsh.Acp.Tests;
+namespace Harness.Acp.Tests;
 
 /// <summary>Zero-dependency console test runner for the ACP server.</summary>
 public static class Program

@@ -1,4 +1,4 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR;
@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>Deployment-varying web host config; no tunable is hardcoded.</summary>
 public sealed record WebHostConfig(
@@ -152,7 +152,7 @@ public sealed class WebHostService : Service
     private static byte[]? ResolveSigningSecret(Context ctx)
     {
         const string secretRef = "DSH_WEB_SESSION_SECRET";
-        var credentials = ctx.Get<Dsh.Credentials.ICredentialsService>("credentials");
+        var credentials = ctx.Get<Harness.Credentials.ICredentialsService>("credentials");
         if (credentials is null) return null;
         var resolved = credentials.ResolveAsync(secretRef).GetAwaiter().GetResult();
         if (resolved is not null)

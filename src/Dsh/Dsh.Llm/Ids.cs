@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>Common shape of the branded string ids: a nominal wrapper over one string value.</summary>
 public interface IStringId

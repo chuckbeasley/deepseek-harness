@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.Workflow;
+namespace Harness.Workflow;
 
 /// <summary>
 /// Model-facing Consumer of the workflow capability: the <c>workflow</c> tool over

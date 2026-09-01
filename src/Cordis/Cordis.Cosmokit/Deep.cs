@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Globalization;
 
-namespace Cordis.Cosmokit;
+namespace Harness.Cordis.Cosmokit;
 
 /// <summary>Deep-clone and deep-equality helpers (port of cosmokit <c>types.ts</c>).</summary>
 public static class Deep

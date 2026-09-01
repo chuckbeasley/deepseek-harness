@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>default</LangVersion>
-    <RootNamespace>Dsh.Agent.Tests</RootNamespace>
+    <RootNamespace>Harness.Agent.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

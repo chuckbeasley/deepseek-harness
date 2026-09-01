@@ -1,10 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Tools;
 
-namespace Dsh.Terminal;
+namespace Harness.Terminal;
 
 /// <summary>
 /// Model-facing Consumer of the terminal capability: terminal_open, terminal_read,

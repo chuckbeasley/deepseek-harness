@@ -1,4 +1,4 @@
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>Typed error for LLM-related failures with a stable machine-readable code.</summary>
 public sealed class LlmError : Exception

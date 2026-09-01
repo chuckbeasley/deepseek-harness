@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.CordisRunner;
+namespace Harness.CordisRunner;
 
 /// <summary>
 /// The ported Cordis API catalog (the C# analog of the generated <c>api-catalog.ts</c>): the
@@ -128,7 +128,7 @@ public static class CordisApiCatalog
 
     private static JsonObject LoadToolsContract()
     {
-        var stream = typeof(CordisApiCatalog).Assembly.GetManifestResourceStream("Dsh.CordisRunner.tools-service-catalog.json")
+        var stream = typeof(CordisApiCatalog).Assembly.GetManifestResourceStream("Harness.CordisRunner.tools-service-catalog.json")
             ?? throw new InvalidOperationException("the tools service catalog resource is missing");
         using var reader = new StreamReader(stream);
         var node = JsonNode.Parse(reader.ReadToEnd())

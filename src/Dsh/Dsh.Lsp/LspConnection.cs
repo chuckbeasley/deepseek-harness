@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using Dsh.Subprocess;
+using Harness.Subprocess;
 
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>Static JSON helpers shared by the connection and the instance.</summary>
 internal static class LspJson
@@ -27,8 +27,8 @@ public record LspConnectionSpec(
 public delegate void LspConnectionWriter(Stream stdin, JsonRpcMessage message, Action<Exception?> done);
 
 /// <summary>
-/// The process-handle surface the connection needs from a spawn. The current Dsh.Subprocess seam has no
-/// pipe stdio modes, so this Dsh.Lsp-owned surface is the §9.2 fallback: the default spawner produces
+/// The process-handle surface the connection needs from a spawn. The current Harness.Subprocess seam has no
+/// pipe stdio modes, so this Harness.Lsp-owned surface is the §9.2 fallback: the default spawner produces
 /// <see cref="LspProcessHandle"/> directly on System.Diagnostics.Process, and a future seam extension
 /// (or the Wave 2 provider) adapts its handles to the same interface, keeping the connection code
 /// identical either way.
@@ -398,7 +398,7 @@ public sealed class LspConnection
 /// <summary>
 /// The §9.2 fallback process handle: spawns via System.Diagnostics.Process with all three stdio
 /// redirected, scrubs the ambient DSH_* environment before the spec's entries merge, retains a bounded
-/// UTF-8-safe stderr tail, and tree-terminates via Dsh.Subprocess.ProcessTree.Kill.
+/// UTF-8-safe stderr tail, and tree-terminates via Harness.Subprocess.ProcessTree.Kill.
 /// </summary>
 internal sealed class LspProcessHandle : ILspProcessHandle
 {

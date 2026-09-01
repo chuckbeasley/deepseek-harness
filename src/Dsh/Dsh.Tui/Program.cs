@@ -1,4 +1,4 @@
-namespace Dsh.Tui;
+namespace Harness.Tui;
 
 /// <summary>Standalone TUI entry (the CLI's tui profile calls <see cref="TuiApp.Run"/>).</summary>
 public static class Program

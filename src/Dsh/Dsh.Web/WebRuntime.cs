@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Llm;
+using Harness.Cordis.Core;
+using Harness.Llm;
 
-namespace Dsh.Web;
+namespace Harness.Web;
 
 /// <summary>Selection inputs for execution-time provider resolution.</summary>
 public sealed record WebRuntimeConfig(

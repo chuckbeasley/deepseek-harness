@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace Cordis.Cosmokit;
+namespace Harness.Cordis.Cosmokit;
 
 /// <summary>Time constants plus parsing and formatting helpers (port of cosmokit <c>time.ts</c>).</summary>
 public static class Time

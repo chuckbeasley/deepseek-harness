@@ -1,4 +1,4 @@
-namespace Cordis.Schemastery;
+namespace Harness.Cordis.Schemastery;
 
 /// <summary>A deprecated/experimental badge attached to schema metadata for form renderers.</summary>
 /// <param name="Text">Badge label, e.g. <c>deprecated</c>.</param>

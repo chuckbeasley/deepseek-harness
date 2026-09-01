@@ -1,4 +1,4 @@
-namespace Dsh.Session.Persistence;
+namespace Harness.Session.Persistence;
 
 /// <summary>How the JSONL backend makes appended session events durable.</summary>
 public enum FlushMode

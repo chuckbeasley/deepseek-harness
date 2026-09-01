@@ -1,7 +1,7 @@
-﻿using Dsh.Web.App.Slots;
+using Harness.Web.App.Slots;
 using Microsoft.AspNetCore.Components;
 
-namespace Dsh.Ui.Workspace;
+namespace Harness.Ui.Workspace;
 
 /// <summary>
 /// The workspace-list contribution (port of the TS ui-workspace browsing region): every workspace

@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Threading.Channels;
-using Cordis.Core;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Session;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The session remote methods (port of the session-controller slice this wave ports): the unary
@@ -72,7 +72,7 @@ public static class SessionRemotes
         // seq after a snapshot is the log count, not cursor + 1.
         long expected = session.Events.Count;
         using var subscription = ctx.On("session/event",
-            new Action<Dsh.Session.Session, SessionEvent>((liveSession, evt) =>
+            new Action<Harness.Session.Session, SessionEvent>((liveSession, evt) =>
             {
                 if (liveSession.Id != session.Id) return;
                 if (evt.Seq != expected)
@@ -109,7 +109,7 @@ public static class SessionRemotes
     }
 
     /// <summary>Resolve the session-kind address and the windowing args, failing loud on bad requests.</summary>
-    private static (Dsh.Session.Session Session, long ThroughSeq, long? BeforeSeq, int? MaxMessages) ResolvePageArgs(SessionStore sessions, JsonElement? args)
+    private static (Harness.Session.Session Session, long ThroughSeq, long? BeforeSeq, int? MaxMessages) ResolvePageArgs(SessionStore sessions, JsonElement? args)
     {
         var session = ResolveAddress(sessions, args);
         var throughSeq = LongArg(args, "throughSeq")
@@ -124,7 +124,7 @@ public static class SessionRemotes
     }
 
     /// <summary>Resolve one address object; only the session kind is ported this wave.</summary>
-    private static Dsh.Session.Session ResolveAddress(SessionStore sessions, JsonElement? args)
+    private static Harness.Session.Session ResolveAddress(SessionStore sessions, JsonElement? args)
     {
         var address = args is JsonElement element && element.TryGetProperty("address", out var addressValue)
             ? addressValue

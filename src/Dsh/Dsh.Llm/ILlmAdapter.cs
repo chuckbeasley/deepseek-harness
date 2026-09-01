@@ -1,4 +1,4 @@
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>
 /// Provider-wire adapter for the harness message and stream vocabulary. Implementations must

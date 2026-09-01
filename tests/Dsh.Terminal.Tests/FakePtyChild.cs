@@ -1,7 +1,7 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Dsh.Terminal.Tests;
+namespace Harness.Terminal.Tests;
 
 /// <summary>
 /// Scripted ConPTY client for the terminal tests, entered when <c>FAKE_PTY_CHILD=1</c> in the

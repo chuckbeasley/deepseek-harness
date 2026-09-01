@@ -1,7 +1,7 @@
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.SessionQuery;
+namespace Harness.SessionQuery;
 
 /// <summary>
 /// First-party semantic text extraction (port of extraction.ts). Structural boundaries, raw stream

@@ -1,4 +1,4 @@
-namespace Dsh.Web.App;
+namespace Harness.Web.App;
 
 /// <summary>
 /// The shell's copy dictionary (the C# half of the "client UI copy is locale-owned" rule): every

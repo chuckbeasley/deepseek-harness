@@ -1,7 +1,7 @@
-using Dsh.Session;
-using Dsh.Storage;
+using Harness.Session;
+using Harness.Storage;
 
-namespace Dsh.Workspace.Tests;
+namespace Harness.Workspace.Tests;
 
 /// <summary>
 /// The durable workspace registry: create/resolve/rename/delete/order, explicit session

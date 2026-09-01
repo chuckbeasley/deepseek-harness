@@ -1,4 +1,4 @@
-namespace Dsh.Sandbox.Tests;
+namespace Harness.Sandbox.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

@@ -1,4 +1,4 @@
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>
 /// One stdio language-server provider (port of the TS lsp-stdio provider, single-server form): a

@@ -1,7 +1,7 @@
-using Cordis.Cosmokit;
+using Harness.Cordis.Cosmokit;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Cordis.Tests;
+namespace Harness.Cordis.Tests;
 
 /// <summary>Thrown by <see cref="Assert"/> when a check fails; aborts the current test.</summary>
 public sealed class AssertionException : Exception

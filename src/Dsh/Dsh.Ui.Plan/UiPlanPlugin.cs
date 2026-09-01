@@ -1,8 +1,8 @@
-﻿using Dsh.Web.App;
-using Dsh.Web.App.Slots;
+using Harness.Web.App;
+using Harness.Web.App.Slots;
 using Microsoft.AspNetCore.Components;
 
-namespace Dsh.Ui.Plan;
+namespace Harness.Ui.Plan;
 
 /// <summary>
 /// The plan surface (port of the TS ui-plan): the <c>/plan</c> page showing the selected

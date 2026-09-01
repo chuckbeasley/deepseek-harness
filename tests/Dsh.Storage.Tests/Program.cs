@@ -1,4 +1,4 @@
-namespace Dsh.Storage.Tests;
+namespace Harness.Storage.Tests;
 
 /// <summary>Zero-dependency console test runner for the storage capability seam.</summary>
 public static class Program

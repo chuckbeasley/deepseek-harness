@@ -1,14 +1,14 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Session.Persistence;
-using Dsh.Shell;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Session.Persistence;
+using Harness.Shell;
+using Harness.Tools;
 
-namespace Dsh.Hooks;
+namespace Harness.Hooks;
 
 /// <summary>Plugin config for the Codex bridge: where the Codex hook config lives + the model name for payloads.</summary>
 public sealed record CodexBridgeConfig(
@@ -41,7 +41,7 @@ public sealed class CodexBridge : IDisposable
     private readonly DetachedRuns _detached = new();
     private readonly List<IDisposable> _disposers = new();
     private readonly IShellService _shell;
-    private readonly Dsh.AgentLoop.AgentLoop? _loop;
+    private readonly Harness.AgentLoop.AgentLoop? _loop;
     private readonly SessionPersistenceService? _persistence;
     private readonly Dictionary<(string Session, string CallId), UserMessage> _pendingContext = new();
     private int _handlerCounter;
@@ -59,7 +59,7 @@ public sealed class CodexBridge : IDisposable
         }
         _shell = ctx.Get<IShellService>("shell")
             ?? throw new InvalidOperationException("hooks-codex requires the \"shell\" row");
-        _loop = ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop");
+        _loop = ctx.Get<Harness.AgentLoop.AgentLoop>("agentLoop");
         _persistence = ctx.Get<SessionPersistenceService>("sessionPersistence");
         try
         {
@@ -155,7 +155,7 @@ public sealed class CodexBridge : IDisposable
 
         // Deliver post-tool contexts once the durable tool/result event commits, so the recorded
         // event order (result, then the next-step context splice) reproduces exactly.
-        _disposers.Add(_ctx.On("session/event", new Action<Dsh.Session.Session, SessionEvent>((session, evt) =>
+        _disposers.Add(_ctx.On("session/event", new Action<Harness.Session.Session, SessionEvent>((session, evt) =>
         {
             if (evt is not ToolResultEvent toolResult) return;
             var callId = (toolResult.Message.Source as ToolSource)?.CallId;
@@ -180,7 +180,7 @@ public sealed class CodexBridge : IDisposable
 
     /// <summary>Run and fold one configured Codex hook point; a supplied turn records the invoked/result pair inside that open turn.</summary>
     private async Task<MergedHookOutcome> RunPointAsync(string point, string matchQuery, object payload,
-        Dsh.Session.Session? session, long? turn, CancellationToken signal, bool plainStdoutAsContext)
+        Harness.Session.Session? session, long? turn, CancellationToken signal, bool plainStdoutAsContext)
     {
         if (!_groups.TryGetValue(point, out var groups)) return NeutralOutcome();
         var outputs = new List<HookOutput>();
@@ -243,22 +243,22 @@ public sealed class CodexBridge : IDisposable
         Source = new PluginSource { Plugin = PluginName },
     };
 
-    private void QueueNextStep(Dsh.Session.Session? session, ToolCallId callId, UserMessage? context)
+    private void QueueNextStep(Harness.Session.Session? session, ToolCallId callId, UserMessage? context)
     {
         if (context is null || session is null) return;
         _pendingContext[(session.Id.Value, callId.Value)] = context;
     }
 
-    private void InjectNextStep(Dsh.Session.Session? session, UserMessage? context)
+    private void InjectNextStep(Harness.Session.Session? session, UserMessage? context)
     {
         if (context is null || session is null) return;
         _loop?.GetLoop(session.Id)?.Inject(context);
     }
 
-    private static long LastTurn(Dsh.Session.Session session)
+    private static long LastTurn(Harness.Session.Session session)
         => session.Events.OfType<TurnStartEvent>().Select(evt => evt.Turn).DefaultIfEmpty(0).Last();
 
-    private Dictionary<string, object?> Base(Dsh.Agent.Agent? agent, string eventName)
+    private Dictionary<string, object?> Base(Harness.Agent.Agent? agent, string eventName)
     {
         var session = agent?.Session;
         return new Dictionary<string, object?>
@@ -273,7 +273,7 @@ public sealed class CodexBridge : IDisposable
         };
     }
 
-    private Dictionary<string, object?> TurnBase(Dsh.Agent.Agent? agent, string eventName)
+    private Dictionary<string, object?> TurnBase(Harness.Agent.Agent? agent, string eventName)
         => new(Base(agent, eventName)) { ["turn_id"] = agent is null ? 0 : LastTurn(agent.Session) };
 
     private Dictionary<string, object?> BuildSessionStartPayload(SessionStartPayload payload)
@@ -304,15 +304,15 @@ public sealed class CodexBridge : IDisposable
             ["tool_response"] = BlocksToText(result.Content),
         };
 
-    private Dictionary<string, object?> BuildStopPayload(Dsh.Agent.Agent agent)
+    private Dictionary<string, object?> BuildStopPayload(Harness.Agent.Agent agent)
         => new(TurnBase(agent, "Stop"))
         {
             ["stop_hook_active"] = false,
             ["last_assistant_message"] = null,
         };
 
-    private Dsh.Agent.Agent? AgentOf(Dsh.Session.Session session)
-        => _ctx.Get<Dsh.Agent.AgentRegistry>("agents")?.List().FirstOrDefault(agent => ReferenceEquals(agent.Session, session));
+    private Harness.Agent.Agent? AgentOf(Harness.Session.Session session)
+        => _ctx.Get<Harness.Agent.AgentRegistry>("agents")?.List().FirstOrDefault(agent => ReferenceEquals(agent.Session, session));
 
     /// <summary>Extract a <c>command</c> string from a tool call's parsed arguments, else ''.</summary>
     private static string CommandOf(JsonElement arguments)

@@ -4,7 +4,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Dsh.Sdk.Client</RootNamespace>
+    <RootNamespace>Harness.Sdk.Client</RootNamespace>
+    <!-- The public SDK surface (the .NET replacement for the retired Python SDK):
+         the package consumers restore. -->
+    <PackageId>Harness.Sdk</PackageId>
+    <Description>The Harness .NET client SDK: spawns the dsh runtime as a subprocess and drives typed session turns over the JSON-RPC line transport.</Description>
   </PropertyGroup>
 
   <ItemGroup>

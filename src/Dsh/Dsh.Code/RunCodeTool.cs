@@ -3,11 +3,11 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Jint;
 using Jint.Native;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.Code;
+namespace Harness.Code;
 
 /// <summary>
 /// The <c>run_code</c> tool (port of the TS PTC code mode with the worker-thread runtime replaced

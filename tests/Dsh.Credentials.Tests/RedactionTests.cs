@@ -1,6 +1,6 @@
-using Dsh.Credentials;
+using Harness.Credentials;
 
-namespace Dsh.Credentials.Tests;
+namespace Harness.Credentials.Tests;
 
 /// <summary>Masking and scrubbing behavior of <see cref="CredentialsRedaction"/>.</summary>
 public static class RedactionTests

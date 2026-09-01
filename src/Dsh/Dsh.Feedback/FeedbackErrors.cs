@@ -1,4 +1,4 @@
-namespace Dsh.Feedback;
+namespace Harness.Feedback;
 
 /// <summary>Stable error codes for rejected feedback writes (TS <c>MessageFeedbackFailure</c> codes).</summary>
 public static class FeedbackErrorCode

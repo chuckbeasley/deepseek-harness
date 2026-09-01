@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Cordis.Plugin.Loader;
+namespace Harness.Cordis.Plugin.Loader;
 
 /// <summary>Root loader configuration (port of the vendored <c>Loader.Config</c>).</summary>
 public sealed class LoaderConfig

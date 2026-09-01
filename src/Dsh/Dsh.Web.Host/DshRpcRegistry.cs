@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// One registered RPC method (the runtime half of the Typert local registry port): the canonical

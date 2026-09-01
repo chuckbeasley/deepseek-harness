@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Subagent;
+namespace Harness.Subagent;
 
 /// <summary>
 /// One published SDK child run: the output fold over the child session events, the terminal

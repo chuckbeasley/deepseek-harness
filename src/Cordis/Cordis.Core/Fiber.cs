@@ -1,4 +1,4 @@
-namespace Cordis.Core;
+namespace Harness.Cordis.Core;
 
 /// <summary>
 /// Lifecycle state of a plugin fiber (port of the vendored Cordis FiberState). Pending — waiting

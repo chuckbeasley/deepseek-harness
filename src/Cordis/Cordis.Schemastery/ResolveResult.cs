@@ -1,4 +1,4 @@
-namespace Cordis.Schemastery;
+namespace Harness.Cordis.Schemastery;
 
 /// <summary>
 /// The result of one schema resolution: the normalized output plus an optional

@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Cordis.Plugin.Loader;
+using Harness.Cordis.Core;
+using Harness.Cordis.Plugin.Loader;
 
-namespace Cordis.Plugin.Loader.Tests;
+namespace Harness.Cordis.Plugin.Loader.Tests;
 
 internal sealed class TestService
 {

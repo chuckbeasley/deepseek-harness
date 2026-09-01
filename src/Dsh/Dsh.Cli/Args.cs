@@ -1,4 +1,4 @@
-namespace Dsh.Cli;
+namespace Harness.Cli;
 
 /// <summary>One resolved <c>dsh</c> invocation (port of the TS <c>DshInvocation</c> union).</summary>
 public abstract record DshInvocation
@@ -310,7 +310,7 @@ public static class Args
         Console.Out.WriteLine("manage a profile's plugin bundles by editing its profile.json manifest");
         Console.Out.WriteLine();
         Console.Out.WriteLine("Arguments:");
-        Console.Out.WriteLine("  args  the action and its bundle argument (add <bundle>, remove <bundle>, list)");
+        Console.Out.WriteLine("  args  the action and its bundle argument (add <bundle> [--source <feed>], remove <bundle>, list)");
         Console.Out.WriteLine();
         Console.Out.WriteLine("Options:");
         Console.Out.WriteLine("  --profile <name>  the profile whose plugins to manage (initialized on first use)");

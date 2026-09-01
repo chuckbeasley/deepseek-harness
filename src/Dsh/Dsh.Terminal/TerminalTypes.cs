@@ -1,4 +1,4 @@
-namespace Dsh.Terminal;
+namespace Harness.Terminal;
 
 /// <summary>Registry-minted terminal session identity.</summary>
 public readonly record struct TerminalSessionId(string Value)

@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>default</LangVersion>
-    <RootNamespace>Cordis.Plugin.Include.Tests</RootNamespace>
+    <RootNamespace>Harness.Cordis.Plugin.Include.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

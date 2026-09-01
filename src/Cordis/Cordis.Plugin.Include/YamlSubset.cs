@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 
-namespace Cordis.Plugin.Include;
+namespace Harness.Cordis.Plugin.Include;
 
 /// <summary>Error thrown when a YAML document is outside the supported subset.</summary>
 public sealed class YamlParseException : Exception

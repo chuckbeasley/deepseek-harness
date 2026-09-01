@@ -1,8 +1,8 @@
-﻿using Cordis.Core;
-using Dsh.Credentials;
-using Dsh.Web.Host;
+using Harness.Cordis.Core;
+using Harness.Credentials;
+using Harness.Web.Host;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The credentials remotes: the batched describe facts, the grammar and batch bounds, and the
@@ -180,9 +180,9 @@ public static class CredentialsRemotesTests
             },
             name => environment.TryGetValue(name, out var value) ? value : null);
         var registry = new DshRpcRegistry(ctx);
-        _ = registry.Register(Dsh.Web.Host.CredentialsRemotes.Describe(ctx));
-        _ = registry.Register(Dsh.Web.Host.CredentialsRemotes.Set(ctx));
-        _ = registry.Register(Dsh.Web.Host.CredentialsRemotes.Unset(ctx));
+        _ = registry.Register(global::Harness.Web.Host.CredentialsRemotes.Describe(ctx));
+        _ = registry.Register(global::Harness.Web.Host.CredentialsRemotes.Set(ctx));
+        _ = registry.Register(global::Harness.Web.Host.CredentialsRemotes.Unset(ctx));
         return (ctx, registry, credentials);
     }
 

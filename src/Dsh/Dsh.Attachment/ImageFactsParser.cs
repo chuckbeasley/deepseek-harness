@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Dsh.Attachment;
+namespace Harness.Attachment;
 
 /// <summary>Parsed image facts for one committed attachment.</summary>
 public sealed record ImageFacts(string MediaType, int Width, int Height);

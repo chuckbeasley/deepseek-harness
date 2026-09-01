@@ -1,7 +1,7 @@
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Session.Titles;
+namespace Harness.Session.Titles;
 
 /// <summary>
 /// The sole session-title provider: the first user prompt becomes the title. The first

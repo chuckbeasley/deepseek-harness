@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Llm;
+using Harness.Tools;
 
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>The raw, schema-typed <c>lsp</c> tool arguments (one-based model coordinates).</summary>
 public sealed record LspToolArgs(string Operation, string FilePath, int Line, int Character);

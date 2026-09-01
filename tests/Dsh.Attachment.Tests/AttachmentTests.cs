@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Dsh.Attachment.Tests;
+namespace Harness.Attachment.Tests;
 
 /// <summary>Behavior tests for the attachment capability seam (ingest/list/read/remove, size validation).</summary>
 public static class AttachmentTests

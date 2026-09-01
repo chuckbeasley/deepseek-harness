@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Workspace;
+namespace Harness.Workspace;
 
 /// <summary>
 /// Local provider for ctx.workspace (port of the workspace identity/root core of

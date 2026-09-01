@@ -1,4 +1,4 @@
-namespace Dsh.Jobs;
+namespace Harness.Jobs;
 
 /// <summary>
 /// Service Definition of the background-job capability seam (ctx.jobs). It owns the contract for

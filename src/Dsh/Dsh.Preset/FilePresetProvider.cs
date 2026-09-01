@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
-using Cordis.Plugin.Include;
-using Cordis.Plugin.Loader;
+using Harness.Cordis.Plugin.Include;
+using Harness.Cordis.Plugin.Loader;
 
-namespace Dsh.Preset;
+namespace Harness.Preset;
 
 /// <summary>
 /// Filesystem discovery and composition of agent presets (port of the TS discovery module plus

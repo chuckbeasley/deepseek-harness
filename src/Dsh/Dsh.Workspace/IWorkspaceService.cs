@@ -1,4 +1,4 @@
-namespace Dsh.Workspace;
+namespace Harness.Workspace;
 
 /// <summary>
 /// The workspace capability Service Definition (port of the workspace capability seam of

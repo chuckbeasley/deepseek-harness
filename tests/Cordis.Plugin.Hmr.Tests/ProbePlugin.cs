@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Cordis.Plugin.Loader;
+using Harness.Cordis.Core;
+using Harness.Cordis.Plugin.Loader;
 
-namespace Cordis.Plugin.Hmr.Tests;
+namespace Harness.Cordis.Plugin.Hmr.Tests;
 
 /// <summary>Test plugin that records the config value it last saw and registers a service.</summary>
 [CordisPlugin("probe")]

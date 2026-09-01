@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text;
 
-namespace Dsh.Llm.DeepSeek.Tests;
+namespace Harness.Llm.DeepSeek.Tests;
 
 /// <summary>
 /// In-memory HttpMessageHandler: records every request and serves scripted responses. No network

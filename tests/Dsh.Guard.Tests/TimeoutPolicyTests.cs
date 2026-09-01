@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Guard.Tests;
+namespace Harness.Guard.Tests;
 
 /// <summary>
 /// Tool-timeout-policy coverage (ported from the TS spec): delegation for unconfigured tools, the

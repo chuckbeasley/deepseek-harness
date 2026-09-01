@@ -1,8 +1,8 @@
-namespace Cordis.Plugin.Timer.Tests;
+namespace Harness.Cordis.Plugin.Timer.Tests;
 
 /// <summary>
 /// Zero-dependency console assertion runner for the Phase 1 timer/logger port (mirrors
-/// <c>tests\Cordis.Tests</c>). Each entry runs one scenario; failures are collected and the
+/// <c>tests\global::Harness.Cordis.Tests</c>). Each entry runs one scenario; failures are collected and the
 /// process exits non-zero when any assertion fails.
 /// </summary>
 internal static class Program
@@ -59,7 +59,7 @@ internal static class Program
         }
 
         Console.WriteLine();
-        Console.WriteLine($"== Cordis.Plugin.Timer.Tests: {passed} passed, {failures.Count} failed of {tests.Length} ==");
+        Console.WriteLine($"== Harness.Cordis.Plugin.Timer.Tests: {passed} passed, {failures.Count} failed of {tests.Length} ==");
         foreach (var failure in failures)
         {
             Console.WriteLine($"  - {failure}");

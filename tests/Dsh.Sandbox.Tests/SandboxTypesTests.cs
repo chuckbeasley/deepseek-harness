@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Sandbox.Tests;
+namespace Harness.Sandbox.Tests;
 
 /// <summary>The wire names, JSON wire shape, and error vocabulary of the sandbox value types.</summary>
 public static class SandboxTypesTests

@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Cordis.Cosmokit;
+namespace Harness.Cordis.Cosmokit;
 
 /// <summary>String case, path, and property formatting helpers (port of cosmokit <c>string.ts</c>).</summary>
 public static class Strings

@@ -1,4 +1,4 @@
-namespace Dsh.Sdk.Protocol;
+namespace Harness.Sdk.Protocol;
 
 /// <summary>Wire method names and the wire-stable server identity (the TS constants).</summary>
 public static class SdkProtocol
@@ -70,7 +70,7 @@ public sealed record SdkEncodedImageBlock(
 public abstract record SdkPromptContentBlock
 {
     /// <summary>One ordinary durable content block.</summary>
-    public sealed record Block(Dsh.Llm.ContentBlock Content) : SdkPromptContentBlock;
+    public sealed record Block(Harness.Llm.ContentBlock Content) : SdkPromptContentBlock;
 
     /// <summary>One inline raster image awaiting admission.</summary>
     public sealed record Image(SdkEncodedImageBlock Value) : SdkPromptContentBlock;
@@ -125,7 +125,7 @@ public sealed record SubagentFinishedNotification(
     /// <summary>Deployment-mapped run outcome (<c>ok</c> or <c>error</c>).</summary>
     string Status,
     /// <summary>The provider-reported stop reason.</summary>
-    Dsh.Subagent.SubagentStopReason StopReason,
+    Harness.Subagent.SubagentStopReason StopReason,
     /// <summary>The child's selected assistant output; absent when the child produced none.</summary>
-    IReadOnlyList<Dsh.Llm.ContentBlock>? LastAssistantMessage = null);
+    IReadOnlyList<Harness.Llm.ContentBlock>? LastAssistantMessage = null);
 

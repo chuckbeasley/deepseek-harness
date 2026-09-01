@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Dsh.Feedback.Tests;
+namespace Harness.Feedback.Tests;
 
 public static class FeedbackTests
 {

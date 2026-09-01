@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.CordisRunner;
+namespace Harness.CordisRunner;
 
 /// <summary>One immutable package version stored on a dynamic plugin.</summary>
 public sealed record DynamicCordisDefinition(

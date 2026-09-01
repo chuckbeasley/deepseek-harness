@@ -1,11 +1,11 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Jobs;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Jobs;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.Jobs.Tests;
+namespace Harness.Jobs.Tests;
 
 /// <summary>
 /// The job tools executed through <see cref="ToolRuntime"/>: job_output's consuming reads and
@@ -13,7 +13,7 @@ namespace Dsh.Jobs.Tests;
 /// </summary>
 public static class JobToolsTests
 {
-    private static ToolExecutionInput Input(string callId, string name, JsonElement args, Dsh.Session.Session? session = null)
+    private static ToolExecutionInput Input(string callId, string name, JsonElement args, global::Harness.Session.Session? session = null)
         => new(new ToolCallId(callId), name, args, CancellationToken.None) { Session = session };
 
     private static JsonElement Args(object arguments)

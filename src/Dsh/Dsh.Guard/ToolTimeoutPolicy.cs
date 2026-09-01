@@ -1,8 +1,8 @@
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Tools;
 
-namespace Dsh.Guard;
+namespace Harness.Guard;
 
 /// <summary>
 /// Per-tool timeout configuration (port of the TS tool-declared <c>timeoutMs</c> budget, moved

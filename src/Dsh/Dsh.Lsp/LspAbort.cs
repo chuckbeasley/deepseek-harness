@@ -1,4 +1,4 @@
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>
 /// Shared cancellation helpers (port of <c>abort.ts</c>): reason classification for an aborted token,

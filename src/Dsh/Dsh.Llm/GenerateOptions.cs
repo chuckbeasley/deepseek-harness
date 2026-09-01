@@ -1,9 +1,9 @@
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>
 /// A single model request, fully assembled. <see cref="SessionId"/> is the owning session's id
-/// for loop-built requests; it travels as a plain string so Dsh.Llm keeps no reference on
-/// Dsh.Session. Dsh.AgentLoop sets it on every request it builds and its invariant verifies the
+/// for loop-built requests; it travels as a plain string so Harness.Llm keeps no reference on
+/// Harness.Session. Harness.AgentLoop sets it on every request it builds and its invariant verifies the
 /// request against that live session's log. <see cref="Purpose"/> marks auxiliary calls (the TS
 /// <c>purpose</c> union: <c>"compaction"</c> summarization) that ride the same session binding
 /// but are exempt from the loop-request reconstruction invariant.

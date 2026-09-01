@@ -1,4 +1,4 @@
-namespace Dsh.Settings.Tests;
+namespace Harness.Settings.Tests;
 
 /// <summary>Zero-dependency console runner for the Settings port tests.</summary>
 public static class Program

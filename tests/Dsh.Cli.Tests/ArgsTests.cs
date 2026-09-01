@@ -1,4 +1,4 @@
-namespace Dsh.Cli.Tests;
+namespace Harness.Cli.Tests;
 
 /// <summary>The launcher-args acceptance and rejection cases (port of apps/cli/tests/args.spec.ts).</summary>
 public static class ArgsTests

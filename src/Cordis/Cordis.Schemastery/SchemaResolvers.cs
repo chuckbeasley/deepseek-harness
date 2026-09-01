@@ -2,9 +2,9 @@ using System.Collections;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Cordis.Cosmokit;
+using Harness.Cordis.Cosmokit;
 
-namespace Cordis.Schemastery;
+namespace Harness.Cordis.Schemastery;
 
 /// <summary>
 /// Per-type validation logic and type-string formatters, mirroring the

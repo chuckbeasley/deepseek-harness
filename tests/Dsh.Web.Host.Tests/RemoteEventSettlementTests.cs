@@ -3,13 +3,13 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.Interaction;
-using Dsh.Session;
-using Dsh.Web.Host;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.Interaction;
+using Harness.Session;
+using Harness.Web.Host;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The $events waterfall settlement over a real Kestrel host: the mux $events stream forwards an
@@ -216,7 +216,7 @@ public static class RemoteEventSettlementTests
         public required HttpClient Client { get; init; }
         public required ApprovalService Approval { get; init; }
         public required UserQuestionService UserQuestions { get; init; }
-        public required Dsh.Agent.Agent Agent { get; init; }
+        public required global::Harness.Agent.Agent Agent { get; init; }
 
         public static Harness Start()
         {
@@ -230,7 +230,7 @@ public static class RemoteEventSettlementTests
             var store = new SessionStore(ctx);
             var session = store.Create(new SessionId("web-approval"));
             session.Append(new TurnStartEvent { Turn = 1 });
-            var agent = new Dsh.Agent.Agent(ctx, session);
+            var agent = new global::Harness.Agent.Agent(ctx, session);
             var listener = new TcpListener(IPAddress.Loopback, 0);
             listener.Start();
             var port = ((IPEndPoint)listener.LocalEndpoint).Port;

@@ -1,7 +1,7 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 using Xunit;
 
-namespace Cordis.Core.Tests;
+namespace Harness.Cordis.Core.Tests;
 
 public class ServiceTests
 {

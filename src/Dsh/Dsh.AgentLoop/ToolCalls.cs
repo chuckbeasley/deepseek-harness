@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop;
+namespace Harness.AgentLoop;
 
 /// <summary>
 /// Schedules one assistant step's tool calls in model order (port of the TS tool-calls module).
@@ -19,7 +19,7 @@ public static class ToolCallScheduler
     /// the AgentLoop configuration boundary.
     /// </summary>
     public static async Task<bool> ExecuteAsync(
-        Dsh.Agent.Agent agent, ToolRuntime tools, long turn, long step,
+        Harness.Agent.Agent agent, ToolRuntime tools, long turn, long step,
         IReadOnlyList<ToolCallBlock> toolCalls, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(tools);
@@ -77,24 +77,24 @@ public static class ToolCallScheduler
     /// env, no spill service, a non-text result, or a storage failure keeps the original. The
     /// product bundles adopt the policy row at cutover; the env is the snapshot config channel.
     /// </summary>
-    private static ToolExecutionResult ApplySpillPolicy(Dsh.Agent.Agent agent, ToolCallBlock call, ToolExecutionResult result)
+    private static ToolExecutionResult ApplySpillPolicy(Harness.Agent.Agent agent, ToolCallBlock call, ToolExecutionResult result)
     {
         if (result is not ToolExecutionSuccess success) return result;
         if (call.Name == "read") return result; // avoid a read -> spill -> read-again loop
         var envCap = Environment.GetEnvironmentVariable("DSH_SNAPSHOT_SPILL_MAX_BYTES");
         if (envCap is null || !int.TryParse(envCap, out var cap) || cap < 0) return result;
-        var spill = agent.Owner.Get<Dsh.Spill.ISpillService>("spill");
+        var spill = agent.Owner.Get<Harness.Spill.ISpillService>("spill");
         if (spill is null) return result;
         var blocks = success.Blocks;
         if (blocks.Count == 0 || blocks.Any(block => block is not TextBlock)) return result;
         var text = string.Concat(blocks.Cast<TextBlock>().Select(block => block.Text));
-        var replaced = Dsh.Spill.SpillPolicy.Replacement(text, agent.Session.Id.Value, $"{call.Name}.txt", spill, cap);
+        var replaced = Harness.Spill.SpillPolicy.Replacement(text, agent.Session.Id.Value, $"{call.Name}.txt", spill, cap);
         if (replaced is null) return result;
         return success with { Blocks = new ContentBlock[] { new TextBlock(replaced) } };
     }
 
     /// <summary>Append a model-ordered result linked to its call event.</summary>
-    private static void AppendToolResult(Dsh.Session.Session session, long turn, long step, ToolCallBlock call, ToolExecutionResult result, long callSeq)
+    private static void AppendToolResult(Harness.Session.Session session, long turn, long step, ToolCallBlock call, ToolExecutionResult result, long callSeq)
     {
         session.Append(new ToolResultEvent
         {
@@ -112,7 +112,7 @@ public static class ToolCallScheduler
     }
 
     /// <summary>Append the durable result for a model call skipped after cancellation (its call event is already logged).</summary>
-    private static void AppendSkipped(Dsh.Session.Session session, long turn, long step, ToolCallBlock call, long callSeq)
+    private static void AppendSkipped(Harness.Session.Session session, long turn, long step, ToolCallBlock call, long callSeq)
     {
         var content = new ContentBlock[] { new TextBlock("Error: tool call aborted before dispatch") };
         session.Append(new ToolResultEvent

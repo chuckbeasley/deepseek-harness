@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace Cordis.Cosmokit;
+namespace Harness.Cordis.Cosmokit;
 
 /// <summary>Array set and normalization helpers (port of cosmokit <c>array.ts</c>).</summary>
 public static class Arrays

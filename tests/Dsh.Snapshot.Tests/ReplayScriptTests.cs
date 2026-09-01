@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Dsh.Llm;
-using Dsh.Llm.Replay;
+using Harness.Llm;
+using Harness.Llm.Replay;
 
-namespace Dsh.Snapshot.Tests;
+namespace Harness.Snapshot.Tests;
 
 /// <summary>Unit coverage for the recorded-session script derivation (port of the TS llm-replay specs).</summary>
 public static class ReplayScriptTests
@@ -67,7 +67,7 @@ public static class ReplayScriptTests
 
     public static void Install_ConsumptionCheck_ReportsUnderruns()
     {
-        var ctx = new Cordis.Core.Context();
+        var ctx = new global::Harness.Cordis.Core.Context();
         var llm = new LlmRuntime(ctx);
         var handle = ReplayInstall.Install(llm, new ReplayConfig
         {

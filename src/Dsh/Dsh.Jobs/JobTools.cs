@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.Jobs;
+namespace Harness.Jobs;
 
 /// <summary>
 /// Model-facing Consumer of the background-job capability: the <c>job_output</c>, <c>job_list</c>,

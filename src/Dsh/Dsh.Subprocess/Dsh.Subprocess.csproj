@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Dsh.Subprocess</RootNamespace>
+    <RootNamespace>Harness.Subprocess</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

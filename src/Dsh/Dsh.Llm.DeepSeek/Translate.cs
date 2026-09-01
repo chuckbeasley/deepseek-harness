@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Llm.DeepSeek;
+namespace Harness.Llm.DeepSeek;
 
 /// <summary>One open block under assembly inside <see cref="Translate"/>.</summary>
 internal sealed class OpenBlock

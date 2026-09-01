@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>
 /// Raw streaming protocol emitted by adapters. Block indexes correlate interleaved deltas, and

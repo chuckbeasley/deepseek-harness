@@ -1,6 +1,6 @@
-﻿using System.Reflection;
+using System.Reflection;
 
-namespace Dsh.Web.App;
+namespace Harness.Web.App;
 
 /// <summary>
 /// The routed pages contributed by ui-* packages: the static Router scans the shell assembly

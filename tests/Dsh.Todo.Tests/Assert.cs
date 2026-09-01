@@ -1,4 +1,4 @@
-namespace Dsh.Todo.Tests;
+namespace Harness.Todo.Tests;
 
 /// <summary>Test failure carrying one assertion message.</summary>
 public sealed class AssertionException : Exception

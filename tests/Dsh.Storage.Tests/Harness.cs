@@ -1,4 +1,4 @@
-namespace Dsh.Storage.Tests;
+namespace Harness.Storage.Tests;
 
 /// <summary>
 /// One booted storage spine: a context with the JSON file provider over a fresh temp root.

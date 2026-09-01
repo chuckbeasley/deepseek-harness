@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Sandbox;
+namespace Harness.Sandbox;
 
 /// <summary>Configuration for the Landlock sidecar backend.</summary>
 public sealed record LandlockSidecarConfig(

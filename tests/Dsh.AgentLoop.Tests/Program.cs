@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop.Tests;
+namespace Harness.AgentLoop.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

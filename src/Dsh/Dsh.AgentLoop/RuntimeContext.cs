@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop;
+namespace Harness.AgentLoop;
 
 /// <summary>
 /// Tracks the last retained runtime-context snapshot without owning its commit (port of the TS
@@ -16,7 +16,7 @@ public sealed class RuntimeContextProjection
     /// </summary>
     /// <param name="ownerCtx">the context whose <c>session/event</c> stream is observed.</param>
     /// <param name="session">the session receiving projected messages.</param>
-    public RuntimeContextProjection(Context ownerCtx, Dsh.Session.Session session)
+    public RuntimeContextProjection(Context ownerCtx, Harness.Session.Session session)
     {
         ArgumentNullException.ThrowIfNull(ownerCtx);
         ArgumentNullException.ThrowIfNull(session);
@@ -30,7 +30,7 @@ public sealed class RuntimeContextProjection
             _retained = (owned.Seq, TextOf(owned.Message));
             break;
         }
-        ownerCtx.On("session/event", (Delegate)(Action<Dsh.Session.Session, SessionEvent>)((subject, evt) =>
+        ownerCtx.On("session/event", (Delegate)(Action<Harness.Session.Session, SessionEvent>)((subject, evt) =>
         {
             if (!ReferenceEquals(subject, session)) return;
             if (evt is UserMessageEvent { Message: { Source: PluginSource { Plugin: AgentLoopConstants.RuntimeContextSource } } } committed)

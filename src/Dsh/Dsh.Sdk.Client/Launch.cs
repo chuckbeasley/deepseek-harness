@@ -1,4 +1,4 @@
-namespace Dsh.Sdk.Client;
+namespace Harness.Sdk.Client;
 
 /// <summary>Internal generic process launch used by the transport and fake-runtime tests (the TS <c>RuntimeProcessOptions</c>).</summary>
 public sealed record RuntimeProcessOptions(

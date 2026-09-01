@@ -1,4 +1,4 @@
-namespace Cordis.Plugin.Loader.Tests;
+namespace Harness.Cordis.Plugin.Loader.Tests;
 
 /// <summary>
 /// Zero-dependency console test runner for the Phase 1 loader port. The host sandbox
@@ -15,7 +15,7 @@ public static class Program
     /// <summary>Runs every registered test and returns the process exit code.</summary>
     public static int Main()
     {
-        Console.WriteLine("Cordis.Plugin.Loader Phase 1 - console assertions");
+        Console.WriteLine("Harness.Cordis.Plugin.Loader Phase 1 - console assertions");
         Console.WriteLine();
 
         Run("Ordered load: rows register services in row order", LoaderTests.OrderedLoad_RegistersServicesInRowOrder);

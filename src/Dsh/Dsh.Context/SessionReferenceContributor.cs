@@ -1,10 +1,10 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Context;
+namespace Harness.Context;
 
 /// <summary>
 /// Canonical session-reference URI and mention encoding (port of session-reference/uri.ts):
@@ -103,14 +103,14 @@ public sealed class SessionReferenceContributor : IContextContributor
     /// <summary>The contributor's stable key.</summary>
     public const string DefaultKey = "session-reference";
 
-    private readonly Func<Dsh.Session.SessionId, Dsh.Session.Session?> _resolver;
+    private readonly Func<Harness.Session.SessionId, Harness.Session.Session?> _resolver;
     private readonly int _maxMessages;
 
     /// <summary>Create the contributor over a session resolver.</summary>
     /// <param name="resolver">maps a referenced session id to its live session; a null result fails loud.</param>
     /// <param name="maxMessages">maximum derived messages contributed per referenced session.</param>
     public SessionReferenceContributor(
-        Func<Dsh.Session.SessionId, Dsh.Session.Session?> resolver,
+        Func<Harness.Session.SessionId, Harness.Session.Session?> resolver,
         int maxMessages = 10)
     {
         _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
@@ -123,7 +123,7 @@ public sealed class SessionReferenceContributor : IContextContributor
     public string Key => DefaultKey;
 
     /// <inheritdoc />
-    public Task<ContextSection?> ContributeAsync(Dsh.Session.Session session, CancellationToken cancellationToken = default)
+    public Task<ContextSection?> ContributeAsync(Harness.Session.Session session, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(session);
         cancellationToken.ThrowIfCancellationRequested();
@@ -139,7 +139,7 @@ public sealed class SessionReferenceContributor : IContextContributor
         if (mentions.Count == 0) return Task.FromResult<ContextSection?>(null);
 
         var sections = new List<string>();
-        var seen = new HashSet<Dsh.Session.SessionId>();
+        var seen = new HashSet<Harness.Session.SessionId>();
         foreach (var mention in mentions)
         {
             if (mention.SessionId == session.Id.Value)
@@ -148,8 +148,8 @@ public sealed class SessionReferenceContributor : IContextContributor
                     $"session \"{mention.SessionId}\" cannot reference itself",
                     SessionReferenceErrorCodes.SelfReference);
             }
-            if (!seen.Add(new Dsh.Session.SessionId(mention.SessionId))) continue;
-            var referenced = _resolver(new Dsh.Session.SessionId(mention.SessionId))
+            if (!seen.Add(new Harness.Session.SessionId(mention.SessionId))) continue;
+            var referenced = _resolver(new Harness.Session.SessionId(mention.SessionId))
                 ?? throw new SessionReferenceError(
                     $"failed to read referenced session \"{mention.SessionId}\"",
                     SessionReferenceErrorCodes.ReadFailed);
@@ -159,7 +159,7 @@ public sealed class SessionReferenceContributor : IContextContributor
         return Task.FromResult<ContextSection?>(new ContextSection(Key, string.Join("\n\n", sections)));
     }
 
-    private string RenderReferencedSession(ParsedSessionReference mention, Dsh.Session.Session referenced)
+    private string RenderReferencedSession(ParsedSessionReference mention, Harness.Session.Session referenced)
     {
         var lines = referenced.DeriveMessages()
             .TakeLast(_maxMessages)

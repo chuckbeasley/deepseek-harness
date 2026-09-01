@@ -1,12 +1,12 @@
 using System.Text.Json;
 using System.Threading.Channels;
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.Jobs;
-using Dsh.Session;
-using Dsh.Session.Projection;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.Jobs;
+using Harness.Session;
+using Harness.Session.Projection;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The session control stream (port of the TS session-control feed): one baseline frame with the
@@ -25,13 +25,13 @@ public static class SessionControlRemotes
     /// <summary>The session-event serializer: the session log's polymorphic codecs, camel-cased for the wire; rebuilt when the event-type registry grows.</summary>
     private static JsonSerializerOptions WireJson()
     {
-        var revision = Dsh.Session.SessionEventTypes.Revision;
+        var revision = Harness.Session.SessionEventTypes.Revision;
         if (_wireJson is null || _wireJsonRevision != revision)
         {
             _wireJson = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                TypeInfoResolver = Dsh.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
+                TypeInfoResolver = Harness.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
             };
             _wireJsonRevision = revision;
         }
@@ -121,7 +121,7 @@ public static class SessionControlRemotes
     }
 
     /// <summary>One session's queued items: next-turn prompts then next-step input, all placed <c>queued</c>.</summary>
-    private static object[] QueueItems(Dsh.Agent.Agent agent)
+    private static object[] QueueItems(Harness.Agent.Agent agent)
     {
         var items = new List<object>();
         foreach (var message in agent.Inbox.NextTurn) items.Add(QueuedItem(message));
@@ -129,7 +129,7 @@ public static class SessionControlRemotes
         return items.ToArray();
     }
 
-    private static object QueuedItem(Dsh.Llm.UserMessage message)
+    private static object QueuedItem(Harness.Llm.UserMessage message)
         => new
         {
             id = message.Id.Value,
@@ -191,7 +191,7 @@ public static class SessionControlRemotes
     /// <summary>Subscribe the inbox events: every mutation re-derives the affected session's queue.</summary>
     private static IDisposable SubscribeInbox(Context ctx, Channel<JsonElement> channel)
     {
-        void OnChange(Dsh.Agent.Agent agent)
+        void OnChange(Harness.Agent.Agent agent)
         {
             EmitFrame(ctx, channel, new
             {
@@ -241,7 +241,7 @@ public static class SessionControlRemotes
             lastCut[agent.Session.Id.Value] = cut;
         }
         var gate = new object();
-        return ctx.On("session/event", new Action<Dsh.Session.Session, SessionEvent>((session, _) =>
+        return ctx.On("session/event", new Action<Harness.Session.Session, SessionEvent>((session, _) =>
         {
             Dictionary<string, JsonElement> changed;
             long asOfSeq;

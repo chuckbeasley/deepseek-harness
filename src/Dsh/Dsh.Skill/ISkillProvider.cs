@@ -1,4 +1,4 @@
-namespace Dsh.Skill;
+namespace Harness.Skill;
 
 /// <summary>Provider interface for one source of skills, such as a local directory or a remote registry.</summary>
 public interface ISkillProvider

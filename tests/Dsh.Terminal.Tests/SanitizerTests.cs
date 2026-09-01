@@ -1,6 +1,6 @@
-﻿using Dsh.Terminal;
+using Harness.Terminal;
 
-namespace Dsh.Terminal.Tests;
+namespace Harness.Terminal.Tests;
 
 /// <summary>Pure behavior of the terminal sanitizer: sequence stripping and prompt-marker recognition.</summary>
 public static class SanitizerTests

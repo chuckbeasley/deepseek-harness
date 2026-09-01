@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Cordis.Core.Tests.Runner;
+namespace Harness.Cordis.Core.Tests.Runner;
 
 internal static class ServiceTests
 {

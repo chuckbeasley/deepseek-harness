@@ -1,9 +1,9 @@
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Llm.DeepSeek.Tests;
+namespace Harness.Llm.DeepSeek.Tests;
 
 /// <summary>Behavior tests for the DeepSeek adapter against a fake HttpMessageHandler (no network).</summary>
 public static class AdapterTests

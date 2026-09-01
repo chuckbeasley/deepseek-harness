@@ -1,4 +1,4 @@
-﻿namespace Dsh.Webhook.Tests;
+namespace Harness.Webhook.Tests;
 
 /// <summary>Zero-dependency console test runner for the webhook capability seam.</summary>
 public static class Program

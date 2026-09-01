@@ -1,4 +1,4 @@
-namespace Cordis.Core;
+namespace Harness.Cordis.Core;
 
 /// <summary>Stable machine-readable Cordis error codes (port of the TS CordisError.Code table).</summary>
 public static class CordisErrorCode

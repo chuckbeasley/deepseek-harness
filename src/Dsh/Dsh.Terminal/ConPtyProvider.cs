@@ -2,10 +2,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-using Cordis.Core;
+using Harness.Cordis.Core;
 using Microsoft.Win32.SafeHandles;
 
-namespace Dsh.Terminal;
+namespace Harness.Terminal;
 
 /// <summary>Deployment-varying ConPTY backend config; no tunable is hardcoded.</summary>
 public sealed record ConPtyConfig(

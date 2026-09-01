@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Terminal;
+using Harness.Cordis.Core;
+using Harness.Terminal;
 
-namespace Dsh.Terminal.Tests;
+namespace Harness.Terminal.Tests;
 
 /// <summary>
 /// The ConPTY backend (Windows-only; registered by Program.cs only on Windows): real TTY

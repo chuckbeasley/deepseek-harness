@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Dsh.Spill;
+namespace Harness.Spill;
 
 /// <summary>
 /// Result-retention policy for oversized plain-text tool results (port of packages/spill/spill-policy

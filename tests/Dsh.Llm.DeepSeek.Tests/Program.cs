@@ -1,4 +1,4 @@
-namespace Dsh.Llm.DeepSeek.Tests;
+namespace Harness.Llm.DeepSeek.Tests;
 
 /// <summary>
 /// Zero-dependency console test runner for the DeepSeek LLM provider. The host sandbox blocks
@@ -15,7 +15,7 @@ public static class Program
     /// <summary>Runs every registered test and returns the process exit code.</summary>
     public static int Main()
     {
-        Console.WriteLine("Dsh.Llm.DeepSeek - console assertions");
+        Console.WriteLine("Harness.Llm.DeepSeek - console assertions");
         Console.WriteLine();
 
         Run("Adapter: request shape pins URL, auth header, and body JSON", AdapterTests.RequestShape_PinsUrlAuthHeadersAndBody);

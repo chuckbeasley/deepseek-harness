@@ -1,6 +1,6 @@
-using Cordis.Plugin.Loader;
+using Harness.Cordis.Plugin.Loader;
 
-namespace Dsh.Preset.Tests;
+namespace Harness.Preset.Tests;
 
 /// <summary>Temp-directory fixture helpers for preset discovery tests.</summary>
 internal static class PresetFixture

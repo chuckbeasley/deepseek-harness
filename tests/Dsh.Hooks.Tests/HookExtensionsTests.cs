@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Dsh.Hooks;
+using Harness.Hooks;
 
-namespace Dsh.Hooks.Tests;
+namespace Harness.Hooks.Tests;
 
 /// <summary>Merge, config-parser, and runner tests (ports of the TS merge/config/runner specs).</summary>
 public static class HookExtensionsTests
@@ -115,7 +115,7 @@ public static class HookExtensionsTests
     {
         using var temp = new TempDir();
         using var harness = Harness.Create();
-        var shell = harness.Ctx.Get<Dsh.Shell.IShellService>("shell")!;
+        var shell = harness.Ctx.Get<global::Harness.Shell.IShellService>("shell")!;
         var capture = Path.Combine(temp.Path, "payload.txt");
         var hook = HookScripts.WriteCaptureEcho(temp.Path, capture, "{\"continue\":false,\"stopReason\":\"stop it\"}");
         var result = HookRunner.RunHook(shell, new CommandHook(hook), new HookRunner.RunHookOptions(

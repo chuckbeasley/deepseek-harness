@@ -1,10 +1,10 @@
-using Cordis.Core;
-using Cordis.Plugin.Include;
-using Cordis.Plugin.Loader;
-using IncludePlugin = Cordis.Plugin.Include.Include;
-using IncludePluginConfig = Cordis.Plugin.Include.IncludeConfig;
+using Harness.Cordis.Core;
+using Harness.Cordis.Plugin.Include;
+using Harness.Cordis.Plugin.Loader;
+using IncludePlugin = global::Harness.Cordis.Plugin.Include.Include;
+using IncludePluginConfig = global::Harness.Cordis.Plugin.Include.IncludeConfig;
 
-namespace Cordis.Plugin.Hmr.Tests;
+namespace Harness.Cordis.Plugin.Hmr.Tests;
 
 /// <summary>
 /// Behavior tests for the Phase 1 HMR port. Each test boots a fresh context with the loader and a
@@ -15,10 +15,10 @@ internal static class HmrTests
 {
     private static readonly TimeSpan PollTimeout = TimeSpan.FromSeconds(5);
 
-    private static (Context Ctx, Cordis.Plugin.Loader.Loader Loader) Boot()
+    private static (Context Ctx, global::Harness.Cordis.Plugin.Loader.Loader Loader) Boot()
     {
         var ctx = new Context();
-        var loader = new Cordis.Plugin.Loader.Loader(ctx);
+        var loader = new global::Harness.Cordis.Plugin.Loader.Loader(ctx);
         loader.Catalog.RegisterType("probe", typeof(ProbePlugin));
         return (ctx, loader);
     }

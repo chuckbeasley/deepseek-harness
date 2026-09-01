@@ -1,4 +1,4 @@
-namespace Dsh.Hooks;
+namespace Harness.Hooks;
 
 /// <summary>The folded outcome of every hook that matched one point.</summary>
 public sealed record MergedHookOutcome(

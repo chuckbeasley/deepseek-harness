@@ -1,7 +1,7 @@
 using System.Reflection;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Cordis.Plugin.Loader;
+namespace Harness.Cordis.Plugin.Loader;
 
 /// <summary>
 /// Mutable tree of loader entries (port of the vendored EntryTree). Persistence is supplied by

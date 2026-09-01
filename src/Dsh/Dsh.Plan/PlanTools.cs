@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Llm;
+using Harness.Tools;
 
-namespace Dsh.Plan;
+namespace Harness.Plan;
 
 /// <summary>
 /// The model-facing whole-plan replacement tool: plan_write. Each call replaces the previous plan

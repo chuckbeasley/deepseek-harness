@@ -1,11 +1,11 @@
 using System.Globalization;
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Session;
-using Dsh.Storage;
-using Dsh.Workspace;
+using Harness.Cordis.Core;
+using Harness.Session;
+using Harness.Storage;
+using Harness.Workspace;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The workspace remotes over the durable registry: create/resolve idempotence, rename/delete/
@@ -284,7 +284,7 @@ public static class WorkspaceRemotesTests
             Directory.CreateDirectory(firstDir);
             var first = seam.Create(firstDir);
 
-            var follow = Dsh.Web.Host.WorkspaceRemotes.Follow(ctx);
+            var follow = global::Harness.Web.Host.WorkspaceRemotes.Follow(ctx);
             using var cts = new CancellationTokenSource();
             await using var enumerator = follow.Invoke(null, cts.Token).GetAsyncEnumerator();
 
@@ -347,12 +347,12 @@ public static class WorkspaceRemotesTests
         var known = new HashSet<string> { "s-known" };
         var seam = new WorkspaceRegistry(ctx, storage, id => known.Contains(id.Value));
         var registry = new DshRpcRegistry(ctx);
-        _ = registry.Register(Dsh.Web.Host.WorkspaceRemotes.Create(ctx));
-        _ = registry.Register(Dsh.Web.Host.WorkspaceRemotes.Rename(ctx));
-        _ = registry.Register(Dsh.Web.Host.WorkspaceRemotes.Delete(ctx));
-        _ = registry.Register(Dsh.Web.Host.WorkspaceRemotes.InsertBefore(ctx));
-        _ = registry.Register(Dsh.Web.Host.WorkspaceRemotes.InsertSessionBefore(ctx));
-        _ = registry.Register(Dsh.Web.Host.WorkspaceRemotes.ArchiveSession(ctx));
+        _ = registry.Register(global::Harness.Web.Host.WorkspaceRemotes.Create(ctx));
+        _ = registry.Register(global::Harness.Web.Host.WorkspaceRemotes.Rename(ctx));
+        _ = registry.Register(global::Harness.Web.Host.WorkspaceRemotes.Delete(ctx));
+        _ = registry.Register(global::Harness.Web.Host.WorkspaceRemotes.InsertBefore(ctx));
+        _ = registry.Register(global::Harness.Web.Host.WorkspaceRemotes.InsertSessionBefore(ctx));
+        _ = registry.Register(global::Harness.Web.Host.WorkspaceRemotes.ArchiveSession(ctx));
         return (ctx, registry, seam, root);
     }
 

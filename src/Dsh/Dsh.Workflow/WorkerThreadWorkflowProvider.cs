@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Llm;
+using Harness.Cordis.Core;
+using Harness.Llm;
 
-namespace Dsh.Workflow;
+namespace Harness.Workflow;
 
 /// <summary>The provider's mutable per-run record (never handed out — see <see cref="Snapshot"/>).</summary>
 internal sealed class RunRecord

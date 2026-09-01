@@ -1,4 +1,4 @@
-﻿namespace Dsh.Sdk.Protocol.Tests;
+namespace Harness.Sdk.Protocol.Tests;
 
 /// <summary>Test failure carrying one assertion message.</summary>
 public sealed class AssertionException : Exception

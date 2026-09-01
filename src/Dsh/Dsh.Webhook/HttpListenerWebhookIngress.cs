@@ -1,7 +1,7 @@
 using System.Net;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Webhook;
+namespace Harness.Webhook;
 
 /// <summary>Service Definition of the webhook ingress: one HTTP listener that bridges real requests onto a handler.</summary>
 public interface IWebhookIngress

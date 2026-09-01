@@ -1,4 +1,4 @@
-namespace Dsh.Tui.Tests;
+namespace Harness.Tui.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

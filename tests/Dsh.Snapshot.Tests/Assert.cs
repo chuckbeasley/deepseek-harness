@@ -1,4 +1,4 @@
-namespace Dsh.Snapshot.Tests;
+namespace Harness.Snapshot.Tests;
 
 /// <summary>Test failure carrying one assertion message.</summary>
 public sealed class AssertionException : Exception

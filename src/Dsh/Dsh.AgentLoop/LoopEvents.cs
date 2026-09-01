@@ -1,9 +1,9 @@
-namespace Dsh.AgentLoop;
+namespace Harness.AgentLoop;
 
 /// <summary>
 /// Event names and typed payload records the loop dispatches on the agent's owner context (port
 /// of the TS loop dispatch surface). Waterfall events carry the subject agent in their proposal
-/// so listeners can filter by identity, matching the scoped-listener convention in Dsh.Scope.
+/// so listeners can filter by identity, matching the scoped-listener convention in Harness.Scope.
 /// </summary>
 public static class LoopEvents
 {
@@ -27,7 +27,7 @@ public static class LoopEvents
 }
 
 /// <summary>Proposal delivered to <see cref="LoopEvents.PreStep"/> listeners.</summary>
-public sealed record PreStepProposal(Dsh.Agent.Agent Agent, IReadOnlyList<UserMessage> Messages, long Turn, long Step);
+public sealed record PreStepProposal(Harness.Agent.Agent Agent, IReadOnlyList<UserMessage> Messages, long Turn, long Step);
 
 /// <summary>The decision a pre-step waterfall listener returns.</summary>
 public abstract record PreStepDecision
@@ -51,11 +51,11 @@ public sealed record EnterDecision(IReadOnlyList<UserMessage> Messages, PromptAs
 }
 
 /// <summary>Proposal delivered to <see cref="LoopEvents.Request"/> listeners.</summary>
-public sealed record RequestProposal(Dsh.Agent.Agent Agent, long Turn, long Step, LlmCallConfig SeedConfig);
+public sealed record RequestProposal(Harness.Agent.Agent Agent, long Turn, long Step, LlmCallConfig SeedConfig);
 
 /// <summary>Proposal delivered to <see cref="LoopEvents.RequestError"/> listeners.</summary>
 public sealed record RequestErrorProposal(
-    Dsh.Agent.Agent Agent, long Turn, long Step, string Provider, LlmFailure Failure, CancellationToken CancellationToken);
+    Harness.Agent.Agent Agent, long Turn, long Step, string Provider, LlmFailure Failure, CancellationToken CancellationToken);
 
 /// <summary>The decision a request-error waterfall listener returns.</summary>
 public abstract record RequestErrorAction
@@ -89,10 +89,10 @@ public sealed record StopDecision : RequestErrorAction
 }
 
 /// <summary>Payload of <see cref="LoopEvents.TurnStopping"/>.</summary>
-public sealed record TurnStoppingProposal(Dsh.Agent.Agent Agent, long Turn);
+public sealed record TurnStoppingProposal(Harness.Agent.Agent Agent, long Turn);
 
 /// <summary>Payload of <see cref="LoopEvents.Error"/>.</summary>
-public sealed record AgentErrorPayload(Dsh.Agent.Agent Agent, long Turn, long Step, Exception Error);
+public sealed record AgentErrorPayload(Harness.Agent.Agent Agent, long Turn, long Step, Exception Error);
 
 /// <summary>Payload of <see cref="LoopEvents.SessionStart"/>.</summary>
-public sealed record SessionStartPayload(Dsh.Agent.Agent Agent, string Source);
+public sealed record SessionStartPayload(Harness.Agent.Agent Agent, string Source);

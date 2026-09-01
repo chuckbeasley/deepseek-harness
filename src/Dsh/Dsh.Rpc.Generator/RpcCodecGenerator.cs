@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Dsh.Rpc.Generator;
+namespace Harness.Rpc.Generator;
 
 /// <summary>
 /// The Roslyn source generator for typed RPC codecs (the port's typert codec half): a record
@@ -21,10 +21,10 @@ namespace Dsh.Rpc.Generator;
 [Generator(LanguageNames.CSharp)]
 public sealed class RpcCodecGenerator : IIncrementalGenerator
 {
-    private const string CodecAttribute = "Dsh.Rpc.Generator.RpcCodecAttribute";
+    private const string CodecAttribute = "Harness.Rpc.Generator.RpcCodecAttribute";
 
     private const string AttributeSource = """
-        namespace Dsh.Rpc.Generator
+        namespace Harness.Rpc.Generator
         {
             /// <summary>Mark a record whose typed codec the RPC gateway uses.</summary>
             [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Struct)]
@@ -94,7 +94,7 @@ public sealed class RpcCodecGenerator : IIncrementalGenerator
         builder.AppendLine("using System.IO;");
         builder.AppendLine("using System.Text.Json;");
         builder.AppendLine();
-        builder.Append("/// <summary>Generated typed codec for ").Append(type.ToDisplayString()).AppendLine(" (Dsh.Rpc.Generator).</summary>");
+        builder.Append("/// <summary>Generated typed codec for ").Append(type.ToDisplayString()).AppendLine(" (Harness.Rpc.Generator).</summary>");
         builder.Append("public static class ").Append(type.Name).AppendLine("Codec");
         builder.AppendLine("{");
         EmitEncode(builder, type, members);

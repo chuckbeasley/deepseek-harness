@@ -1,4 +1,4 @@
-namespace Dsh.Spill.Tests;
+namespace Harness.Spill.Tests;
 
 /// <summary>
 /// One booted spill spine: a context with the local spill provider over a fresh temp root, plus a

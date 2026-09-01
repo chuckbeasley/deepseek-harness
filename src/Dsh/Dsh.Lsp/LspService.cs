@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>
 /// The LSP capability service (ctx.lsp): provider registration plus per-query selection by the

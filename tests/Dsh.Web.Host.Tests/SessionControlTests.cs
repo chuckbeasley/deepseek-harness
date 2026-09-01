@@ -1,16 +1,16 @@
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Jobs;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Session.Projection;
-using Dsh.Spike;
-using Dsh.SystemPrompt;
-using Dsh.Tools;
-using Dsh.Web.Host;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Jobs;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Session.Projection;
+using Harness.Spike;
+using Harness.SystemPrompt;
+using Harness.Tools;
+using Harness.Web.Host;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The session control stream: the baseline cut (queues, jobs, projections) and the live queue
@@ -250,7 +250,7 @@ public static class SessionControlTests
     /// <summary>Boot the loop spine with the mock adapter, plus optional jobs and projection services.</summary>
     private static Context Boot(
         out SessionStore sessions,
-        out Dsh.AgentLoop.AgentLoop loop,
+        out global::Harness.AgentLoop.AgentLoop loop,
         out AgentRegistry agents,
         out LocalJobsProvider? jobs,
         out SessionProjectionRegistry? projections)
@@ -261,13 +261,13 @@ public static class SessionControlTests
         _ = new ToolRuntime(ctx);
         _ = new SystemPromptService(ctx);
         agents = new AgentRegistry(ctx);
-        loop = new Dsh.AgentLoop.AgentLoop(ctx);
+        loop = new global::Harness.AgentLoop.AgentLoop(ctx);
         jobs = new LocalJobsProvider(ctx);
         projections = new SessionProjectionRegistry(ctx);
         llm.RegisterAdapter(new[] { MockLlmProvider.Provider }, new MockLlmProvider());
         return ctx;
     }
 
-    private static Context Boot(out SessionStore sessions, out Dsh.AgentLoop.AgentLoop loop, out AgentRegistry agents)
+    private static Context Boot(out SessionStore sessions, out global::Harness.AgentLoop.AgentLoop loop, out AgentRegistry agents)
         => Boot(out sessions, out loop, out agents, out _, out _);
 }

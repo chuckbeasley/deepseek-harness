@@ -1,4 +1,4 @@
-namespace Dsh.Context;
+namespace Harness.Context;
 
 /// <summary>
 /// Workspace-instruction contributor (port of the agent-instructions baseline rendering): an
@@ -31,7 +31,7 @@ public sealed class AgentInstructionsContributor : IContextContributor
     public string Instructions => _instructions;
 
     /// <inheritdoc />
-    public Task<ContextSection?> ContributeAsync(Dsh.Session.Session session, CancellationToken cancellationToken = default)
+    public Task<ContextSection?> ContributeAsync(Harness.Session.Session session, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(session);
         cancellationToken.ThrowIfCancellationRequested();

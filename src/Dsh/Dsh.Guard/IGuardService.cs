@@ -1,4 +1,4 @@
-namespace Dsh.Guard;
+namespace Harness.Guard;
 
 /// <summary>
 /// The loop-hygiene guard seam (port of packages/guard): guards observe tool-call streams and

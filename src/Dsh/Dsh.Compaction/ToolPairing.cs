@@ -1,7 +1,7 @@
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Compaction;
+namespace Harness.Compaction;
 
 /// <summary>
 /// Tool-pairing balance over a session surface (port of tool-pairing.ts). Compaction changes
@@ -16,7 +16,7 @@ public static class ToolPairing
     /// <param name="seq">the event sequence whose leading cut is checked.</param>
     /// <returns>true when no unanswered tool call crosses the cut.</returns>
     /// <exception cref="InvalidOperationException">when the seq is absent from the current surface or a tool result has no preceding open call (corrupt surface).</exception>
-    public static bool BalancedBefore(Dsh.Session.Session session, long seq)
+    public static bool BalancedBefore(Harness.Session.Session session, long seq)
     {
         ArgumentNullException.ThrowIfNull(session);
         var nodes = SessionSurface.Nodes(session);
@@ -47,7 +47,7 @@ public static class ToolPairing
     };
 
     /// <summary>Read and validate the event named by a surface sequence.</summary>
-    private static SessionEvent EventForSeq(Dsh.Session.Session session, long seq)
+    private static SessionEvent EventForSeq(Harness.Session.Session session, long seq)
     {
         var events = session.Events;
         if (seq < 0 || seq >= events.Count || events[(int)seq].Seq != seq)
@@ -70,7 +70,7 @@ public static class TurnAlignment
 {
     /// <summary>Whether the cut immediately before <paramref name="seq"/> is a turn boundary.</summary>
     /// <exception cref="InvalidOperationException">when the seq is absent from the current surface.</exception>
-    public static bool IsTurnBoundaryCut(Dsh.Session.Session session, long seq)
+    public static bool IsTurnBoundaryCut(Harness.Session.Session session, long seq)
     {
         ArgumentNullException.ThrowIfNull(session);
         var nodes = SessionSurface.Nodes(session);
@@ -84,7 +84,7 @@ public static class TurnAlignment
     }
 
     /// <summary>The turn number owning a log position, or null before the first turn/start.</summary>
-    private static long? TurnOf(Dsh.Session.Session session, long seq)
+    private static long? TurnOf(Harness.Session.Session session, long seq)
     {
         var events = session.Events;
         for (var i = (int)Math.Min(seq, events.Count - 1); i >= 0; i--)

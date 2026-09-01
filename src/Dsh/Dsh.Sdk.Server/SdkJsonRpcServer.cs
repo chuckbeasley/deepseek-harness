@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Sdk.Protocol;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Sdk.Protocol;
+using Harness.Session;
 
-namespace Dsh.Sdk.Server;
+namespace Harness.Sdk.Server;
 
 /// <summary>
 /// The SDK runtime server (port of the TS <c>HarnessSdkJsonRpcServer</c>): hosts one booted
@@ -41,7 +41,7 @@ public sealed class SdkJsonRpcServer
         var options = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            TypeInfoResolver = Dsh.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
+            TypeInfoResolver = Harness.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
         };
         options.Converters.Add(new SdkPromptContentBlockConverter());
         return options;
@@ -49,8 +49,8 @@ public sealed class SdkJsonRpcServer
 
     private sealed class SessionRecord
     {
-        public required Dsh.Agent.AgentHandle Handle { get; init; }
-        public required Dsh.AgentLoop.LoopAgent Driver { get; init; }
+        public required Harness.Agent.AgentHandle Handle { get; init; }
+        public required Harness.AgentLoop.LoopAgent Driver { get; init; }
     }
 
     /// <summary>
@@ -64,15 +64,15 @@ public sealed class SdkJsonRpcServer
         _transport = transport ?? throw new ArgumentNullException(nameof(transport));
         transport.OnRequest(HandleRequestAsync);
         _disposers.Add(ctx.On("session/event",
-            new Action<Dsh.Session.Session, Dsh.Session.SessionEvent>((session, evt) =>
+            new Action<Harness.Session.Session, Harness.Session.SessionEvent>((session, evt) =>
                 transport.Notify(SdkProtocol.SessionEvent,
                     JsonSerializer.SerializeToElement(new SessionEventNotification(session.Id.Value, WireEnvelope(evt)), WireJson)))));
         _disposers.Add(ctx.On("agent/status",
-            new Action<Dsh.Agent.AgentStatusPayload>(payload =>
+            new Action<Harness.Agent.AgentStatusPayload>(payload =>
                 transport.Notify(SdkProtocol.SessionStatus,
                     JsonSerializer.SerializeToElement(new SessionStatusNotification(
                         payload.Agent.Session.Id.Value,
-                        payload.Status == Dsh.Agent.AgentStatus.Running ? "running" : "idle"), WireJson)))));
+                        payload.Status == Harness.Agent.AgentStatus.Running ? "running" : "idle"), WireJson)))));
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public sealed class SdkJsonRpcServer
         var cwd = Path.GetFullPath(wire.Cwd ?? throw new InvalidOperationException("initialize cwd must be a string"));
         var provider = wire.Provider ?? throw new InvalidOperationException("initialize provider must be a string");
         var model = wire.Model ?? throw new InvalidOperationException("initialize model must be a string");
-        var llm = _ctx.Get<Dsh.Llm.LlmRuntime>("llm")
+        var llm = _ctx.Get<Harness.Llm.LlmRuntime>("llm")
             ?? throw new InvalidOperationException("SDK initialize requires the llm row");
         if (!llm.ListProviders().Contains(provider, StringComparer.Ordinal))
         {
@@ -104,11 +104,11 @@ public sealed class SdkJsonRpcServer
             }
             // The adapter reads its key/base-url from the environment at call time, like the
             // spine's deepseek row; mounting here makes an unowned official route usable.
-            _adapterRegistration = llm.RegisterAdapter(new[] { provider }, new Dsh.Llm.DeepSeek.DeepSeekAdapter(
-                new Dsh.Llm.DeepSeek.DeepSeekConfig
+            _adapterRegistration = llm.RegisterAdapter(new[] { provider }, new Harness.Llm.DeepSeek.DeepSeekAdapter(
+                new Harness.Llm.DeepSeek.DeepSeekConfig
                 {
-                    ApiKey = Environment.GetEnvironmentVariable(Dsh.Llm.DeepSeek.DeepSeekAdapter.ApiKeyEnvVar),
-                    BaseUrl = Environment.GetEnvironmentVariable(Dsh.Llm.DeepSeek.DeepSeekAdapter.BaseUrlEnvVar),
+                    ApiKey = Environment.GetEnvironmentVariable(Harness.Llm.DeepSeek.DeepSeekAdapter.ApiKeyEnvVar),
+                    BaseUrl = Environment.GetEnvironmentVariable(Harness.Llm.DeepSeek.DeepSeekAdapter.BaseUrlEnvVar),
                 }));
         }
         _cwd = cwd;
@@ -136,13 +136,13 @@ public sealed class SdkJsonRpcServer
         AssertLiveAgent(record, wire.SessionId);
         var content = DurablePromptContent(wire.ContentBlocks);
         AssertLiveAgent(record, wire.SessionId);
-        var message = new Dsh.Llm.UserMessage
+        var message = new Harness.Llm.UserMessage
         {
-            Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("D")),
+            Id = new Harness.Llm.MessageId(Guid.NewGuid().ToString("D")),
             Content = content.ToArray(),
-            Source = new Dsh.Llm.UserSource(),
+            Source = new Harness.Llm.UserSource(),
         };
-        record.Driver.Send(message, Dsh.Agent.InboxTarget.NextTurn, wakeup: true);
+        record.Driver.Send(message, Harness.Agent.InboxTarget.NextTurn, wakeup: true);
         return JsonSerializer.SerializeToElement(new SessionPromptResult(message.Id.Value), WireJson);
     }
 
@@ -151,7 +151,7 @@ public sealed class SdkJsonRpcServer
     /// fields on the envelope, every remaining payload field under <c>data</c> (the TS
     /// <c>SessionEvent</c> shape both SDK clients read).
     /// </summary>
-    private static WireSessionEvent WireEnvelope(Dsh.Session.SessionEvent evt)
+    private static WireSessionEvent WireEnvelope(Harness.Session.SessionEvent evt)
     {
         var json = JsonSerializer.SerializeToElement(evt, WireJson);
         var data = new Dictionary<string, JsonElement>();
@@ -183,16 +183,16 @@ public sealed class SdkJsonRpcServer
 
     private void AssertLiveAgent(SessionRecord record, string sessionId)
     {
-        var agents = _ctx.Get<Dsh.Agent.AgentRegistry>("agents");
+        var agents = _ctx.Get<Harness.Agent.AgentRegistry>("agents");
         if (agents is null || agents.Get(record.Handle.Agent.Id) != record.Handle.Agent)
         {
             throw new InvalidOperationException($"session agent was disposed outside the server: {sessionId}");
         }
     }
 
-    private static IReadOnlyList<Dsh.Llm.ContentBlock> DurablePromptContent(IReadOnlyList<SdkPromptContentBlock> blocks)
+    private static IReadOnlyList<Harness.Llm.ContentBlock> DurablePromptContent(IReadOnlyList<SdkPromptContentBlock> blocks)
     {
-        var content = new List<Dsh.Llm.ContentBlock>(blocks.Count);
+        var content = new List<Harness.Llm.ContentBlock>(blocks.Count);
         foreach (var block in blocks)
         {
             switch (block)
@@ -231,10 +231,10 @@ public sealed class SdkJsonRpcServer
 
     private Task<SessionRecord> CreateSessionAsync(string sessionId)
     {
-        var loop = _ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
+        var loop = _ctx.Get<Harness.AgentLoop.AgentLoop>("agentLoop")
             ?? throw new InvalidOperationException("SDK session creation requires the agentLoop row");
         var id = new SessionId(sessionId);
-        var handle = loop.Create(id, new Dsh.Agent.AgentOptions
+        var handle = loop.Create(id, new Harness.Agent.AgentOptions
         {
             Provider = _provider,
             Model = _model,

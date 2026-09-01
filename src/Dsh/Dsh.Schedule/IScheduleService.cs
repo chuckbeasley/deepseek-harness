@@ -1,4 +1,4 @@
-namespace Dsh.Schedule;
+namespace Harness.Schedule;
 
 /// <summary>
 /// The schedule capability surface (ctx.schedule): register recurring and once tasks with stable

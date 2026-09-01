@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Dsh.Goal.Tests;
+namespace Harness.Goal.Tests;
 
 public static class GoalTests
 {

@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using Cordis.Schemastery;
+using Harness.Cordis.Schemastery;
 
-namespace Cordis.Tests;
+namespace Harness.Cordis.Tests;
 
 /// <summary>Schema definition and validation behavior for the minimal Schemastery port.</summary>
 public static class SchemaValidationTests

@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Interaction;
+namespace Harness.Interaction;
 
 /// <summary>
 /// The session's permission preset was applied (port of the TS <c>permission/preset</c>):

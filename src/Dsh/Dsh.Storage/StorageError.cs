@@ -1,4 +1,4 @@
-namespace Dsh.Storage;
+namespace Harness.Storage;
 
 /// <summary>
 /// Stable, machine-routable codes for storage failures (port of the TS <c>StorageErrorCode</c>

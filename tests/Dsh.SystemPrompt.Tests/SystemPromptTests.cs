@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Tools;
 
-namespace Dsh.SystemPrompt.Tests;
+namespace Harness.SystemPrompt.Tests;
 
 /// <summary>
 /// System-prompt registry and assembly tests (ported from packages/core/system-prompt). Every

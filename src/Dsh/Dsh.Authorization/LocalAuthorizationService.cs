@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Credentials;
+using Harness.Cordis.Core;
+using Harness.Credentials;
 
-namespace Dsh.Authorization;
+namespace Harness.Authorization;
 
 /// <summary>Minimal <see cref="IDisposable"/> built from an action; used for sync effect cleanups.</summary>
 internal sealed class ActionDisposer : IDisposable

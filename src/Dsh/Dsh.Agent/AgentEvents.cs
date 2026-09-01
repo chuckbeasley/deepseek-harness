@@ -1,6 +1,6 @@
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Agent;
+namespace Harness.Agent;
 
 /// <summary>
 /// Event names and typed payload records for the live <c>agent/*</c> event set (port of the

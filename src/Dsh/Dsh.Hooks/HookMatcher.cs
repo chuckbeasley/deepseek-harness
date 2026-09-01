@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Dsh.Hooks;
+namespace Harness.Hooks;
 
 /// <summary>
 /// Matcher shared by both hook dialects (port of matcher.ts). Claude treats word-and-pipe

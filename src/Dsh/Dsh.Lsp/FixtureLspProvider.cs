@@ -1,4 +1,4 @@
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>
 /// Embedded fixture language server (the recorded corpus path; node is not used in the ported

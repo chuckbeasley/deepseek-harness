@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Tools;
 
-namespace Dsh.Skill;
+namespace Harness.Skill;
 
 /// <summary>The model-facing shape a loaded skill renders to, shared by the tool result and renderers.</summary>
 /// <param name="Name">Kebab-case skill name.</param>

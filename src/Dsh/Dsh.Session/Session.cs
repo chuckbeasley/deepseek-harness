@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Session;
+namespace Harness.Session;
 
 /// <summary>Identifies one session in the store (and its persistence artifacts).</summary>
 [JsonConverter(typeof(StringIdJsonConverter<SessionId>))]

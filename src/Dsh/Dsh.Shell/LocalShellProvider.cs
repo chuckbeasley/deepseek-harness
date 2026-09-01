@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Subprocess;
+using Harness.Cordis.Core;
+using Harness.Subprocess;
 
-namespace Dsh.Shell;
+namespace Harness.Shell;
 
 /// <summary>
 /// Local shell executor (ctx.shell; port of the bash/pwsh-local family folded to one configured

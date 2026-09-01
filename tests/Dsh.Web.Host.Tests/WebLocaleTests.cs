@@ -1,12 +1,12 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using Cordis.Core;
-using Dsh.Web.App;
+using Harness.Cordis.Core;
+using Harness.Web.App;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The bilingual shell copy dictionary: the fallback chain (active → English → key), the
@@ -98,10 +98,10 @@ public static class WebLocaleTests
         var host = new WebHostService(ctx, new WebHostConfig(Port: port, AuthFence: false),
             configure: builder =>
             {
-                var slots = new Dsh.Web.App.Slots.SlotRegistry();
-                _ = Dsh.Ui.Sidebar.UiSidebarPlugin.Apply(slots);
-                _ = Dsh.Ui.Sessions.UiSessionsPlugin.Apply(slots);
-                _ = Dsh.Ui.Chat.UiChatPlugin.Apply(slots);
+                var slots = new global::Harness.Web.App.Slots.SlotRegistry();
+                _ = global::Harness.Ui.Sidebar.UiSidebarPlugin.Apply(slots);
+                _ = global::Harness.Ui.Sessions.UiSessionsPlugin.Apply(slots);
+                _ = global::Harness.Ui.Chat.UiChatPlugin.Apply(slots);
                 builder.Services.AddDshApp(slots);
             },
             map: app => app.MapDshApp());

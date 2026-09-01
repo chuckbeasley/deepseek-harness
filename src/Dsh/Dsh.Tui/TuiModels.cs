@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Todo;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Todo;
 
-namespace Dsh.Tui;
+namespace Harness.Tui;
 
 /// <summary>The role of one transcript row.</summary>
 public enum TranscriptRowKind

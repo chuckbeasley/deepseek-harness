@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Hooks;
+namespace Harness.Hooks;
 
 /// <summary>
 /// Parse Codex's five-event hook subset into shared <see cref="MatcherGroup"/>s (port of the TS

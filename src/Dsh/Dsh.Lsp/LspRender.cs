@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>
 /// Pure formatting and coordinate conversion for the <c>lsp</c> tool (port of <c>tool-lsp/render.ts</c>):

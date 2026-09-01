@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Session;
-using Dsh.Storage;
+using Harness.Cordis.Core;
+using Harness.Session;
+using Harness.Storage;
 
-namespace Dsh.Workspace;
+namespace Harness.Workspace;
 
 /// <summary>Event names the registry emits after committed mutations (the follow feed's deltas).</summary>
 public static class WorkspaceRegistryEvents

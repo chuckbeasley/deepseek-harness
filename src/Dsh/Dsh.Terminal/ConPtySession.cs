@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Dsh.Terminal;
+namespace Harness.Terminal;
 
 /// <summary>
 /// One live ConPTY session: the sanitized bounded scrollback, the controlled-prompt readiness

@@ -1,4 +1,4 @@
-namespace Dsh.Goal.Tests;
+namespace Harness.Goal.Tests;
 
 /// <summary>Thrown by <see cref="Assert"/> when a check fails; aborts the current test.</summary>
 public sealed class AssertionException : Exception

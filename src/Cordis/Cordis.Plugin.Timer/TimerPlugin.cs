@@ -1,5 +1,5 @@
-using Cordis.Core;
-namespace Cordis.Plugin.Timer;
+using Harness.Cordis.Core;
+namespace Harness.Cordis.Plugin.Timer;
 
 /// <summary>
 /// Plugin entry point (the C# counterpart of applying <c>cordis-plugin-timer</c> through the

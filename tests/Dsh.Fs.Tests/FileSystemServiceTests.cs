@@ -1,4 +1,4 @@
-namespace Dsh.Fs.Tests;
+namespace Harness.Fs.Tests;
 
 /// <summary>Provider-level coverage of <see cref="LocalFileSystemProvider"/> over one workspace root.</summary>
 public static class FileSystemServiceTests

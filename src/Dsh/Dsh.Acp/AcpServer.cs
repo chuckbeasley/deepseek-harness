@@ -1,16 +1,16 @@
 using System.Text;
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Interaction;
-using Dsh.Llm;
-using Dsh.Sdk.Protocol;
-using Dsh.Session;
-using Dsh.Session.Persistence;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Interaction;
+using Harness.Llm;
+using Harness.Sdk.Protocol;
+using Harness.Session;
+using Harness.Session.Persistence;
+using Harness.Tools;
 
-namespace Dsh.Acp;
+namespace Harness.Acp;
 
 /// <summary>Deployment configuration for the ACP server.</summary>
 public sealed record AcpServerConfig(
@@ -36,7 +36,7 @@ public sealed class AcpServer
     private readonly Context _ctx;
     private readonly JsonRpcLineTransport _transport;
     private readonly AcpServerConfig _config;
-    private readonly Dsh.AgentLoop.AgentLoop _loop;
+    private readonly Harness.AgentLoop.AgentLoop _loop;
     private readonly SessionPersistenceService? _persistence;
     private readonly Dictionary<string, AcpSession> _sessions = new(StringComparer.Ordinal);
     private readonly List<IDisposable> _disposers = new();
@@ -56,13 +56,13 @@ public sealed class AcpServer
         {
             throw new ArgumentOutOfRangeException(nameof(config), "sessionListPageSize must be a positive integer");
         }
-        _loop = ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
+        _loop = ctx.Get<Harness.AgentLoop.AgentLoop>("agentLoop")
             ?? throw new InvalidOperationException("acp requires the agentLoop row");
         _persistence = ctx.Get<SessionPersistenceService>("sessionPersistence");
         transport.OnRequest(HandleRequestAsync);
         transport.OnNotification(HandleNotificationAsync);
         _disposers.Add(ctx.On("session/event",
-            new Action<Dsh.Session.Session, SessionEvent>((session, evt) =>
+            new Action<Harness.Session.Session, SessionEvent>((session, evt) =>
             {
                 if (_sessions.TryGetValue(session.Id.Value, out var record) && record.OwnsSession(session))
                 {
@@ -366,13 +366,13 @@ public sealed class AcpServer
         _disposers.Clear();
     }
 
-    private AcpSession? OwnedRecord(Dsh.Agent.Agent agent)
+    private AcpSession? OwnedRecord(Harness.Agent.Agent agent)
     {
         _sessions.TryGetValue(agent.Session.Id.Value, out var record);
         return record is not null && record.Owns(agent) ? record : null;
     }
 
-    private AcpSession? BySession(Dsh.Session.Session session)
+    private AcpSession? BySession(Harness.Session.Session session)
     {
         _sessions.TryGetValue(session.Id.Value, out var record);
         return record is not null && record.OwnsSession(session) ? record : null;

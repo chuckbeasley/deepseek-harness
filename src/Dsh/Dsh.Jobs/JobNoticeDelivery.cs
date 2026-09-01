@@ -1,9 +1,9 @@
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Jobs;
+namespace Harness.Jobs;
 
 /// <summary>
 /// Completion-notice delivery for the background-job seam (the port of the dsh-tool-jobs

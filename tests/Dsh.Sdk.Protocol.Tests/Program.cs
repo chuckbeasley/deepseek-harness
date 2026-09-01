@@ -1,4 +1,4 @@
-﻿namespace Dsh.Sdk.Protocol.Tests;
+namespace Harness.Sdk.Protocol.Tests;
 
 /// <summary>Zero-dependency console test runner for the SDK wire protocol.</summary>
 public static class Program

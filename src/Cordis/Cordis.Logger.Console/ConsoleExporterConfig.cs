@@ -1,5 +1,5 @@
-using Cordis.Core;
-namespace Cordis.Logger.Console;
+using Harness.Cordis.Core;
+namespace Harness.Cordis.Logger.Console;
 
 /// <summary>Horizontal placement of the logger-name label (port of the TS <c>label.align</c>).</summary>
 public enum LabelAlignment
@@ -19,7 +19,7 @@ public sealed record ConsoleExporterConfig
 {
     /// <summary>
     /// Highest message level this exporter receives; messages with a larger level are skipped
-    /// (the Cordis.Core threshold rule). Default <see cref="LogLevel.Info"/>, the vendored
+    /// (the Harness.Cordis.Core threshold rule). Default <see cref="LogLevel.Info"/>, the vendored
     /// default threshold.
     /// </summary>
     public LogLevel Level { get; init; } = LogLevel.Info;

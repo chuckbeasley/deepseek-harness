@@ -1,7 +1,7 @@
-using Dsh.Llm;
-using Dsh.Spike;
+using Harness.Llm;
+using Harness.Spike;
 
-namespace Dsh.Spike.Tests;
+namespace Harness.Spike.Tests;
 
 public static class MockLlmProviderTests
 {

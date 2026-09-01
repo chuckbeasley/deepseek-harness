@@ -1,20 +1,20 @@
 using System.Text.Json;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Tools;
+namespace Harness.Tools;
 
 /// <summary>Caller-supplied description of one tool call (identity, arguments, owning session).</summary>
 public sealed record ToolExecutionInput(ToolCallId CallId, string Name, JsonElement Arguments, CancellationToken CancellationToken)
 {
     /// <summary>The owning session; the tool appends durable events through it.</summary>
-    public Dsh.Session.Session? Session { get; init; }
+    public Harness.Session.Session? Session { get; init; }
 }
 
 /// <summary>Runtime context handed to a tool body after the registry has accepted a call.</summary>
 public sealed record ToolRunContext(ToolCallId CallId, string Name, JsonElement Arguments, CancellationToken CancellationToken)
 {
     /// <summary>The owning session; the tool appends durable events through it.</summary>
-    public Dsh.Session.Session? Session { get; init; }
+    public Harness.Session.Session? Session { get; init; }
 }
 
 /// <summary>The discriminated outcome of one tool call.</summary>

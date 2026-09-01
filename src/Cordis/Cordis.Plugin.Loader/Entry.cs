@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Cordis.Plugin.Loader;
+namespace Harness.Cordis.Plugin.Loader;
 
 /// <summary>One configured plugin node inside an <see cref="EntryTree"/>.</summary>
 public sealed class Entry
@@ -303,7 +303,7 @@ public sealed class Entry
     {
         // Port of the loader's patch-context hook: only config changes (or a group row) reach a
         // started fiber. Cordis dispatches this through an async 'loader/patch-context' waterfall
-        // used by isolate; Cordis.Core's waterfall is synchronous, so the port runs the update
+        // used by isolate; Harness.Cordis.Core's waterfall is synchronous, so the port runs the update
         // directly and omits the hook.
         if (Fiber is { } fiber && (diff.Contains("config") || Options.Group == true))
         {

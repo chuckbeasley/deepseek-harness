@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Acp;
+namespace Harness.Acp;
 
 /// <summary>Caller-correctable session configuration failure.</summary>
 public sealed class AcpModelConfigError : Exception

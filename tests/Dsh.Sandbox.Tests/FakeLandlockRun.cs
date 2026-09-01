@@ -1,6 +1,6 @@
-﻿using System.Text;
+using System.Text;
 
-namespace Dsh.Sandbox.Tests;
+namespace Harness.Sandbox.Tests;
 
 /// <summary>
 /// Scripted stand-in for the landlock-run sidecar, entered via <c>--fake-landlock-run</c> on the

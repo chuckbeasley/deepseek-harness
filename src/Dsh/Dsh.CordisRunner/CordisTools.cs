@@ -1,11 +1,11 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.CordisRunner;
+namespace Harness.CordisRunner;
 
 /// <summary>
 /// The model-facing dynamic Cordis tools (port of <c>tool-cordis</c>): define, run, stop,
@@ -396,7 +396,7 @@ public static class CordisTools
 
     private static string ClientSource(JsonObject pkg) => pkg.TryGetPropertyValue("clientSource", out var source) ? source!.GetValue<string>() : string.Empty;
 
-    private static Dsh.Session.Session RequireSession(ToolRunContext context)
+    private static Harness.Session.Session RequireSession(ToolRunContext context)
         => context.Session ?? throw new InvalidOperationException("the cordis tools require a calling session");
 
     /// <summary>Two-space LF pretty JSON, matching the recorded render.</summary>

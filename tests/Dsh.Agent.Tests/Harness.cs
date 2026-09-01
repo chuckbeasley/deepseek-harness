@@ -1,8 +1,8 @@
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Agent.Tests;
+namespace Harness.Agent.Tests;
 
 /// <summary>Shared boot and fixture helpers for the Agent port tests.</summary>
 internal static class Harness

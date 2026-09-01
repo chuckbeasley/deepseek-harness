@@ -1,4 +1,4 @@
-namespace Cordis.Schemastery;
+namespace Harness.Cordis.Schemastery;
 
 /// <summary>Runtime validation options shared by all schema calls.</summary>
 public sealed class SchemaOptions

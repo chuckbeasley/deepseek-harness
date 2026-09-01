@@ -1,12 +1,12 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.Guard;
+namespace Harness.Guard;
 
 /// <summary>
 /// Advisory repeat-call detector config (port of the TS repeat-tool-reminder Config). Misconfiguration
@@ -36,7 +36,7 @@ public sealed record RepeatToolReminderConfig
 
 /// <summary>
 /// One agent's consecutive-repeat chain: the last tracked call's identity key and its run length
-/// (port of the TS Chain). Chains are keyed by the live <see cref="Dsh.Session.Session"/> object — the port's
+/// (port of the TS Chain). Chains are keyed by the live <see cref="Harness.Session.Session"/> object — the port's
 /// per-agent identity, since each published agent owns a distinct session — and dropped when the
 /// session is disposed.
 /// </summary>
@@ -78,7 +78,7 @@ public sealed class RepeatToolReminderGuard : Service, IGuardService
     private readonly Regex[] _include;
     private readonly Regex[] _exclude;
     private readonly int _argumentsPreviewChars;
-    private readonly ConditionalWeakTable<Dsh.Session.Session, RepeatChain> _chains = new();
+    private readonly ConditionalWeakTable<Harness.Session.Session, RepeatChain> _chains = new();
 
     /// <summary>
     /// Create and install the guard as <c>guard:repeat-tool-reminder</c>; validation fails loud here.
@@ -102,8 +102,8 @@ public sealed class RepeatToolReminderGuard : Service, IGuardService
                     $"repeat-tool-reminder: invalid argumentsPreviewChars {_argumentsPreviewChars} — must be an integer >= 1",
                     nameof(config));
             }
-            Ctx.On("session/event", (Delegate)(Action<Dsh.Session.Session, SessionEvent>)Drive);
-            Ctx.On("session/disposed", (Delegate)(Action<Dsh.Session.Session>)Drop);
+            Ctx.On("session/event", (Delegate)(Action<Harness.Session.Session, SessionEvent>)Drive);
+            Ctx.On("session/disposed", (Delegate)(Action<Harness.Session.Session>)Drop);
         }
         catch
         {
@@ -198,7 +198,7 @@ public sealed class RepeatToolReminderGuard : Service, IGuardService
     }
 
     /// <summary>Drive the guard's state from one committed session event.</summary>
-    private void Drive(Dsh.Session.Session session, SessionEvent evt)
+    private void Drive(Harness.Session.Session session, SessionEvent evt)
     {
         switch (evt)
         {
@@ -213,7 +213,7 @@ public sealed class RepeatToolReminderGuard : Service, IGuardService
     }
 
     /// <summary>Drop one session's chain when its session is disposed (agent teardown).</summary>
-    private void Drop(Dsh.Session.Session session) => _chains.Remove(session);
+    private void Drop(Harness.Session.Session session) => _chains.Remove(session);
 
     /// <summary>
     /// Advance the calling session's chain for one committed tool result and deliver the
@@ -224,7 +224,7 @@ public sealed class RepeatToolReminderGuard : Service, IGuardService
     /// the agent's next-step inbox (the recorded <c>agent/inbox/spliced</c> insert + consume
     /// pair), not appended directly to the log.
     /// </summary>
-    private void Observe(Dsh.Session.Session session, ToolResultEvent result)
+    private void Observe(Harness.Session.Session session, ToolResultEvent result)
     {
         var callId = (result.Message.Source as ToolSource)?.CallId;
         var call = callId is null ? null : session.Events.OfType<ToolCallEvent>()
@@ -249,7 +249,7 @@ public sealed class RepeatToolReminderGuard : Service, IGuardService
                 Form = "notice",
                 Summary = $"{toolName} × {count}",
             });
-        var agent = Ctx.Get<Dsh.Agent.AgentRegistry>("agents")?.Get(session.Id);
+        var agent = Ctx.Get<Harness.Agent.AgentRegistry>("agents")?.Get(session.Id);
         if (agent is null)
         {
             // No live agent (a direct/test call): fall back to the durable append so the nudge
@@ -261,6 +261,6 @@ public sealed class RepeatToolReminderGuard : Service, IGuardService
             });
             return;
         }
-        agent.Inbox.Append(Dsh.Agent.InboxTarget.NextStep, reminder);
+        agent.Inbox.Append(Harness.Agent.InboxTarget.NextStep, reminder);
     }
 }

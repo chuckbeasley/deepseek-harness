@@ -1,7 +1,7 @@
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Agent;
+namespace Harness.Agent;
 
 /// <summary>
 /// One normalized mutation of an agent's durable pending-message lists (port of the TS

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Dsh.Llm.DeepSeek.Tests;
+namespace Harness.Llm.DeepSeek.Tests;
 
 /// <summary>SSE frame parsing tests: framing, terminators, comments, BOM, and the [DONE] contract.</summary>
 public static class SseParserTests

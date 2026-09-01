@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Dsh.Hooks;
-using Dsh.Session;
+using Harness.Hooks;
+using Harness.Session;
 
-namespace Dsh.Hooks.Tests;
+namespace Harness.Hooks.Tests;
 
 /// <summary>The matcher semantics, the outcome codec, and the log-only event records.</summary>
 public static class HookTests

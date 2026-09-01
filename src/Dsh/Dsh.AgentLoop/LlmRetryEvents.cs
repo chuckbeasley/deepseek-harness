@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.AgentLoop;
+namespace Harness.AgentLoop;
 
 /// <summary>Durable retry-scheduling marker: one scheduled attempt for a failed model call (port of the TS llm/retry event).</summary>
 public sealed record LlmRetryEvent : SessionEvent

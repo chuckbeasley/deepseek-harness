@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Dsh.Sandbox;
+namespace Harness.Sandbox;
 
 /// <summary>
 /// File-effect policy for confined processes (port of the TS <c>SandboxMode</c> union).

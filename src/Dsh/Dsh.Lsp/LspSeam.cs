@@ -1,4 +1,4 @@
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>The four navigation operations the seam exposes (closed union in TS; the wire mapping lives in <see cref="LspTranslate"/>).</summary>
 public enum LspOperation

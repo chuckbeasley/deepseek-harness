@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Sandbox;
+namespace Harness.Sandbox;
 
 /// <summary>
 /// The session's sandbox mode was set (port of the TS <c>sandbox/mode</c>): log-only, durable

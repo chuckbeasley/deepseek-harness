@@ -1,4 +1,4 @@
-namespace Dsh.Hooks.Tests;
+namespace Harness.Hooks.Tests;
 
 /// <summary>Test failure carrying one assertion message.</summary>
 public sealed class AssertionException : Exception

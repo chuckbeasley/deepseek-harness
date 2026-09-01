@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace Dsh.Sdk.Protocol;
+namespace Harness.Sdk.Protocol;
 
 /// <summary>A JSON-RPC error response, preserving the wire <c>code</c> and optional <c>data</c>.</summary>
 public sealed class JsonRpcResponseError : Exception

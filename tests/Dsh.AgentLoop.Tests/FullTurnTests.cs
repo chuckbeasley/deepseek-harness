@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop.Tests;
+namespace Harness.AgentLoop.Tests;
 
 /// <summary>One headless task end-to-end: tool call, then text, through the real agent loop.</summary>
 public static class FullTurnTests

@@ -1,9 +1,9 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Web;
+namespace Harness.Web;
 
 /// <summary>
 /// The durable secret-free DeepSeek Messages request recorded immediately before one auxiliary

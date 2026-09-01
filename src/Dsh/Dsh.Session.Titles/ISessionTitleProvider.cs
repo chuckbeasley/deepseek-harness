@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Session.Titles;
+namespace Harness.Session.Titles;
 
 /// <summary>Generates a session title from the session log.</summary>
 public interface ISessionTitleProvider

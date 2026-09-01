@@ -1,8 +1,8 @@
-using Cordis.Core;
-using Dsh.Authorization;
-using Dsh.Credentials;
+using Harness.Cordis.Core;
+using Harness.Authorization;
+using Harness.Credentials;
 
-namespace Dsh.Authorization.Tests;
+namespace Harness.Authorization.Tests;
 
 /// <summary>One disposable temp directory per test, removed on dispose.</summary>
 internal sealed class TempDir : IDisposable

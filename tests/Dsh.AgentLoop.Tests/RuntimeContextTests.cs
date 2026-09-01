@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop.Tests;
+namespace Harness.AgentLoop.Tests;
 
 /// <summary>Dynamic runtime context projects one snapshot per change into the claimed step input.</summary>
 public static class RuntimeContextTests
@@ -25,7 +25,7 @@ public static class RuntimeContextTests
         Assert.Equal(1, OwnedSnapshots(agent).Length, "unchanged context must not project a second snapshot");
     }
 
-    private static UserMessageEvent[] OwnedSnapshots(Dsh.Agent.Agent agent)
+    private static UserMessageEvent[] OwnedSnapshots(global::Harness.Agent.Agent agent)
         => agent.Session.Events.OfType<UserMessageEvent>()
             .Where(evt => evt.Message.Source is PluginSource { Plugin: AgentLoopConstants.RuntimeContextSource })
             .ToArray();

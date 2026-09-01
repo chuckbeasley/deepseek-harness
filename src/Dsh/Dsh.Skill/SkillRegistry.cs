@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Llm;
+using Harness.Cordis.Core;
+using Harness.Llm;
 
-namespace Dsh.Skill;
+namespace Harness.Skill;
 
 /// <summary>
 /// Layered skill registry (ctx.skills): merges provider catalogs, resolves the winning skill for a

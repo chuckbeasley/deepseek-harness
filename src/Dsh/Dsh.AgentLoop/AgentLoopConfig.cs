@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop;
+namespace Harness.AgentLoop;
 
 /// <summary>
 /// Agent-loop plugin configuration. The declarative boot array of the TS Config belongs to the

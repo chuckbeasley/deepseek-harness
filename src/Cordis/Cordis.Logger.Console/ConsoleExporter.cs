@@ -1,14 +1,14 @@
-using Cordis.Core;
-using Cordis.Cosmokit;
+using Harness.Cordis.Core;
+using Harness.Cordis.Cosmokit;
 using System.Globalization;
 using System.Text;
 
-namespace Cordis.Logger.Console;
+namespace Harness.Cordis.Logger.Console;
 
 /// <summary>
 /// Console log exporter (C# port of the vendored <c>logger-console</c>). Renders one line per
 /// message as <c>[LEVEL] name message</c> with an optional local-time timestamp, mirroring the TS
-/// <c>ConsoleExporter.render</c> layout and the Cordis.Core threshold rule: messages whose level
+/// <c>ConsoleExporter.render</c> layout and the Harness.Cordis.Core threshold rule: messages whose level
 /// exceeds <see cref="IExporter.Level"/> are skipped. Constructing the exporter registers it with
 /// the context logger as a fiber effect; context teardown removes it.
 /// </summary>

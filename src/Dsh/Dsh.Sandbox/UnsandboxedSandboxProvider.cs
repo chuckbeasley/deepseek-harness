@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Sandbox;
+namespace Harness.Sandbox;
 
 /// <summary>Configuration for the unsandboxed backend: the fallback workspace root only.</summary>
 public sealed record SandboxConfig(string? WorkspaceRoot = null);

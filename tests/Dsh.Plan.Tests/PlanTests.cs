@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Dsh.Plan.Tests;
+namespace Harness.Plan.Tests;
 
 public static class PlanTests
 {

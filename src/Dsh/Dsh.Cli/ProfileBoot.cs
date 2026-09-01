@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Cordis.Core;
-using Cordis.Cosmokit;
-using Cordis.Plugin.Include;
-using Cordis.Plugin.Loader;
+using Harness.Cordis.Core;
+using Harness.Cordis.Cosmokit;
+using Harness.Cordis.Plugin.Include;
+using Harness.Cordis.Plugin.Loader;
 
-namespace Dsh.Cli;
+namespace Harness.Cli;
 
 /// <summary>One resolved bundle layer of a profile.</summary>
 public sealed record ProfileLayer(string PackageName, string PackageDir, string PatchPath, List<object?> Patches);
@@ -551,11 +551,11 @@ public static class ProfileBoot
     /// <param name="invocation">the profile to boot and its overlays and inner arguments.</param>
     /// <param name="onExit">receives the app's requested exit code (the one-shot runners).</param>
     /// <returns>the settled root context; the app (or the caller) owns disposal.</returns>
-    public static async Task<Cordis.Core.Context> RunProfileAsync(DshInvocation.ProfileInvocation invocation, Action<int>? onExit = null)
+    public static async Task<Harness.Cordis.Core.Context> RunProfileAsync(DshInvocation.ProfileInvocation invocation, Action<int>? onExit = null)
     {
         var composed = ComposeProfile(invocation.Profile, invocation.Patches);
-        var ctx = new Cordis.Core.Context();
-        var loader = new Cordis.Plugin.Loader.Loader(ctx, new LoaderConfig { BaseUrl = composed.Profile.Dir });
+        var ctx = new Harness.Cordis.Core.Context();
+        var loader = new Harness.Cordis.Plugin.Loader.Loader(ctx, new LoaderConfig { BaseUrl = composed.Profile.Dir });
         SpineRegistry.RegisterAll(loader.Catalog);
         var ready = new AppReady();
         var exit = new AppExit(code =>
@@ -584,7 +584,7 @@ public static class ProfileBoot
     }
 
     /// <summary>Reject rows the spine does not know, naming the row id (fail loud at the earliest resolvable point).</summary>
-    private static void AuditRows(IReadOnlyList<EntryOptions> rows, Cordis.Plugin.Loader.Loader loader)
+    private static void AuditRows(IReadOnlyList<EntryOptions> rows, Harness.Cordis.Plugin.Loader.Loader loader)
     {
         foreach (var row in rows)
         {
@@ -600,7 +600,7 @@ public static class ProfileBoot
     }
 
     /// <summary>Reject a settled tree whose enabled entries never activated.</summary>
-    private static void AuditEntries(Cordis.Plugin.Loader.Loader loader)
+    private static void AuditEntries(Harness.Cordis.Plugin.Loader.Loader loader)
     {
         var failed = loader.Entries().Where(entry => entry.Fiber is null && !entry.Disabled).ToList();
         if (failed.Count > 0)

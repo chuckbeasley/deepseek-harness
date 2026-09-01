@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace Dsh.Lsp.Tests;
+namespace Harness.Lsp.Tests;
 
 /// <summary>The serialized, abortable instance lifecycle over a spawned fixture (mirrors instance.spec.ts).</summary>
 public static class InstanceTests

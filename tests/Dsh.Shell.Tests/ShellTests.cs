@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Dsh.Llm;
-using Dsh.Shell;
-using Dsh.Tools;
+using Harness.Llm;
+using Harness.Shell;
+using Harness.Tools;
 
-namespace Dsh.Shell.Tests;
+namespace Harness.Shell.Tests;
 
 /// <summary>The executor's resolve/run semantics and the bash tool's model-facing surface.</summary>
 public static class ShellTests

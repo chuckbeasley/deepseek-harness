@@ -1,8 +1,8 @@
-﻿using Dsh.Web.App;
-using Dsh.Web.App.Slots;
+using Harness.Web.App;
+using Harness.Web.App.Slots;
 using Microsoft.AspNetCore.Components;
 
-namespace Dsh.Ui.Settings;
+namespace Harness.Ui.Settings;
 
 /// <summary>
 /// The settings surface (port of the TS ui-settings pages): the <c>/settings</c> page showing the

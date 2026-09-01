@@ -1,10 +1,10 @@
 using System.Collections;
 
-namespace Cordis.Plugin.Loader;
+namespace Harness.Cordis.Plugin.Loader;
 
 /// <summary>
 /// Deep structural equality for entry option diffs (C# adaptation of cosmokit <c>deepEqual</c>,
-/// kept local because the loader references only Cordis.Core). Handles primitives, strings,
+/// kept local because the loader references only Harness.Cordis.Core). Handles primitives, strings,
 /// dictionaries, and enumerables; other reference types compare by <c>Equals</c>.
 /// </summary>
 internal static class Deep

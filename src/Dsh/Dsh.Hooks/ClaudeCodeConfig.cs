@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Hooks;
+namespace Harness.Hooks;
 
 /// <summary>
 /// Parse Claude Code's event-to-matcher-group hook format into shared <see cref="MatcherGroup"/>s

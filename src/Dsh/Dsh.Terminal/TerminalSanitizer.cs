@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Dsh.Terminal;
+namespace Harness.Terminal;
 
 /// <summary>
 /// Terminal output sanitizer (port of the TS <c>TerminalSanitizer</c>): strips CSI/OSC/short

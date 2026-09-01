@@ -1,13 +1,13 @@
-namespace Dsh.Sdk.Client.Tests;
+namespace Harness.Sdk.Client.Tests;
 
 /// <summary>Pure launch-resolution tests (port of the TS launch spec): defaults and overrides.</summary>
 public static class LaunchTests
 {
     public static void ResolveLaunch_AppliesTheDefaults()
     {
-        var runtime = SdkLaunch.ResolveLaunch(new HarnessClientOptions { DshBin = "C:\\dsh\\Dsh.Cli.dll" }, "C:\\work");
+        var runtime = SdkLaunch.ResolveLaunch(new HarnessClientOptions { DshBin = "C:\\dsh\\Harness.Cli.dll" }, "C:\\work");
         Assert.Equal("dotnet", runtime.Command, "a .dll entry spawns via dotnet");
-        Assert.True(runtime.Args.SequenceEqual(new[] { "C:\\dsh\\Dsh.Cli.dll", "--profile", "sdk" }), "the canonical argv");
+        Assert.True(runtime.Args.SequenceEqual(new[] { "C:\\dsh\\Harness.Cli.dll", "--profile", "sdk" }), "the canonical argv");
         Assert.Equal("dsh profile \"sdk\"", runtime.Description, "the description names the default profile");
         Assert.Equal(10_000, runtime.InitializeTimeoutMs, "the default handshake bound");
         Assert.Null(runtime.RequestTimeoutMs, "no default request timeout");

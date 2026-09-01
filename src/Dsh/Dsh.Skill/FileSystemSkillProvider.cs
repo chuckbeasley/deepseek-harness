@@ -1,7 +1,7 @@
 using System.Globalization;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Skill;
+namespace Harness.Skill;
 
 /// <summary>File locator carried by one filesystem skill candidate.</summary>
 /// <param name="Path">Absolute path of the skill markdown file.</param>

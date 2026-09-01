@@ -1,4 +1,4 @@
-namespace Dsh.Lsp.Tests;
+namespace Harness.Lsp.Tests;
 
 /// <summary>Probe: the fixture provider reproduces the recorded corpus behavior without node.</summary>
 public static class NodeServerProbe

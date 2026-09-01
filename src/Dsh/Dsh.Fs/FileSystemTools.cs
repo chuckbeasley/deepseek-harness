@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.Fs;
+namespace Harness.Fs;
 
 /// <summary>
 /// Consumer tools over ctx.fs (wave-1 port of packages/fs/tool-fs): the model-facing fs_read and
@@ -87,7 +87,7 @@ public static class FileSystemTools
     /// the presence/absence observation, and the committed sha256 attachment with its parsed
     /// dimensions; Render projects the text envelope plus the image block.
     /// </summary>
-    public static ToolDefinition ReadImage(IFileSystemService fs, Dsh.Attachment.IAttachmentService attachments, Dsh.Llm.LlmRuntime llm)
+    public static ToolDefinition ReadImage(IFileSystemService fs, Harness.Attachment.IAttachmentService attachments, Harness.Llm.LlmRuntime llm)
     {
         ArgumentNullException.ThrowIfNull(fs);
         ArgumentNullException.ThrowIfNull(attachments);
@@ -156,7 +156,7 @@ public static class FileSystemTools
     }
 
     /// <summary>The current session's last routed provider/model, or nulls.</summary>
-    private static (string? Provider, string? Model) RouteOf(Dsh.Session.Session? session)
+    private static (string? Provider, string? Model) RouteOf(Harness.Session.Session? session)
         => session is null
             ? (null, null)
             : session.Events.OfType<RequestHeaderEvent>().Select(evt => evt.Header.Config).LastOrDefault() is { } config

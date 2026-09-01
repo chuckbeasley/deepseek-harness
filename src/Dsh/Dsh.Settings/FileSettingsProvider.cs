@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Settings;
+namespace Harness.Settings;
 
 /// <summary>
 /// File-backed settings provider: one JSON document carries every namespace section. The document

@@ -1,4 +1,4 @@
-namespace Cordis.Cosmokit;
+namespace Harness.Cordis.Cosmokit;
 
 /// <summary>
 /// Internal abort reason carrying a capability-owned code and elapsed deadline,

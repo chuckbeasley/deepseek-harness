@@ -1,4 +1,4 @@
-namespace Cordis.Schemastery;
+namespace Harness.Cordis.Schemastery;
 
 /// <summary>
 /// A non-throwing validation outcome: either a successful normalized value or

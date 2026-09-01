@@ -1,6 +1,6 @@
-using Dsh.Sdk.Protocol;
+using Harness.Sdk.Protocol;
 
-namespace Dsh.Sdk.Client;
+namespace Harness.Sdk.Client;
 
 /// <summary>
 /// High-level run API over <see cref="HarnessClient"/> (port of the TS <c>DeepSeekHarness</c>):

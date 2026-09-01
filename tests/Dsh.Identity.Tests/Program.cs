@@ -1,4 +1,4 @@
-namespace Dsh.Identity.Tests;
+namespace Harness.Identity.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

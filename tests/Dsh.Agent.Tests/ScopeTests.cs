@@ -1,7 +1,7 @@
-using Dsh.Llm;
-using Dsh.Scope;
+using Harness.Llm;
+using Harness.Scope;
 
-namespace Dsh.Agent.Tests;
+namespace Harness.Agent.Tests;
 
 /// <summary>Scoped registration unwinds with the agent's lifecycle.</summary>
 internal static class ScopeTests

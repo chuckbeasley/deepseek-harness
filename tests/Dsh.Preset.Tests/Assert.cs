@@ -1,4 +1,4 @@
-namespace Dsh.Preset.Tests;
+namespace Harness.Preset.Tests;
 
 /// <summary>Test failure carrying one assertion message.</summary>
 public sealed class AssertionException : Exception

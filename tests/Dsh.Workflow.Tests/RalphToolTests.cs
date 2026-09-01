@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
-using Dsh.Workflow;
+using Harness.Workflow;
 
-namespace Dsh.Workflow.Tests;
+namespace Harness.Workflow.Tests;
 
 /// <summary>The Ralph tool's fixed prompt, report validation, and result rendering.</summary>
 public static class RalphToolTests
@@ -41,9 +41,9 @@ public static class RalphToolTests
     {
         var tool = RalphTool.StructuredOutputDefinition();
         var args = System.Text.Json.JsonSerializer.SerializeToElement(JsonNode.Parse("{\"status\":\"complete\",\"summary\":\"s\",\"evidence\":[\"e\"],\"nextSteps\":[],\"blocker\":\"\"}")!);
-        var value = tool.Execute(args, new Dsh.Tools.ToolRunContext(new Dsh.Llm.ToolCallId("c"), "structured_output", args, CancellationToken.None)).GetAwaiter().GetResult();
+        var value = tool.Execute(args, new global::Harness.Tools.ToolRunContext(new global::Harness.Llm.ToolCallId("c"), "structured_output", args, CancellationToken.None)).GetAwaiter().GetResult();
         var blocks = tool.Render!(args, value);
-        Assert.Equal("Structured output recorded.", ((Dsh.Llm.TextBlock)blocks[0]).Text, "the render is the recorded line");
+        Assert.Equal("Structured output recorded.", ((Harness.Llm.TextBlock)blocks[0]).Text, "the render is the recorded line");
     }
 
     public static void RenderResult_MatchesTheRecordedEnvelope()

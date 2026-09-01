@@ -1,4 +1,4 @@
-namespace Dsh.Workspace;
+namespace Harness.Workspace;
 
 /// <summary>Stable, machine-routable codes for workspace failures.</summary>
 public static class WorkspaceErrorCodes

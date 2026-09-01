@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Cordis.Plugin.Loader;
+using Harness.Cordis.Core;
+using Harness.Cordis.Plugin.Loader;
 
-namespace Dsh.Cli;
+namespace Harness.Cli;
 
 /// <summary>
 /// The headless one-shot app row: run one task through the real agent loop and exit. The provider
@@ -14,7 +14,7 @@ public sealed class HeadlessRun : ILoaderPlugin
     public const string SessionIdValue = "session-headless";
 
     /// <inheritdoc />
-    public ValueTask<IDisposable?> ApplyAsync(Cordis.Core.Context ctx, object? config)
+    public ValueTask<IDisposable?> ApplyAsync(Harness.Cordis.Core.Context ctx, object? config)
     {
         var args = ctx.Get<CmdlineArgs>("cmdlineArgs") ?? new CmdlineArgs(Array.Empty<string>());
         var task = string.Join(' ', args.Args);
@@ -24,21 +24,21 @@ public sealed class HeadlessRun : ILoaderPlugin
             Exit(ctx, 1);
             return ValueTask.FromResult<IDisposable?>(null);
         }
-        var loop = ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
+        var loop = ctx.Get<Harness.AgentLoop.AgentLoop>("agentLoop")
             ?? throw new InvalidOperationException("dsh: headless requires the \"agentLoop\" row");
         var key = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
         // A snapshot run follows the recorded fixture's route; otherwise the key decides
         // between the real DeepSeek adapter and the keyless mock route.
-        var provider = Dsh.Llm.Replay.SnapshotEnv.Provider
-            ?? (string.IsNullOrEmpty(key) ? Dsh.Spike.MockLlmProvider.Provider : "deepseek");
-        var model = Dsh.Llm.Replay.SnapshotEnv.Model
-            ?? (string.IsNullOrEmpty(key) ? Dsh.Spike.MockLlmProvider.Model : "deepseek-chat");
-        var sessionId = new Dsh.Session.SessionId(SessionIdValue);
-        var message = new Dsh.Llm.UserMessage
+        var provider = Harness.Llm.Replay.SnapshotEnv.Provider
+            ?? (string.IsNullOrEmpty(key) ? Harness.Spike.MockLlmProvider.Provider : "deepseek");
+        var model = Harness.Llm.Replay.SnapshotEnv.Model
+            ?? (string.IsNullOrEmpty(key) ? Harness.Spike.MockLlmProvider.Model : "deepseek-chat");
+        var sessionId = new Harness.Session.SessionId(SessionIdValue);
+        var message = new Harness.Llm.UserMessage
         {
-            Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("D")),
-            Content = new Dsh.Llm.ContentBlock[] { new Dsh.Llm.TextBlock(task) },
-            Source = new Dsh.Llm.UserSource(),
+            Id = new Harness.Llm.MessageId(Guid.NewGuid().ToString("D")),
+            Content = new Harness.Llm.ContentBlock[] { new Harness.Llm.TextBlock(task) },
+            Source = new Harness.Llm.UserSource(),
         };
 
         // The session is created and the turn starts only after the loader settles
@@ -49,10 +49,10 @@ public sealed class HeadlessRun : ILoaderPlugin
             ?? throw new InvalidOperationException("dsh: headless requires the appReady launcher fact");
         ready.OnReady(() =>
         {
-            var handle = loop.Create(sessionId, new Dsh.Agent.AgentOptions { Provider = provider, Model = model });
+            var handle = loop.Create(sessionId, new Harness.Agent.AgentOptions { Provider = provider, Model = model });
             var driver = loop.GetLoop(sessionId)
                 ?? throw new InvalidOperationException("dsh: headless published no loop");
-            driver.Send(message, Dsh.Agent.InboxTarget.NextTurn, wakeup: true);
+            driver.Send(message, Harness.Agent.InboxTarget.NextTurn, wakeup: true);
             _ = Task.Run(async () =>
             {
                 try
@@ -67,12 +67,12 @@ public sealed class HeadlessRun : ILoaderPlugin
                     // The stdout projection (the TS headless bin): every assistant text block
                     // across all steps concatenates into one line, so a Stop-hook continuation's
                     // earlier reply still appears.
-                    var text = string.Concat(session.Events.OfType<Dsh.Session.AssistantMessageEvent>()
-                        .SelectMany(evt => evt.Message.Content.OfType<Dsh.Llm.TextBlock>())
+                    var text = string.Concat(session.Events.OfType<Harness.Session.AssistantMessageEvent>()
+                        .SelectMany(evt => evt.Message.Content.OfType<Harness.Llm.TextBlock>())
                         .Select(block => block.Text));
                     Console.Out.Write(text.Length == 0 ? "\n" : text + "\n");
                     // The TS bin exits 0 only for a completed turn.
-                    var code = session.Events.OfType<Dsh.Session.TurnEndEvent>().LastOrDefault()?.Reason is Dsh.Session.CompletedReason ? 0 : 1;
+                    var code = session.Events.OfType<Harness.Session.TurnEndEvent>().LastOrDefault()?.Reason is Harness.Session.CompletedReason ? 0 : 1;
                     Exit(ctx, code);
                 }
                 catch (Exception error)
@@ -86,7 +86,7 @@ public sealed class HeadlessRun : ILoaderPlugin
     }
 
     /// <summary>Reconstruct the TS headless stderr projection from the session log.</summary>
-    private static string StderrFromSession(Dsh.Session.Session session)
+    private static string StderrFromSession(Harness.Session.Session session)
     {
         var output = new System.Text.StringBuilder();
         var started = false;
@@ -101,7 +101,7 @@ public sealed class HeadlessRun : ILoaderPlugin
         }
         foreach (var evt in session.Events)
         {
-            if (evt is Dsh.Session.TurnStartEvent)
+            if (evt is Harness.Session.TurnStartEvent)
             {
                 Close();
                 started = true;
@@ -110,7 +110,7 @@ public sealed class HeadlessRun : ILoaderPlugin
             if (!started) continue;
             switch (evt)
             {
-                case Dsh.Session.AssistantChunkEvent { Chunk: Dsh.Llm.ReasoningDelta delta }:
+                case Harness.Session.AssistantChunkEvent { Chunk: Harness.Llm.ReasoningDelta delta }:
                     if (delta.Text.Length == 0) break;
                     if (!open)
                     {
@@ -120,22 +120,22 @@ public sealed class HeadlessRun : ILoaderPlugin
                     output.Append(delta.Text);
                     endsWithNewline = delta.Text.EndsWith('\n');
                     break;
-                case Dsh.Session.AssistantChunkEvent { Chunk: Dsh.Llm.BlockStart { BlockType: not "reasoning" } }:
-                case Dsh.Session.AssistantChunkEvent { Chunk: Dsh.Llm.BlockEnd { Block.BlockType: not "reasoning" } }:
-                case Dsh.Session.AssistantChunkEvent { Chunk: Dsh.Llm.TextDelta }:
-                case Dsh.Session.AssistantChunkEvent { Chunk: Dsh.Llm.ToolCallDelta }:
-                case Dsh.Session.AssistantChunkEvent { Chunk: Dsh.Llm.Finish }:
+                case Harness.Session.AssistantChunkEvent { Chunk: Harness.Llm.BlockStart { BlockType: not "reasoning" } }:
+                case Harness.Session.AssistantChunkEvent { Chunk: Harness.Llm.BlockEnd { Block.BlockType: not "reasoning" } }:
+                case Harness.Session.AssistantChunkEvent { Chunk: Harness.Llm.TextDelta }:
+                case Harness.Session.AssistantChunkEvent { Chunk: Harness.Llm.ToolCallDelta }:
+                case Harness.Session.AssistantChunkEvent { Chunk: Harness.Llm.Finish }:
                     Close();
                     break;
             }
         }
         Close();
-        var turnEnd = session.Events.OfType<Dsh.Session.TurnEndEvent>().LastOrDefault();
-        if (turnEnd?.Reason is not Dsh.Session.ErrorReason error) return output.ToString();
+        var turnEnd = session.Events.OfType<Harness.Session.TurnEndEvent>().LastOrDefault();
+        if (turnEnd?.Reason is not Harness.Session.ErrorReason error) return output.ToString();
         return output.ToString() + $"dsh: {error.Failure.Code}: {error.Failure.Message}\n";
     }
 
-    private static void Exit(Cordis.Core.Context ctx, int code)
+    private static void Exit(Harness.Cordis.Core.Context ctx, int code)
     {
         var exit = ctx.Get<AppExit>("appExit")
             ?? throw new InvalidOperationException("dsh: headless requires the appExit launcher fact");

@@ -1,4 +1,4 @@
-﻿namespace Dsh.Web.App;
+namespace Harness.Web.App;
 
 /// <summary>
 /// The per-scope active locale (scoped service): the page pins <see cref="Language"/> from the

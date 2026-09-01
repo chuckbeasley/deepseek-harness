@@ -1,4 +1,4 @@
-namespace Dsh.Session.Projection;
+namespace Harness.Session.Projection;
 
 /// <summary>
 /// One consistent read cut over every registered client-visible unit for one session.

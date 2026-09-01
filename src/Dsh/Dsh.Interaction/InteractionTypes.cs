@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using Dsh.Tools;
+using Harness.Tools;
 
-namespace Dsh.Interaction;
+namespace Harness.Interaction;
 
 /// <summary>
 /// Every approval outcome the seam produces (port of the TS <c>ApprovalOutcome</c>).
@@ -51,7 +51,7 @@ public enum ApprovalPolicy
 /// <see cref="ApprovalOutcome.Cancelled"/> and a late answer is discarded.
 /// </summary>
 public sealed record ApprovalRequest(
-    Dsh.Agent.Agent Agent,
+    Harness.Agent.Agent Agent,
     string ToolName,
     string? CallId = null,
     string? Reason = null,
@@ -81,7 +81,7 @@ public sealed record UserQuestionAnswer(IReadOnlyList<UserQuestionAnswerItem> An
 /// </summary>
 public sealed record UserQuestionRequest(
     IReadOnlyList<UserQuestionItem> Questions,
-    Dsh.Agent.Agent? Agent = null,
+    Harness.Agent.Agent? Agent = null,
     CancellationToken? CancellationToken = null);
 
 /// <summary>Stable error taxonomy for user-questions failures (port of the TS <c>UserQuestionError</c>).</summary>

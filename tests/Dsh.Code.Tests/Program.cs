@@ -1,11 +1,11 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Code;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Code;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.Code.Tests;
+namespace Harness.Code.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

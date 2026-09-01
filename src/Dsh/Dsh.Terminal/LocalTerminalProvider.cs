@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Text;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Terminal;
+namespace Harness.Terminal;
 
 /// <summary>
 /// Local terminal provider (ctx.terminal; backend type "local"). Port of the terminal-bash

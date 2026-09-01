@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>
 /// Provider, model, reasoning effort, and sampling scalars of one conversation's requests.

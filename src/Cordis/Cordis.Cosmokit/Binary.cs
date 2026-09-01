@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Cordis.Cosmokit;
+namespace Harness.Cordis.Cosmokit;
 
 /// <summary>Base64 and hex conversion helpers (port of cosmokit <c>Binary</c>).</summary>
 public static class Binary

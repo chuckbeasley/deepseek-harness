@@ -1,4 +1,4 @@
-namespace Dsh.Skill.Tests;
+namespace Harness.Skill.Tests;
 
 /// <summary>Zero-dependency console runner for the Skill port tests.</summary>
 public static class Program

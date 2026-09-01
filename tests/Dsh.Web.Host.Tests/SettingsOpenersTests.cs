@@ -1,10 +1,10 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Preset;
-using Dsh.Settings;
-using Dsh.Web.Host;
+using Harness.Cordis.Core;
+using Harness.Preset;
+using Harness.Settings;
+using Harness.Web.Host;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The settings openers: document materialization + native open, the preset-directory open with
@@ -23,7 +23,7 @@ public static class SettingsOpenersTests
         try
         {
             var fake = new SettingsOpeners(OpenPath: _ => Task.CompletedTask, OpenTextFile: path => { opened.Add(path); return Task.CompletedTask; }, CanOpen: true);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenSettingsDocument(ctx, fake));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.OpenSettingsDocument(ctx, fake));
             var response = registry.InvokeAsync(new RpcRequest("settings/openSettingsDocument", null)).GetAwaiter().GetResult();
             Assert.True(response.Ok, "the document open must succeed");
             Assert.True(response.Result!.Value.GetProperty("opened").GetBoolean());
@@ -46,7 +46,7 @@ public static class SettingsOpenersTests
             _ = new NoDocumentSettingsProvider(ctx);
             var registry = new DshRpcRegistry(ctx);
             var fake = new SettingsOpeners(OpenPath: _ => Task.CompletedTask, OpenTextFile: _ => Task.CompletedTask, CanOpen: true);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenSettingsDocument(ctx, fake));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.OpenSettingsDocument(ctx, fake));
             var response = registry.InvokeAsync(new RpcRequest("settings/openSettingsDocument", null)).GetAwaiter().GetResult();
             Assert.False(response.Ok, "a provider without a local document is refused");
             Assert.Equal("gateway/internal", response.Error!.Code);
@@ -68,7 +68,7 @@ public static class SettingsOpenersTests
                 OpenPath: _ => Task.CompletedTask,
                 OpenTextFile: _ => throw new InvalidOperationException("no editor on this box"),
                 CanOpen: true);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenSettingsDocument(ctx, fake));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.OpenSettingsDocument(ctx, fake));
             var response = registry.InvokeAsync(new RpcRequest("settings/openSettingsDocument", null)).GetAwaiter().GetResult();
             Assert.False(response.Ok, "an opener failure is an infrastructure failure");
             Assert.Equal("gateway/internal", response.Error!.Code);
@@ -89,7 +89,7 @@ public static class SettingsOpenersTests
         try
         {
             var registry = new DshRpcRegistry(withoutCtx);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.CanOpenAgentPresetDirectory(withoutCtx, noOpener));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.CanOpenAgentPresetDirectory(withoutCtx, noOpener));
             var without = registry.InvokeAsync(new RpcRequest("settings/canOpenAgentPresetDirectory", null)).GetAwaiter().GetResult();
             Assert.False(without.Result!.Value.GetBoolean(), "a deployment without a native opener answers false");
         }
@@ -102,7 +102,7 @@ public static class SettingsOpenersTests
         try
         {
             var registry = new DshRpcRegistry(defaultCtx);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.CanOpenAgentPresetDirectory(defaultCtx));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.CanOpenAgentPresetDirectory(defaultCtx));
             var withDefault = registry.InvokeAsync(new RpcRequest("settings/canOpenAgentPresetDirectory", null)).GetAwaiter().GetResult();
             Assert.True(withDefault.Result!.Value.GetBoolean(), "the production opener exists");
         }
@@ -118,7 +118,7 @@ public static class SettingsOpenersTests
         try
         {
             var registry = new DshRpcRegistry(ctx);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx));
             var response = registry.InvokeAsync(new RpcRequest("settings/openAgentPresetDirectory",
                 JsonSerializer.SerializeToElement(new { agentPreset = "" }))).GetAwaiter().GetResult();
             Assert.False(response.Ok, "an empty preset id is refused");
@@ -136,7 +136,7 @@ public static class SettingsOpenersTests
         try
         {
             var registry = new DshRpcRegistry(ctx);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx));
             var response = registry.InvokeAsync(new RpcRequest("settings/openAgentPresetDirectory",
                 JsonSerializer.SerializeToElement(new { agentPreset = "any" }))).GetAwaiter().GetResult();
             Assert.False(response.Ok, "no preset service means no presets");
@@ -159,7 +159,7 @@ public static class SettingsOpenersTests
         {
             ctx.Set("preset", new FilePresetProvider(root));
             var registry = new DshRpcRegistry(ctx);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx));
             var response = registry.InvokeAsync(new RpcRequest("settings/openAgentPresetDirectory",
                 JsonSerializer.SerializeToElement(new { agentPreset = "ghost" }))).GetAwaiter().GetResult();
             Assert.False(response.Ok, "a missing preset id is refused");
@@ -186,7 +186,7 @@ public static class SettingsOpenersTests
             ctx.Set("preset", new FilePresetProvider(root));
             var registry = new DshRpcRegistry(ctx);
             var noOpener = new SettingsOpeners(OpenPath: _ => Task.CompletedTask, OpenTextFile: _ => Task.CompletedTask, CanOpen: false);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx, noOpener));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx, noOpener));
             var response = registry.InvokeAsync(new RpcRequest("settings/openAgentPresetDirectory",
                 JsonSerializer.SerializeToElement(new { agentPreset = "writer" }))).GetAwaiter().GetResult();
             Assert.True(response.Ok, "the path fallback is a success result");
@@ -213,7 +213,7 @@ public static class SettingsOpenersTests
             var opened = new List<string>();
             var registry = new DshRpcRegistry(ctx);
             var fake = new SettingsOpeners(OpenPath: path => { opened.Add(path); return Task.CompletedTask; }, OpenTextFile: _ => Task.CompletedTask, CanOpen: true);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx, fake));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx, fake));
             var response = registry.InvokeAsync(new RpcRequest("settings/openAgentPresetDirectory",
                 JsonSerializer.SerializeToElement(new { agentPreset = "writer" }))).GetAwaiter().GetResult();
             Assert.True(response.Ok, "the native open succeeds");
@@ -239,7 +239,7 @@ public static class SettingsOpenersTests
             File.WriteAllText(Path.Combine(presetDir, FilePresetProvider.CompositionFile), "- id: tools\n  name: tools\n");
             ctx.Set("preset", new FilePresetProvider(root, trust: PresetTrust.System));
             var registry = new DshRpcRegistry(ctx);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.OpenAgentPresetDirectory(ctx));
             var response = registry.InvokeAsync(new RpcRequest("settings/openAgentPresetDirectory",
                 JsonSerializer.SerializeToElement(new { agentPreset = "shipped" }))).GetAwaiter().GetResult();
             Assert.False(response.Ok, "a preset shipping with the deployment is not authorable");

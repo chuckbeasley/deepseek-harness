@@ -1,7 +1,7 @@
-using Cordis.Cosmokit;
+using Harness.Cordis.Cosmokit;
 using Microsoft.CSharp.RuntimeBinder;
 
-namespace Cordis.Tests;
+namespace Harness.Cordis.Tests;
 
 /// <summary>Brand marker types; each domain owns one, mirroring <c>Branded&lt;B&gt;</c> usage.</summary>
 public sealed class SessionId

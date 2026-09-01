@@ -1,4 +1,4 @@
-namespace Dsh.Agent.Tests;
+namespace Harness.Agent.Tests;
 
 /// <summary>Minimal assertion helpers.</summary>
 public static class Assert

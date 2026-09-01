@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Text;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Subprocess;
+namespace Harness.Subprocess;
 
 /// <summary>
 /// Local process-tree provider (ctx.subprocess; port of the subprocess-local executor minus the

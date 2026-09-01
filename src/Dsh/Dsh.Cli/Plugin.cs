@@ -1,11 +1,12 @@
-namespace Dsh.Cli;
+namespace Harness.Cli;
 
 /// <summary>
-/// <c>dsh plugin --profile &lt;name&gt; &lt;args...&gt;</c> — profile plugin management as manifest
-/// editing: the port has no package-manager story until NuGet packaging arrives in Phase 8, so the
-/// honest equivalent is editing the <c>dsh.profile.bundles</c> list in <c>profile.json</c>
-/// directly: <c>add &lt;bundle&gt;</c>, <c>remove &lt;bundle&gt;</c>, <c>list</c>. The profile is
-/// initialized on first use.
+/// <c>dsh plugin --profile &lt;name&gt; &lt;args...&gt;</c> — profile plugin management: manifest
+/// editing of the <c>dsh.profile.bundles</c> list in <c>profile.json</c> (<c>add
+/// &lt;bundle&gt;</c>, <c>remove &lt;bundle&gt;</c>, <c>list</c>), plus the NuGet install path
+/// (<c>add &lt;packageId&gt; --source &lt;feed&gt;</c>) that resolves a bundle package from a
+/// flat-container feed and extracts it under the profile's <c>bundles/</c> directory. The
+/// profile is initialized on first use.
 /// </summary>
 public static class Plugin
 {
@@ -29,7 +30,7 @@ public static class Plugin
         switch (verb)
         {
             case "add":
-                return AddBundle(dir, profile, args);
+                return AddBundleAsync(dir, profile, args).GetAwaiter().GetResult();
             case "remove":
                 return RemoveBundle(dir, profile, args);
             case "list":
@@ -42,7 +43,7 @@ public static class Plugin
         }
     }
 
-    private static int AddBundle(string dir, string profile, IReadOnlyList<string> args)
+    private static async Task<int> AddBundleAsync(string dir, string profile, IReadOnlyList<string> args)
     {
         if (args.Count < 2)
         {
@@ -50,6 +51,27 @@ public static class Plugin
             return 1;
         }
         var bundle = args[1];
+        // The NuGet install path: dsh plugin add <packageId> --source <feed> resolves the
+        // package from the flat-container feed and extracts its bundle under the profile.
+        var sourceIndex = -1;
+        for (var i = 0; i < args.Count; i++) { if (args[i] == "--source") { sourceIndex = i; break; } }
+        if (sourceIndex >= 0)
+        {
+            if (sourceIndex + 1 >= args.Count)
+            {
+                Console.Error.WriteLine("dsh: plugin add --source needs a feed (a flat-container URL or local directory)");
+                return 1;
+            }
+            try
+            {
+                await NuGetBundleClient.InstallAsync(bundle, args[sourceIndex + 1], dir).ConfigureAwait(false);
+            }
+            catch (Exception error)
+            {
+                Console.Error.WriteLine($"dsh: failed to install bundle \"{bundle}\": {error.Message}");
+                return 1;
+            }
+        }
         var manifest = ProfileBoot.ReadProfileManifest(dir);
         var bundles = EnsureBundles(manifest);
         if (!bundles.Contains(bundle, StringComparer.Ordinal))

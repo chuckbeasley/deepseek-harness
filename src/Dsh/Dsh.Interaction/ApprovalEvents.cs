@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Interaction;
+namespace Harness.Interaction;
 
 /// <summary>
 /// Durable audit events for the approval seam (port of the TS <c>approval/asked</c> +

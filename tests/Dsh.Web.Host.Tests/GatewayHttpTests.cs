@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Cordis.Core;
-using Dsh.Web.Host;
+using Harness.Cordis.Core;
+using Harness.Web.Host;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The unary HTTP carrier: envelope round-trips, the exact status vocabulary (404/415/400/413),
@@ -27,13 +27,13 @@ public static class GatewayHttpTests
 
         public required DshRpcRegistry Rpc { get; init; }
 
-        public required Dsh.Web.Host.WebHostService Host { get; init; }
+        public required global::Harness.Web.Host.WebHostService Host { get; init; }
 
         public static Spine Create()
         {
             var ctx = new Context();
             var rpc = new DshRpcRegistry(ctx);
-            var host = new Dsh.Web.Host.WebHostService(ctx, new Dsh.Web.Host.WebHostConfig(Port: FreePort(), AuthFence: false));
+            var host = new global::Harness.Web.Host.WebHostService(ctx, new global::Harness.Web.Host.WebHostConfig(Port: FreePort(), AuthFence: false));
             host.StartAsync().GetAwaiter().GetResult();
             return new Spine { Ctx = ctx, Rpc = rpc, Host = host };
         }
@@ -59,7 +59,7 @@ public static class GatewayHttpTests
     public static void UnaryRoundTrip_EchoesRpcIdAndValue()
     {
         using var spine = Spine.Create();
-        using var registration = spine.Rpc.Register(new Dsh.Web.Host.RpcMethod("echo/hello", (args, _) =>
+        using var registration = spine.Rpc.Register(new global::Harness.Web.Host.RpcMethod("echo/hello", (args, _) =>
             Task.FromResult<System.Text.Json.JsonElement?>(args)));
         var raw = Post(spine, "echo/hello",
             "{\"type\":\"client-request\",\"rpcId\":\"rpc-1\",\"method\":\"echo/hello\",\"payload\":{\"args\":{\"name\":\"world\"}}}");

@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Dsh.Lsp.Tests;
+namespace Harness.Lsp.Tests;
 
 /// <summary>Shared spawn, temp-workspace, and polling helpers for the process-backed LSP suites.</summary>
 internal static class LspTestHarness

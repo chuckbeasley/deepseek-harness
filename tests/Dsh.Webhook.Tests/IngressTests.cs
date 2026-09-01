@@ -1,13 +1,13 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
-using Cordis.Core;
-using Dsh.Credentials;
-using Dsh.Webhook;
+using Harness.Cordis.Core;
+using Harness.Credentials;
+using Harness.Webhook;
 
-namespace Dsh.Webhook.Tests;
+namespace Harness.Webhook.Tests;
 
 /// <summary>
 /// End-to-end behavior of <see cref="HttpListenerWebhookIngress"/> over real loopback HTTP: a

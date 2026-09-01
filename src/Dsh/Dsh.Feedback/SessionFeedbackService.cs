@@ -1,10 +1,10 @@
 using System.Runtime.CompilerServices;
 using System.Text;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Feedback;
+namespace Harness.Feedback;
 
 /// <summary>
 /// ctx.feedback: the message-feedback service. It registers the plugin-merged
@@ -15,14 +15,14 @@ namespace Dsh.Feedback;
 /// read, so resume and fork restore the state. Writes validate the optional note (non-blank,
 /// within the configured complete UTF-8 byte bound) and append the durable event.
 /// The <c>Session</c> type is fully qualified because the <c>Dsh</c> root namespace member
-/// <c>Session</c> (the Dsh.Session namespace) shadows the imported type at simple-name lookup.
+/// <c>Session</c> (the Harness.Session namespace) shadows the imported type at simple-name lookup.
 /// </summary>
 public sealed class SessionFeedbackService : Service, IFeedbackService
 {
     private const int DefaultMaxNoteBytes = 4096;
 
     private readonly int _maxNoteBytes;
-    private readonly ConditionalWeakTable<Dsh.Session.Session, Cell> _cells = new();
+    private readonly ConditionalWeakTable<Harness.Session.Session, Cell> _cells = new();
 
     /// <summary>Create and install the service as <c>feedback</c>.</summary>
     /// <param name="ctx">the owner context whose <c>session/event</c> stream is observed.</param>
@@ -39,21 +39,21 @@ public sealed class SessionFeedbackService : Service, IFeedbackService
         // Plugin-boot equivalent of the TS event-type registration: the JSONL backend must
         // serialize and replay this plugin-merged event.
         SessionEventTypes.Register(FeedbackEvent.EventTypeName, typeof(FeedbackEvent));
-        ctx.On("session/event", (Delegate)(Action<Dsh.Session.Session, SessionEvent>)Drive);
+        ctx.On("session/event", (Delegate)(Action<Harness.Session.Session, SessionEvent>)Drive);
     }
 
     /// <summary>Read the feedback service from a context, failing explicitly when it is absent.</summary>
     public static SessionFeedbackService Require(Context ctx) => ctx.Require<SessionFeedbackService>("feedback");
 
     /// <inheritdoc />
-    public FeedbackState Current(Dsh.Session.Session session)
+    public FeedbackState Current(Harness.Session.Session session)
     {
         ArgumentNullException.ThrowIfNull(session);
         return _cells.GetValue(session, BuildCell).State;
     }
 
     /// <inheritdoc />
-    public FeedbackItem Put(Dsh.Session.Session session, MessageId messageId, MessageFeedbackRating rating, string? note = null)
+    public FeedbackItem Put(Harness.Session.Session session, MessageId messageId, MessageFeedbackRating rating, string? note = null)
     {
         ArgumentNullException.ThrowIfNull(session);
         var resolvedNote = ResolveNote(note);
@@ -71,7 +71,7 @@ public sealed class SessionFeedbackService : Service, IFeedbackService
     }
 
     /// <inheritdoc />
-    public bool Delete(Dsh.Session.Session session, MessageId messageId)
+    public bool Delete(Harness.Session.Session session, MessageId messageId)
     {
         ArgumentNullException.ThrowIfNull(session);
         var state = Current(session);
@@ -81,7 +81,7 @@ public sealed class SessionFeedbackService : Service, IFeedbackService
     }
 
     /// <summary>Eager drive: fold one committed <c>feedback/write</c> into its session's cell.</summary>
-    private void Drive(Dsh.Session.Session session, SessionEvent evt)
+    private void Drive(Harness.Session.Session session, SessionEvent evt)
     {
         if (evt is not FeedbackEvent write) return;
         var cell = _cells.GetValue(session, BuildCell);
@@ -91,7 +91,7 @@ public sealed class SessionFeedbackService : Service, IFeedbackService
     }
 
     /// <summary>Fold one session's committed log into the current feedback state (last write wins per message).</summary>
-    private static Cell BuildCell(Dsh.Session.Session session)
+    private static Cell BuildCell(Harness.Session.Session session)
     {
         var state = FeedbackState.Empty;
         long observed = -1;

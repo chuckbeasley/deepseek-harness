@@ -5,7 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Dsh.AgentLoop.Tests</RootNamespace>
+    <RootNamespace>Harness.AgentLoop.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

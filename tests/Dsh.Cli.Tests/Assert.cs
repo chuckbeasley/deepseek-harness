@@ -1,4 +1,4 @@
-namespace Dsh.Cli.Tests;
+namespace Harness.Cli.Tests;
 
 /// <summary>Test failure carrying one assertion message.</summary>
 public sealed class AssertionException : Exception

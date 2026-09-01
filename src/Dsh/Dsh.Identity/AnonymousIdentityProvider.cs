@@ -1,8 +1,8 @@
-using Cordis.Core;
-using Cordis.Cosmokit;
+using Harness.Cordis.Core;
+using Harness.Cordis.Cosmokit;
 using System.Text;
 
-namespace Dsh.Identity;
+namespace Harness.Identity;
 
 /// <summary>
 /// Ambient seams for locating and minting the anonymous id; every field has a default (port of the

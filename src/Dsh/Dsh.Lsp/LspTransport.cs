@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>A JSON-RPC 2.0 message envelope shared by the LSP client and server sides. The version field is named <c>Jsonrpc</c> so camelCase serialization emits the protocol's exact <c>jsonrpc</c> key.</summary>
 public sealed record JsonRpcMessage(string? Jsonrpc = "2.0", string? Method = null, JsonElement? Params = null, long? Id = null, JsonElement? Result = null, JsonElement? Error = null);

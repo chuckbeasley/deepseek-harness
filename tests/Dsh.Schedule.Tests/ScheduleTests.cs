@@ -1,4 +1,4 @@
-namespace Dsh.Schedule.Tests;
+namespace Harness.Schedule.Tests;
 
 public static class ScheduleTests
 {

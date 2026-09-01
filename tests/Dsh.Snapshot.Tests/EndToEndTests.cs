@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Snapshot.Tests;
+namespace Harness.Snapshot.Tests;
 
 /// <summary>
 /// End-to-end coverage: the real dsh CLI subprocess replays the recorded fixture through the

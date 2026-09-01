@@ -2,9 +2,9 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Jint;
 using Jint.Native;
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.CordisRunner;
+namespace Harness.CordisRunner;
 
 /// <summary>Result of a successful define: the minted identities and the declared halves.</summary>
 public sealed record DynamicCordisDefineReceipt(

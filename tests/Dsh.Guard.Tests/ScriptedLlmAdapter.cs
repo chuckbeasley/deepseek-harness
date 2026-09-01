@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace Dsh.Guard.Tests;
+namespace Harness.Guard.Tests;
 
 /// <summary>One scripted tool call a mock response streams.</summary>
 /// <param name="CallId">the tool-call id.</param>

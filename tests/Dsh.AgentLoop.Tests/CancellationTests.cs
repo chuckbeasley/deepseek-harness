@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop.Tests;
+namespace Harness.AgentLoop.Tests;
 
 /// <summary>Cancellation aborts the running turn, finalizes the safe prefix, and quiesces.</summary>
 public static class CancellationTests
@@ -11,7 +11,7 @@ public static class CancellationTests
         var agent = handle.Agent;
         var loop = h.Loop.GetLoop(new SessionId("session-cancel")) ?? throw new AssertionException("no loop published");
         var firstChunk = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var observer = h.Ctx.On("session/event", (Delegate)(Action<Dsh.Session.Session, SessionEvent>)((_, evt) =>
+        using var observer = h.Ctx.On("session/event", (Delegate)(Action<Harness.Session.Session, SessionEvent>)((_, evt) =>
         {
             if (evt is AssistantChunkEvent) firstChunk.TrySetResult();
         }));

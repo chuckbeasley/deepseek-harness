@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Storage;
+namespace Harness.Storage;
 
 /// <summary>
 /// The storage capability Service Definition (port of the TS <c>Storage</c> hub plus the

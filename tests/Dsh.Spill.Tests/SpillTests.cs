@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Dsh.Spill.Tests;
+namespace Harness.Spill.Tests;
 
 /// <summary>Behavior tests for the spill capability seam (spill file registry, path safety, cleanup).</summary>
 public static class SpillTests

@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
-namespace Dsh.Snapshot.Tests;
+namespace Harness.Snapshot.Tests;
 
 /// <summary>One run's volatile values the normalizers recognize.</summary>
 public sealed record NormalizeContext(string Cwd, IReadOnlyList<string> SessionIds);

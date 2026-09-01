@@ -1,8 +1,8 @@
 using System.Runtime.CompilerServices;
-using Cordis.Core;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Session;
 
-namespace Dsh.Goal;
+namespace Harness.Goal;
 
 /// <summary>
 /// ctx.goal: the goal service. It registers the plugin-merged <see cref="GoalWriteEvent"/> in the
@@ -14,14 +14,14 @@ namespace Dsh.Goal;
 /// transitions) and append the durable event; unlike the TS strict replay fold, replay does not
 /// re-validate transitions — the service is the single writer, so the fold trusts it.
 /// The <c>Session</c> type is fully qualified because the <c>Dsh</c> root namespace member
-/// <c>Session</c> (the Dsh.Session namespace) shadows the imported type at simple-name lookup.
+/// <c>Session</c> (the Harness.Session namespace) shadows the imported type at simple-name lookup.
 /// </summary>
 public sealed class SessionGoalService : Service, IGoalService
 {
     private const int DefaultMaxGoalRounds = 256;
 
     private readonly int _defaultMaxGoalRounds;
-    private readonly ConditionalWeakTable<Dsh.Session.Session, Cell> _cells = new();
+    private readonly ConditionalWeakTable<Harness.Session.Session, Cell> _cells = new();
 
     /// <summary>Create and install the service as <c>goal</c>.</summary>
     /// <param name="ctx">the owner context whose <c>session/event</c> stream is observed.</param>
@@ -38,14 +38,14 @@ public sealed class SessionGoalService : Service, IGoalService
         // Plugin-boot equivalent of the TS event-type registration: the JSONL backend must
         // serialize and replay this plugin-merged event.
         SessionEventTypes.Register(GoalWriteEvent.EventTypeName, typeof(GoalWriteEvent));
-        ctx.On("session/event", (Delegate)(Action<Dsh.Session.Session, SessionEvent>)Drive);
+        ctx.On("session/event", (Delegate)(Action<Harness.Session.Session, SessionEvent>)Drive);
     }
 
     /// <summary>Read the goal service from a context, failing explicitly when it is absent.</summary>
     public static SessionGoalService Require(Context ctx) => ctx.Require<SessionGoalService>("goal");
 
     /// <inheritdoc />
-    public GoalView? Get(Dsh.Session.Session session)
+    public GoalView? Get(Harness.Session.Session session)
     {
         ArgumentNullException.ThrowIfNull(session);
         var cell = _cells.GetValue(session, BuildCell);
@@ -53,7 +53,7 @@ public sealed class SessionGoalService : Service, IGoalService
     }
 
     /// <inheritdoc />
-    public GoalView? Disarm(Dsh.Session.Session session)
+    public GoalView? Disarm(Harness.Session.Session session)
     {
         ArgumentNullException.ThrowIfNull(session);
         var cell = _cells.GetValue(session, BuildCell);
@@ -62,7 +62,7 @@ public sealed class SessionGoalService : Service, IGoalService
     }
 
     /// <inheritdoc />
-    public GoalView Create(Dsh.Session.Session session, string objective, int? maxGoalRounds = null)
+    public GoalView Create(Harness.Session.Session session, string objective, int? maxGoalRounds = null)
     {
         ArgumentNullException.ThrowIfNull(session);
         var specObjective = ResolveObjective(objective);
@@ -78,7 +78,7 @@ public sealed class SessionGoalService : Service, IGoalService
     }
 
     /// <inheritdoc />
-    public GoalView Edit(Dsh.Session.Session session, GoalRef reference, string? objective, int? maxGoalRounds)
+    public GoalView Edit(Harness.Session.Session session, GoalRef reference, string? objective, int? maxGoalRounds)
     {
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(reference);
@@ -98,11 +98,11 @@ public sealed class SessionGoalService : Service, IGoalService
     }
 
     /// <inheritdoc />
-    public GoalView Pause(Dsh.Session.Session session, GoalRef reference)
+    public GoalView Pause(Harness.Session.Session session, GoalRef reference)
         => Transition(session, reference, GoalOperation.Pause, [GoalPhase.Active], GoalPhase.Paused, GoalActivation.Disarmed);
 
     /// <inheritdoc />
-    public GoalView Resume(Dsh.Session.Session session, GoalRef reference)
+    public GoalView Resume(Harness.Session.Session session, GoalRef reference)
     {
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(reference);
@@ -125,11 +125,11 @@ public sealed class SessionGoalService : Service, IGoalService
     }
 
     /// <inheritdoc />
-    public GoalView Complete(Dsh.Session.Session session, GoalRef reference)
+    public GoalView Complete(Harness.Session.Session session, GoalRef reference)
         => Transition(session, reference, GoalOperation.Complete, [GoalPhase.Active, GoalPhase.Paused, GoalPhase.Blocked], GoalPhase.Complete, GoalActivation.Disarmed);
 
     /// <inheritdoc />
-    public GoalView Block(Dsh.Session.Session session, GoalRef reference, GoalBlockReason reason)
+    public GoalView Block(Harness.Session.Session session, GoalRef reference, GoalBlockReason reason)
     {
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(reference);
@@ -145,7 +145,7 @@ public sealed class SessionGoalService : Service, IGoalService
     }
 
     /// <inheritdoc />
-    public GoalRef Clear(Dsh.Session.Session session, GoalRef reference)
+    public GoalRef Clear(Harness.Session.Session session, GoalRef reference)
     {
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(reference);
@@ -163,7 +163,7 @@ public sealed class SessionGoalService : Service, IGoalService
     }
 
     /// <summary>Eager drive: fold one committed <c>goal/write</c> into its session's cell.</summary>
-    private void Drive(Dsh.Session.Session session, SessionEvent evt)
+    private void Drive(Harness.Session.Session session, SessionEvent evt)
     {
         if (evt is not GoalWriteEvent write) return;
         var cell = _cells.GetValue(session, BuildCell);
@@ -178,7 +178,7 @@ public sealed class SessionGoalService : Service, IGoalService
     }
 
     /// <summary>Fold one session's committed log into the current goal state (last write wins).</summary>
-    private static Cell BuildCell(Dsh.Session.Session session)
+    private static Cell BuildCell(Harness.Session.Session session)
     {
         var state = GoalState.Empty;
         long observed = -1;
@@ -208,7 +208,7 @@ public sealed class SessionGoalService : Service, IGoalService
     }
 
     /// <summary>Reject a stale or missing current-state ref.</summary>
-    private GoalView ExpectCurrent(Dsh.Session.Session session, GoalRef reference)
+    private GoalView ExpectCurrent(Harness.Session.Session session, GoalRef reference)
     {
         var current = Get(session);
         if (current is null) throw new GoalError("no current goal", GoalErrorCode.NotFound);
@@ -226,7 +226,7 @@ public sealed class SessionGoalService : Service, IGoalService
         => new(current.Id, current.Revision + 1, current.Objective, phase, current.BlockedReason, current.MaxGoalRounds);
 
     /// <summary>Shared validated phase transition.</summary>
-    private GoalView Transition(Dsh.Session.Session session, GoalRef reference, GoalOperation operation, GoalPhase[] allowed, GoalPhase phase, GoalActivation activation)
+    private GoalView Transition(Harness.Session.Session session, GoalRef reference, GoalOperation operation, GoalPhase[] allowed, GoalPhase phase, GoalActivation activation)
     {
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(reference);
@@ -242,14 +242,14 @@ public sealed class SessionGoalService : Service, IGoalService
             GoalErrorCode.InvalidTransition);
 
     /// <summary>Commit a mutation that retains the current goal's derived counters and timestamps.</summary>
-    private GoalView CommitCurrent(Dsh.Session.Session session, GoalView current, GoalOperation operation, GoalSnapshot goal, GoalActivation activation)
+    private GoalView CommitCurrent(Harness.Session.Session session, GoalView current, GoalOperation operation, GoalSnapshot goal, GoalActivation activation)
         => CommitSnapshot(session, operation, goal, current.RoundsStarted, current.CreatedAt, NextMutationTime(current.UpdatedAt), activation);
 
     /// <summary>Clamp a current goal's next timestamp across backward wall-clock movement.</summary>
     private static long NextMutationTime(long updatedAt) => Math.Max(Now(), updatedAt);
 
     /// <summary>Build and commit one full-snapshot mutation.</summary>
-    private GoalView CommitSnapshot(Dsh.Session.Session session, GoalOperation operation, GoalSnapshot goal, int roundsStarted, long createdAt, long updatedAt, GoalActivation activation)
+    private GoalView CommitSnapshot(Harness.Session.Session session, GoalOperation operation, GoalSnapshot goal, int roundsStarted, long createdAt, long updatedAt, GoalActivation activation)
     {
         var cell = _cells.GetValue(session, BuildCell);
         Commit(cell, session, new GoalWriteEvent
@@ -264,7 +264,7 @@ public sealed class SessionGoalService : Service, IGoalService
     }
 
     /// <summary>Append one mutation and let the synchronous <c>session/event</c> publication drive the fold.</summary>
-    private void Commit(Cell cell, Dsh.Session.Session session, GoalWriteEvent write, GoalActivation activation)
+    private void Commit(Cell cell, Harness.Session.Session session, GoalWriteEvent write, GoalActivation activation)
     {
         cell.PendingActivationSeq = session.Seq;
         cell.PendingActivation = activation;

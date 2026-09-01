@@ -1,7 +1,7 @@
 using System.Text;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Credentials;
+namespace Harness.Credentials;
 
 /// <summary>
 /// Fully resolved provider parameters; defaulting happens here (an explicit path wins, otherwise

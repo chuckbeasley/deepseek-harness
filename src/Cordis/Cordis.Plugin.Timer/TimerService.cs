@@ -1,5 +1,5 @@
-using Cordis.Core;
-namespace Cordis.Plugin.Timer;
+using Harness.Cordis.Core;
+namespace Harness.Cordis.Plugin.Timer;
 
 /// <summary>
 /// Disposal-aware scheduling service registered as <c>ctx.timer</c> (C# port of the vendored
@@ -46,7 +46,7 @@ public sealed class TimerService : Service
     /// <param name="delayMs">delay in milliseconds, within <see cref="TimerConfig.MaxDelayMs"/>.</param>
     /// <returns>a single-shot disposer; disposing it before the due time cancels the callback.</returns>
     /// <exception cref="ArgumentOutOfRangeException">when <paramref name="delayMs"/> is negative or above the configured cap.</exception>
-    /// <exception cref="Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
+    /// <exception cref="Harness.Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
     public IDisposable Timeout(Action callback, long delayMs)
     {
         ArgumentNullException.ThrowIfNull(callback);
@@ -68,7 +68,7 @@ public sealed class TimerService : Service
     /// <param name="delayMs">delay in milliseconds, within <see cref="TimerConfig.MaxDelayMs"/>.</param>
     /// <returns>a task completing when the delay elapses or faulting on context disposal.</returns>
     /// <exception cref="ArgumentOutOfRangeException">when <paramref name="delayMs"/> is negative or above the configured cap.</exception>
-    /// <exception cref="Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
+    /// <exception cref="Harness.Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
     public Task TimeoutAsync(long delayMs)
     {
         ValidateDelay(delayMs, nameof(delayMs));
@@ -96,7 +96,7 @@ public sealed class TimerService : Service
     /// <param name="delayMs">period in milliseconds, within <see cref="TimerConfig.MaxDelayMs"/>.</param>
     /// <returns>a single-shot disposer; disposing it cancels pending ticks.</returns>
     /// <exception cref="ArgumentOutOfRangeException">when <paramref name="delayMs"/> is negative or above the configured cap.</exception>
-    /// <exception cref="Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
+    /// <exception cref="Harness.Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
     public IDisposable Interval(Action callback, long delayMs)
     {
         ArgumentNullException.ThrowIfNull(callback);
@@ -120,7 +120,7 @@ public sealed class TimerService : Service
     /// <param name="delayMs">period in milliseconds, within <see cref="TimerConfig.MaxDelayMs"/>.</param>
     /// <returns>an async enumerable of tick indices.</returns>
     /// <exception cref="ArgumentOutOfRangeException">when <paramref name="delayMs"/> is negative or above the configured cap.</exception>
-    /// <exception cref="Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
+    /// <exception cref="Harness.Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
     public IAsyncEnumerable<int> Interval(long delayMs)
     {
         ValidateDelay(delayMs, nameof(delayMs));
@@ -140,7 +140,7 @@ public sealed class TimerService : Service
     /// <param name="noTrailing">suppress the trailing call (default false).</param>
     /// <returns>a throttled wrapper whose disposal cancels a pending trailing call.</returns>
     /// <exception cref="ArgumentOutOfRangeException">when <paramref name="delayMs"/> is negative or above the configured cap.</exception>
-    /// <exception cref="Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
+    /// <exception cref="Harness.Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
     public ThrottledAction Throttle(Action callback, long delayMs, bool noTrailing = false)
     {
         ArgumentNullException.ThrowIfNull(callback);
@@ -159,7 +159,7 @@ public sealed class TimerService : Service
     /// <param name="delayMs">quiet period in milliseconds, within <see cref="TimerConfig.MaxDelayMs"/>.</param>
     /// <returns>a debounced wrapper whose disposal cancels the pending call.</returns>
     /// <exception cref="ArgumentOutOfRangeException">when <paramref name="delayMs"/> is negative or above the configured cap.</exception>
-    /// <exception cref="Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
+    /// <exception cref="Harness.Cordis.Core.CordisError">with code <c>INACTIVE_EFFECT</c> on a disposed context.</exception>
     public DebouncedAction Debounce(Action callback, long delayMs)
     {
         ArgumentNullException.ThrowIfNull(callback);

@@ -5,7 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Dsh.Sandbox.Tests</RootNamespace>
+    <RootNamespace>Harness.Sandbox.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-namespace Dsh.Subagent;
+namespace Harness.Subagent;
 
 /// <summary>
 /// One already-settled run handle the deterministic fixture providers return.

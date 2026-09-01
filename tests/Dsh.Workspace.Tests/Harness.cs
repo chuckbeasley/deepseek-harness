@@ -1,4 +1,4 @@
-namespace Dsh.Workspace.Tests;
+namespace Harness.Workspace.Tests;
 
 /// <summary>
 /// One booted workspace spine: a context with the local workspace provider, an existing directory

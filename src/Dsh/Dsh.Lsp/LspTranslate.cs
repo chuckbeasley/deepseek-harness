@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>
 /// Pure protocol translation (port of <c>translate.ts</c>): what a server's capabilities allow, and how its

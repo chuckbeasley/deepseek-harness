@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Dsh.Skill;
+namespace Harness.Skill;
 
 /// <summary>Skill-name grammar and validation (the TS SKILL_NAME kebab-case pattern).</summary>
 public static class SkillNames

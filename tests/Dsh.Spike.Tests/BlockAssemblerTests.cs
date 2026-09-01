@@ -1,6 +1,6 @@
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Spike.Tests;
+namespace Harness.Spike.Tests;
 
 public static class BlockAssemblerTests
 {

@@ -1,4 +1,4 @@
-namespace Dsh.Agent.Tests;
+namespace Harness.Agent.Tests;
 
 /// <summary>Zero-dependency console runner for the Agent and Scope port tests.</summary>
 public static class Program

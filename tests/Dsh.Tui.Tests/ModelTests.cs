@@ -1,11 +1,11 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Todo;
-using Dsh.Tui;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Todo;
+using Harness.Tui;
 
-namespace Dsh.Tui.Tests;
+namespace Harness.Tui.Tests;
 
 /// <summary>Headless tests of the pure view models.</summary>
 public static class ModelTests
@@ -123,7 +123,7 @@ public static class ModelTests
         Assert.Equal(0, TuiApp.Run(new[] { "--smoke" }), "the fake-driver smoke must exit 0");
     }
 
-    private static Dsh.Session.Session NewSession()
+    private static global::Harness.Session.Session NewSession()
     {
         var ctx = new Context();
         var sessions = new SessionStore(ctx);

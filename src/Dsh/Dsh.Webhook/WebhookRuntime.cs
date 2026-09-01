@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Webhook;
+namespace Harness.Webhook;
 
 /// <summary>One effect-owned rule registration and the invocations that currently use it.</summary>
 internal sealed class RuleRegistration

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Globalization;
 using System.Text.Json;
 
-namespace Dsh.Settings;
+namespace Harness.Settings;
 
 /// <summary>
 /// Internal JSON-value helpers for the settings seam: plain-object detection, deep equality and

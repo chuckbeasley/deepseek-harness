@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Sandbox;
+using Harness.Cordis.Core;
+using Harness.Sandbox;
 
-namespace Dsh.Sandbox.Tests;
+namespace Harness.Sandbox.Tests;
 
 /// <summary>
 /// The Landlock sidecar backend: argv wrapping per the sidecar contract, enforcement probing,

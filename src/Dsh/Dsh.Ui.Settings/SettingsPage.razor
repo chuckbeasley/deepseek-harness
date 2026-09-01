@@ -1,6 +1,6 @@
-﻿@page "/settings"
+@page "/settings"
 @rendermode InteractiveServer
-@inject Cordis.Core.Context Ctx
+@inject Harness.Cordis.Core.Context Ctx
 @inject WebLocale Locale
 
 <div class="dsh-page">
@@ -13,7 +13,7 @@
     {
         <p class="dsh-settings-path">@Locale.T("settingsDocument") @(Provider.DocumentPath ?? "-")</p>
         <ul class="dsh-settings-namespaces">
-            @foreach (var ns in Provider.Describe(new Dsh.Settings.SettingsDescribeOptions(RedactSecrets: true)))
+            @foreach (var ns in Provider.Describe(new Harness.Settings.SettingsDescribeOptions(RedactSecrets: true)))
             {
                 <li class="dsh-settings-namespace">
                     <span class="dsh-settings-ns">@ns.Ns</span>
@@ -25,5 +25,5 @@
 </div>
 
 @code {
-    private Dsh.Settings.SettingsProvider? Provider => Ctx.Get<Dsh.Settings.SettingsProvider>("settings");
+    private Harness.Settings.SettingsProvider? Provider => Ctx.Get<Harness.Settings.SettingsProvider>("settings");
 }

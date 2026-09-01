@@ -1,4 +1,4 @@
-namespace Cordis.Core;
+namespace Harness.Cordis.Core;
 
 /// <summary>Numeric severity of a log message (port of the TS LoggerLevel); higher is more verbose.</summary>
 public enum LogLevel

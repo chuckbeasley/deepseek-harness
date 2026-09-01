@@ -1,6 +1,6 @@
-using Dsh.Sdk.Protocol;
+using Harness.Sdk.Protocol;
 
-namespace Dsh.Sdk.Protocol.Tests;
+namespace Harness.Sdk.Protocol.Tests;
 
 /// <summary>The wire-type contract: the method names, the handshake/request records, and the notification payloads.</summary>
 public static class SdkProtocolTypesTests
@@ -32,7 +32,7 @@ public static class SdkProtocolTypesTests
 
         var prompt = new SessionPromptParams("session-1", new SdkPromptContentBlock[]
         {
-            new SdkPromptContentBlock.Block(new Dsh.Llm.TextBlock("hello")),
+            new SdkPromptContentBlock.Block(new global::Harness.Llm.TextBlock("hello")),
             new SdkPromptContentBlock.Image(new SdkEncodedImageBlock("aGVsbG8=", "image/png")),
         });
         Assert.Equal("session-1", prompt.SessionId, "the session id rides along");
@@ -57,9 +57,9 @@ public static class SdkProtocolTypesTests
         Assert.Equal("child", started.ChildSessionId, "the child rides along");
 
         var finished = new SubagentFinishedNotification(
-            "in-process", "child", "parent", "child", "ok", Dsh.Subagent.SubagentStopReason.Completed);
+            "in-process", "child", "parent", "child", "ok", Harness.Subagent.SubagentStopReason.Completed);
         Assert.Equal("ok", finished.Status, "the outcome rides along");
-        Assert.Equal(Dsh.Subagent.SubagentStopReason.Completed, finished.StopReason, "the stop reason rides along");
+        Assert.Equal(global::Harness.Subagent.SubagentStopReason.Completed, finished.StopReason, "the stop reason rides along");
         Assert.Null(finished.LastAssistantMessage, "absent assistant output stays absent");
     }
 }

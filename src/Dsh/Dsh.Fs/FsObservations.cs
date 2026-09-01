@@ -1,4 +1,4 @@
-namespace Dsh.Fs;
+namespace Harness.Fs;
 
 /// <summary>One authoritative presence/absence observation of a target (port of the TS <c>FsObservation</c>).</summary>
 public enum FsObservedKind

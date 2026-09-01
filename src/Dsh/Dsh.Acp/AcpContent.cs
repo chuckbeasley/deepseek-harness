@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Dsh.Llm;
-using Dsh.Sdk.Protocol;
+using Harness.Llm;
+using Harness.Sdk.Protocol;
 
-namespace Dsh.Acp;
+namespace Harness.Acp;
 
 /// <summary>
 /// ACP wire-content admission and projection owned by the ACP adapter (reduced port of the TS

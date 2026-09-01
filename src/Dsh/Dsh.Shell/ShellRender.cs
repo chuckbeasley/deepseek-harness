@@ -1,7 +1,7 @@
-using Dsh.Sandbox;
-using Dsh.Subprocess;
+using Harness.Sandbox;
+using Harness.Subprocess;
 
-namespace Dsh.Shell;
+namespace Harness.Shell;
 
 /// <summary>
 /// Model-facing result rendering for the shell tool (port of the tool-bash render module): stdout,

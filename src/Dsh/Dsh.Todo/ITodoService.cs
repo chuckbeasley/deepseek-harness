@@ -1,4 +1,4 @@
-namespace Dsh.Todo;
+namespace Harness.Todo;
 
 /// <summary>
 /// Service Definition for the todo capability: one agent-scoped whole-list todo state with

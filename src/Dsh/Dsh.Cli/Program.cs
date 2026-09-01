@@ -1,4 +1,4 @@
-namespace Dsh.Cli;
+namespace Harness.Cli;
 
 /// <summary>
 /// Command-line entry for <c>dsh</c> (port of <c>apps/cli/src/bin.ts</c>): parse the launcher

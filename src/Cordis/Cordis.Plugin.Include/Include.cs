@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Text.Json;
-using Cordis.Core;
-using Cordis.Plugin.Loader;
+using Harness.Cordis.Core;
+using Harness.Cordis.Plugin.Loader;
 
-namespace Cordis.Plugin.Include;
+namespace Harness.Cordis.Plugin.Include;
 
 /// <summary>
 /// File-backed loader entry tree (port of the vendored Include plugin). Reads an entry-list YAML or
@@ -11,7 +11,7 @@ namespace Cordis.Plugin.Include;
 /// <c>!!js</c> values evaluate through the restricted <see cref="ConfigExpression"/> language. Every
 /// mutation runs through one serialized queue (the group update is not reentrant), and config
 /// writes go through a retried temp-file rename. The vendored Include mounts a child entry tree;
-/// the port composes the <see cref="Cordis.Plugin.Loader.Loader"/> and mounts rows on its root
+/// the port composes the <see cref="Harness.Cordis.Plugin.Loader.Loader"/> and mounts rows on its root
 /// group, because the loader's service accessor is assembly-internal (documented deviation). The
 /// nested-group plugin ships with the Loader as <c>GroupPlugin</c>; this class owns the file half
 /// of the seam.
@@ -26,7 +26,7 @@ public sealed class Include
     private const int WriteRetryLimit = 10;
     private const int WriteRetryDelayMs = 50;
 
-    private readonly Cordis.Plugin.Loader.Loader _loader;
+    private readonly Harness.Cordis.Plugin.Loader.Loader _loader;
     private readonly IncludeConfig _config;
     private string? _content;
     private Task _applyQueue = Task.CompletedTask;
@@ -36,7 +36,7 @@ public sealed class Include
     public Include(Context ctx, IncludeConfig config)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
-        _loader = ctx.Get<Cordis.Plugin.Loader.Loader>("loader")
+        _loader = ctx.Get<Harness.Cordis.Plugin.Loader.Loader>("loader")
             ?? throw new InvalidOperationException("the include requires the loader service");
         EnableLogs = config.EnableLogs;
         Filename = Path.GetFullPath(config.Path);
@@ -129,7 +129,7 @@ public sealed class Include
         }
     }
 
-    private Cordis.Core.Logger Log => _loader.Ctx.Logger.Logger("loader");
+    private Harness.Cordis.Core.Logger Log => _loader.Ctx.Logger.Logger("loader");
 
     private async Task WriteDataAsync(List<object?> data)
     {

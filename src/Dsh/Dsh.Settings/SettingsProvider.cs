@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Cordis.Schemastery;
+using Harness.Cordis.Core;
+using Harness.Cordis.Schemastery;
 
-namespace Dsh.Settings;
+namespace Harness.Settings;
 
 /// <summary>Minimal <see cref="IDisposable"/> built from an action; used for sync effect cleanups.</summary>
 internal sealed class ActionDisposer : IDisposable

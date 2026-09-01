@@ -1,4 +1,4 @@
-namespace Dsh.Cli.Tests;
+namespace Harness.Cli.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program
@@ -19,6 +19,7 @@ public static class Program
         ("args: plugin requires profile and args", ArgsTests.Plugin_RequiresProfileAndArgs),
         ("args: plugin resolves an invocation", ArgsTests.Plugin_ResolvesAnInvocation),
         ("boot: plugin initializes and manages bundles", BootTests.Plugin_InitializesAndManagesBundles),
+        ("boot: plugin installs a bundle from a NuGet feed", BootTests.Plugin_InstallsABundleFromANuGetFeed),
         ("boot: dump-config composes layers boot-free", BootTests.DumpConfig_ComposesLayersBootFree),
         ("boot: headless runs one task through the real loop", BootTests.Headless_RunsOneTaskThroughTheRealLoop),
         ("boot: headless without a task exits 1", BootTests.Headless_WithoutATask_ExitsOne),

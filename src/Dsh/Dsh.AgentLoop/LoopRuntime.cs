@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop;
+namespace Harness.AgentLoop;
 
 /// <summary>
 /// The loop's resolved runtime dependencies (port of the TS inject list). Resolution fails loud
@@ -24,4 +24,4 @@ public sealed record LoopRuntime(LlmRuntime Llm, ToolRuntime Tools, SystemPrompt
 }
 
 /// <summary>One contributed runtime-context part: dynamic system-prompt input for the next step.</summary>
-public sealed record RuntimeContextPart(string Text, IReadOnlyList<Dsh.Llm.NamedSection> Sections);
+public sealed record RuntimeContextPart(string Text, IReadOnlyList<Harness.Llm.NamedSection> Sections);

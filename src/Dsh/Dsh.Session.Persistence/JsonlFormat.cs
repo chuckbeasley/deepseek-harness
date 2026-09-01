@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Session.Persistence;
+namespace Harness.Session.Persistence;
 
 /// <summary>Thrown when a stored session log carries a format version this build cannot read.</summary>
 public sealed class SessionFormatUnsupportedException : Exception

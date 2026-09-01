@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>
 /// LLM service (ctx.llm): an adapter registry plus a streaming model-call API, interceptable via

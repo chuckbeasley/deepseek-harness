@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Cordis.Core.Tests.Runner;
+namespace Harness.Cordis.Core.Tests.Runner;
 
 /// <summary>
 /// Proves the section 7 consumer contract of .wt/spike-slice/spike-design.md compiles against the

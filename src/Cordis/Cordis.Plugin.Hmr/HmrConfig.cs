@@ -1,4 +1,4 @@
-namespace Cordis.Plugin.Hmr;
+namespace Harness.Cordis.Plugin.Hmr;
 
 /// <summary>
 /// Config for the HMR service (port of the vendored <c>Hmr.Config</c> minus the main module

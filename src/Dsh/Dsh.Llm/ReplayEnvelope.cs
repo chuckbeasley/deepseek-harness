@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>
 /// Adapter-private lossless-JSON state for replaying a successful response, carried by a terminal

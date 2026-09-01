@@ -9,7 +9,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Dsh.Cli</RootNamespace>
+    <RootNamespace>Harness.Cli</RootNamespace>
     <!-- The bundle manifests are declared explicitly below; the Web SDK's default Content glob
          (wwwroot and friends) would duplicate them. -->
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
@@ -17,6 +17,13 @@
          so the SDK's automatic condition would skip the Blazor framework assets; the host needs
          them regardless. -->
     <RequiresAspNetWebAssets>true</RequiresAspNetWebAssets>
+    <!-- Phase 8 packaging: the runtime ships as the DeepSeek.Harness dotnet tool (command dsh);
+         the SDK client spawns it and the corpus replays through it. -->
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dsh</ToolCommandName>
+    <PackageId>Harness</PackageId>
+    <Description>The Harness runtime (dsh): the agent harness CLI, headless profile, TUI, and web host. Install as a dotnet tool; the Harness.Sdk client drives it.</Description>
   </PropertyGroup>
 
   <ItemGroup>

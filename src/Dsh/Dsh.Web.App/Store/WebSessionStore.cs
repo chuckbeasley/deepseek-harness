@@ -1,20 +1,20 @@
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Session;
 
-namespace Dsh.Web.App.Store;
+namespace Harness.Web.App.Store;
 
 /// <summary>One session entry in the store: identity, the live transcript events, and the live agent state.</summary>
 public sealed class WebSessionEntry
 {
-    internal WebSessionEntry(Dsh.Session.Session session)
+    internal WebSessionEntry(Harness.Session.Session session)
     {
         Session = session;
     }
 
     /// <summary>The live session this entry projects.</summary>
-    public Dsh.Session.Session Session { get; }
+    public Harness.Session.Session Session { get; }
 
     /// <summary>Every committed event, in log order.</summary>
     public IReadOnlyList<SessionEvent> Events => Session.Events;
@@ -25,7 +25,7 @@ public sealed class WebSessionEntry
         .LastOrDefault()
         ?.Message
         .Content
-        .OfType<Dsh.Llm.TextBlock>()
+        .OfType<Harness.Llm.TextBlock>()
         .Select(block => block.Text)
         .FirstOrDefault();
 
@@ -62,9 +62,9 @@ public sealed class WebSessionStore : IDisposable
         {
             foreach (var session in sessions.List()) _entries[session.Id] = new WebSessionEntry(session);
         }
-        _subscriptions.Add(ctx.On<Dsh.Session.Session>("session/created", OnCreated));
-        _subscriptions.Add(ctx.On<Dsh.Session.Session>("session/disposed", OnDisposed));
-        _subscriptions.Add(ctx.On("session/event", new Action<Dsh.Session.Session, SessionEvent>((_, _) => NotifyChanged())));
+        _subscriptions.Add(ctx.On<Harness.Session.Session>("session/created", OnCreated));
+        _subscriptions.Add(ctx.On<Harness.Session.Session>("session/disposed", OnDisposed));
+        _subscriptions.Add(ctx.On("session/event", new Action<Harness.Session.Session, SessionEvent>((_, _) => NotifyChanged())));
         var agents = ctx.Get<AgentRegistry>("agents");
         if (agents is not null)
         {
@@ -111,13 +111,13 @@ public sealed class WebSessionStore : IDisposable
         _subscriptions.Clear();
     }
 
-    private void OnCreated(Dsh.Session.Session session)
+    private void OnCreated(Harness.Session.Session session)
     {
         lock (_gate) _entries[session.Id] = new WebSessionEntry(session);
         NotifyChanged();
     }
 
-    private void OnDisposed(Dsh.Session.Session session)
+    private void OnDisposed(Harness.Session.Session session)
     {
         lock (_gate) _entries.Remove(session.Id);
         NotifyChanged();
@@ -134,7 +134,7 @@ public sealed class WebSessionStore : IDisposable
         NotifyChanged();
     }
 
-    private void OnInboxChanged(Dsh.Agent.Agent agent)
+    private void OnInboxChanged(Harness.Agent.Agent agent)
     {
         lock (_gate)
         {

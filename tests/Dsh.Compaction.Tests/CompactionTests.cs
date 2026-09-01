@@ -1,10 +1,10 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Compaction;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Compaction;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Compaction.Tests;
+namespace Harness.Compaction.Tests;
 
 public static class CompactionTests
 {
@@ -19,7 +19,7 @@ public static class CompactionTests
             MaxTokens: 8192));
 
     /// <summary>Seed three complete turns with deterministic token prices (see per-test comments).</summary>
-    private static Dsh.Session.Session SeedThreeTurns(Dsh.Session.Session session)
+    private static global::Harness.Session.Session SeedThreeTurns(global::Harness.Session.Session session)
     {
         // Node prices (ceil(len/4)+4 per block, +4 role): "first"=10, "reply one"=11,
         // "second message"=12, "reply two"=11, "third"=10, "done"=9. Surface nodes are seqs
@@ -269,19 +269,19 @@ public static class CompactionTests
 
     // --- seeding helpers ---
 
-    private static void TurnStart(Dsh.Session.Session session, long turn) => session.Append(new TurnStartEvent { Turn = turn });
+    private static void TurnStart(global::Harness.Session.Session session, long turn) => session.Append(new TurnStartEvent { Turn = turn });
 
-    private static void TurnEnd(Dsh.Session.Session session, long turn)
+    private static void TurnEnd(global::Harness.Session.Session session, long turn)
         => session.Append(new TurnEndEvent { Turn = turn, Reason = new CompletedReason() });
 
-    private static void User(Dsh.Session.Session session, string text)
+    private static void User(global::Harness.Session.Session session, string text)
         => session.Append(new UserMessageEvent
         {
             Message = Messages.CreateUserMessage(new ContentBlock[] { new TextBlock(text) }),
             SurfaceOp = SurfaceOp.Append,
         });
 
-    private static void Assistant(Dsh.Session.Session session, long turn, long step, string text)
+    private static void Assistant(global::Harness.Session.Session session, long turn, long step, string text)
         => session.Append(new AssistantMessageEvent
         {
             Turn = turn,
@@ -290,7 +290,7 @@ public static class CompactionTests
             SurfaceOp = SurfaceOp.Append,
         });
 
-    private static void AssistantToolCall(Dsh.Session.Session session, long turn, long step, ToolCallId callId, string name, string args)
+    private static void AssistantToolCall(global::Harness.Session.Session session, long turn, long step, ToolCallId callId, string name, string args)
         => session.Append(new AssistantMessageEvent
         {
             Turn = turn,
@@ -300,7 +300,7 @@ public static class CompactionTests
             SurfaceOp = SurfaceOp.Append,
         });
 
-    private static void ToolResult(Dsh.Session.Session session, ToolCallId callId, string text)
+    private static void ToolResult(global::Harness.Session.Session session, ToolCallId callId, string text)
         => session.Append(new ToolResultEvent
         {
             Turn = 0,
@@ -310,11 +310,11 @@ public static class CompactionTests
         });
 
     /// <summary>The seq of the assistant message carrying the named tool call.</summary>
-    private static long call2Seq(Dsh.Session.Session session, ToolCallId callId)
+    private static long call2Seq(global::Harness.Session.Session session, ToolCallId callId)
         => session.Events.OfType<AssistantMessageEvent>()
             .First(evt => evt.Message.Content.OfType<ToolCallBlock>().Any(block => block.Id == callId)).Seq;
 
     /// <summary>The seq of the tool result answering the named call.</summary>
-    private static long resultSeq(Dsh.Session.Session session, ToolCallId callId)
+    private static long resultSeq(global::Harness.Session.Session session, ToolCallId callId)
         => session.Events.OfType<ToolResultEvent>().First(evt => evt.Message.Result.ToolCallId == callId).Seq;
 }

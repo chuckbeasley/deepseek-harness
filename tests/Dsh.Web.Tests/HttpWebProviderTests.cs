@@ -1,8 +1,8 @@
 using System.Net;
 using System.Text;
-using Dsh.Web;
+using Harness.Web;
 
-namespace Dsh.Web.Tests;
+namespace Harness.Web.Tests;
 
 /// <summary>
 /// Transport behavior of <see cref="HttpWebProvider"/> against the fake handler: request shape,

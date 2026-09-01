@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Interaction;
+using Harness.Cordis.Core;
+using Harness.Interaction;
 
-namespace Dsh.Interaction.Tests;
+namespace Harness.Interaction.Tests;
 
 /// <summary>
 /// The user-questions seam and its model-facing consumer: validation, the answerer waterfall, the

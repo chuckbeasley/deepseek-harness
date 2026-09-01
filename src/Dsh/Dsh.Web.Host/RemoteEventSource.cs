@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>One forwarded event dispatch: the event name and the JSON-safe argument list.</summary>
 public sealed record RemoteEventDispatch(string Event, IReadOnlyList<JsonElement> Args);
@@ -18,12 +18,12 @@ public static class RemoteEventSource
     /// <summary>The forwarded event selection, each with its typed listener wiring.</summary>
     private static readonly (string Event, Func<Context, Action<RemoteEventDispatch>, IDisposable> Wire)[] Selection =
     {
-        ("session/created", (ctx, handler) => ctx.On<Dsh.Session.Session>("session/created",
+        ("session/created", (ctx, handler) => ctx.On<Harness.Session.Session>("session/created",
             session => handler(new RemoteEventDispatch("session/created", new[] { SessionJson(session) })))),
-        ("session/disposed", (ctx, handler) => ctx.On<Dsh.Session.Session>("session/disposed",
+        ("session/disposed", (ctx, handler) => ctx.On<Harness.Session.Session>("session/disposed",
             session => handler(new RemoteEventDispatch("session/disposed", new[] { SessionJson(session) })))),
         ("session/event", (ctx, handler) => ctx.On("session/event",
-            new Action<Dsh.Session.Session, Dsh.Session.SessionEvent>((session, evt) =>
+            new Action<Harness.Session.Session, Harness.Session.SessionEvent>((session, evt) =>
                 handler(new RemoteEventDispatch("session/event", new[] { SessionJson(session), EventJson(evt) }))))),
         ("agent/status", (ctx, handler) => ctx.On("agent/status",
             new Action<object>((payload) => handler(new RemoteEventDispatch("agent/status", new[] { Json(payload) }))))),
@@ -42,13 +42,13 @@ public static class RemoteEventSource
     /// <summary>The session-event serializer: the session log's polymorphic codecs, camel-cased for the wire; rebuilt when the event-type registry grows.</summary>
     private static JsonSerializerOptions WireJson()
     {
-        var revision = Dsh.Session.SessionEventTypes.Revision;
+        var revision = Harness.Session.SessionEventTypes.Revision;
         if (_wireJson is null || _wireJsonRevision != revision)
         {
             _wireJson = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                TypeInfoResolver = Dsh.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
+                TypeInfoResolver = Harness.Session.SessionEventTypes.CreateSerializerOptions().TypeInfoResolver,
             };
             _wireJsonRevision = revision;
         }
@@ -81,10 +81,10 @@ public static class RemoteEventSource
         return new CompositeDisposer(disposers);
     }
 
-    private static JsonElement SessionJson(Dsh.Session.Session session)
+    private static JsonElement SessionJson(Harness.Session.Session session)
         => JsonSerializer.SerializeToElement(new { id = session.Id.Value }, WireJson());
 
-    private static JsonElement EventJson(Dsh.Session.SessionEvent evt)
+    private static JsonElement EventJson(Harness.Session.SessionEvent evt)
         => JsonSerializer.SerializeToElement(evt, WireJson());
 
     private static JsonElement Json(object value)

@@ -1,4 +1,4 @@
-namespace Dsh.Schedule;
+namespace Harness.Schedule;
 
 /// <summary>Stable identity of one registered schedule task; unique and never reused within one provider.</summary>
 public readonly record struct ScheduleTaskId(string Value)

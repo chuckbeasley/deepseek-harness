@@ -1,10 +1,10 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Llm;
+using Harness.Tools;
 
-namespace Dsh.Web;
+namespace Harness.Web;
 
 /// <summary>
 /// Model-facing <c>web_search</c> and <c>web_fetch</c> tools over <see cref="IWebService"/>. This
@@ -228,7 +228,7 @@ public static class WebTools
     /// search to settle before rethrowing the first failure.
     /// </summary>
     private static async Task<WebSeam.SearchResult> RunSearchQueriesAsync(
-        IWebService web, IReadOnlyList<string> queries, int maxResults, Dsh.Session.Session? session, CancellationToken cancellationToken)
+        IWebService web, IReadOnlyList<string> queries, int maxResults, Harness.Session.Session? session, CancellationToken cancellationToken)
     {
         if (queries.Count == 1)
         {
@@ -255,7 +255,7 @@ public static class WebTools
     }
 
     private static async Task RunOneSearchAsync(
-        IWebService web, string query, int index, int maxResults, Dsh.Session.Session? session, CancellationToken linkedToken,
+        IWebService web, string query, int index, int maxResults, Harness.Session.Session? session, CancellationToken linkedToken,
         WebSeam.SearchResult[] results, CancellationTokenSource controller, FirstFailureBox firstFailure)
     {
         try

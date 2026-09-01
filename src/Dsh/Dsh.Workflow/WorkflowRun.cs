@@ -1,4 +1,4 @@
-namespace Dsh.Workflow;
+namespace Harness.Workflow;
 
 /// <summary>
 /// Holder-owned live workflow run — the <see cref="IWorkflowService.Start"/> return. <see cref="Result"/>

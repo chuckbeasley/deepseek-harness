@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dsh.Web.App;
+namespace Harness.Web.App;
 
 /// <summary>
 /// The Blazor shell wiring (the Phase-5 web app): mounts the Razor components with server

@@ -1,4 +1,4 @@
-namespace Dsh.Tools;
+namespace Harness.Tools;
 
 /// <summary>Thrown when the model requests a tool that is not registered.</summary>
 public sealed class ToolNotFoundError : Exception

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>Why a model response stopped. Merge-extensible so adapters can surface provider-specific reasons.</summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]

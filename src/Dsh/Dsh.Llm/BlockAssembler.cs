@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>
 /// Incremental chunk-to-message assembler: the single canonical assembly algorithm used by the

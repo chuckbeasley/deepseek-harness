@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Llm;
+using Harness.Cordis.Core;
+using Harness.Llm;
 
-namespace Dsh.Session;
+namespace Harness.Session;
 
 /// <summary>
 /// In-memory session store (ctx.sessions). Persistence is intentionally not implemented here —

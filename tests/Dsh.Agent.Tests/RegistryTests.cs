@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Session;
 
-namespace Dsh.Agent.Tests;
+namespace Harness.Agent.Tests;
 
 /// <summary>Registry registration, disposal, and lifecycle events.</summary>
 internal static class RegistryTests

@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Cordis.Core;
-using Dsh.AgentLoop;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.AgentLoop;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Compaction;
+namespace Harness.Compaction;
 
 /// <summary>
 /// Fixed-density heuristic token pricing (port of dsh-token-meter/estimate: the fixed
@@ -33,7 +33,7 @@ public static class TokenEstimator
     };
 
     /// <summary>Per-surface-node token estimates, aligned with <see cref="SessionSurface.Nodes"/>.</summary>
-    public static IReadOnlyList<long> Estimate(Dsh.Session.Session session)
+    public static IReadOnlyList<long> Estimate(Harness.Session.Session session)
     {
         ArgumentNullException.ThrowIfNull(session);
         var tokens = new List<long>();
@@ -162,7 +162,7 @@ public sealed class BasicCompactionProvider : Service, ICompactionService
         + "- Output only the checkpoint text: do not call any tool or take any other action.\n"
         + "- If the conversation already contains a <compacted-summary> block, it is a PRIOR checkpoint. Do not copy it forward verbatim: preserve still-true facts, drop stale ones, and merge newer information into a single consolidated summary under the same structure.";
 
-    private readonly Func<Dsh.Session.Session, IReadOnlyList<long>> _estimator;
+    private readonly Func<Harness.Session.Session, IReadOnlyList<long>> _estimator;
     private readonly Func<SummarizationInput, CancellationToken, Task<SummaryResult>> _summarizer;
     private readonly int _maxTokens;
     private readonly int _maxOverflowRetries;
@@ -182,7 +182,7 @@ public sealed class BasicCompactionProvider : Service, ICompactionService
     /// <param name="auto">whether the overflow recovery listener is installed.</param>
     public BasicCompactionProvider(
         Context ctx,
-        Func<Dsh.Session.Session, IReadOnlyList<long>>? estimator = null,
+        Func<Harness.Session.Session, IReadOnlyList<long>>? estimator = null,
         Func<SummarizationInput, CancellationToken, Task<SummaryResult>>? summarizer = null,
         int maxTokens = (int)CompactionPolicyDefaults.MaxTokens,
         int maxOverflowRetries = DefaultMaxOverflowRetries,
@@ -264,7 +264,7 @@ public sealed class BasicCompactionProvider : Service, ICompactionService
     }
 
     /// <inheritdoc />
-    public SurfaceSelection? SelectRange(Dsh.Session.Session session, long retainTokens)
+    public SurfaceSelection? SelectRange(Harness.Session.Session session, long retainTokens)
     {
         ArgumentNullException.ThrowIfNull(session);
         if (retainTokens < 0)
@@ -371,8 +371,8 @@ public sealed class BasicCompactionProvider : Service, ICompactionService
         await foreach (var chunk in llm.Stream(options, ct)) assembler.Push(chunk);
         var failure = assembler.Finish switch
         {
-            Dsh.Llm.Error error => error.Failure,
-            Dsh.Llm.Aborted aborted => aborted.Failure,
+            Harness.Llm.Error error => error.Failure,
+            Harness.Llm.Aborted aborted => aborted.Failure,
             _ => null,
         };
         if (failure is not null) throw new LlmError(failure.Message, failure.Code, failure.Status);
@@ -383,7 +383,7 @@ public sealed class BasicCompactionProvider : Service, ICompactionService
     }
 
     /// <summary>Reconstruct the summary call's cacheable prefix from the last routed request header and the shadowed region.</summary>
-    private SummarizationInput BuildSummarizationInput(Dsh.Session.Session session, SurfaceSelection region)
+    private SummarizationInput BuildSummarizationInput(Harness.Session.Session session, SurfaceSelection region)
     {
         var header = session.Events.OfType<RequestHeaderEvent>().Select(evt => evt.Header).LastOrDefault();
         var shadowed = region.ShadowedSeqs.ToHashSet();
@@ -409,7 +409,7 @@ public sealed class BasicCompactionProvider : Service, ICompactionService
     private void RegisterOverflowListener()
     {
         _listeners.Add(Ctx.On("session/event",
-            new Action<Dsh.Session.Session, SessionEvent>((session, evt) =>
+            new Action<Harness.Session.Session, SessionEvent>((session, evt) =>
             {
                 if (evt is AssistantMessageEvent) _overflowRetries.Remove(session.Id.Value);
             })));
@@ -435,7 +435,7 @@ public sealed class BasicCompactionProvider : Service, ICompactionService
     }
 
     /// <summary>Sum the estimator's per-node prices over the shadowed span.</summary>
-    private long ShadowedTokenCount(Dsh.Session.Session session, SurfaceSelection region)
+    private long ShadowedTokenCount(Harness.Session.Session session, SurfaceSelection region)
     {
         var priced = _estimator(session);
         long total = 0;
@@ -444,7 +444,7 @@ public sealed class BasicCompactionProvider : Service, ICompactionService
     }
 
     /// <summary>Reject a durable unmatched compaction marker: the lock is held until one compaction/end.</summary>
-    private static void AssertCompactionInactive(Dsh.Session.Session session)
+    private static void AssertCompactionInactive(Harness.Session.Session session)
     {
         foreach (var evt in session.Events.Reverse())
         {
@@ -459,7 +459,7 @@ public sealed class BasicCompactionProvider : Service, ICompactionService
     }
 
     /// <summary>The open turn owning the next compaction, or null when no turn is open.</summary>
-    private static long? OpenTurn(Dsh.Session.Session session)
+    private static long? OpenTurn(Harness.Session.Session session)
     {
         foreach (var evt in session.Events.Reverse())
         {

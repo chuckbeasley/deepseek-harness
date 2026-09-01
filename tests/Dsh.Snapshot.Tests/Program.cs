@@ -1,4 +1,4 @@
-namespace Dsh.Snapshot.Tests;
+namespace Harness.Snapshot.Tests;
 
 /// <summary>Zero-dependency console test runner for the recorded-session snapshot harness.</summary>
 public static class Program

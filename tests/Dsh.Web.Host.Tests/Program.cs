@@ -1,4 +1,4 @@
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>Zero-dependency console test runner for the Phase-5 web host.</summary>
 public static class Program

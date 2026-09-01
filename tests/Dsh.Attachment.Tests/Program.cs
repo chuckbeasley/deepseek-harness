@@ -1,4 +1,4 @@
-namespace Dsh.Attachment.Tests;
+namespace Harness.Attachment.Tests;
 
 /// <summary>Zero-dependency console test runner for the attachment capability seam.</summary>
 public static class Program

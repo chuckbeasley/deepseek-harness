@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>Cordis.Plugin.Timer.Tests</RootNamespace>
+    <RootNamespace>Harness.Cordis.Plugin.Timer.Tests</RootNamespace>
     <AssemblyName>Cordis.Plugin.Timer.Tests</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

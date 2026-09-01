@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Fs;
+namespace Harness.Fs;
 
 /// <summary>
 /// Configuration for the local filesystem backend: the single workspace root all paths resolve

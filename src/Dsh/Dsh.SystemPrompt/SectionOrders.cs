@@ -1,4 +1,4 @@
-namespace Dsh.SystemPrompt;
+namespace Harness.SystemPrompt;
 
 /// <summary>Centrally allocated repository prompt-section placements (sparse; at least ten apart).</summary>
 public enum SectionOrderName

@@ -1,13 +1,13 @@
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Agent;
+namespace Harness.Agent;
 
 /// <summary>
 /// A live agent: session-backed identity, the two-list inbox, lifecycle status, step counters,
 /// an agent-scoped context, and a cancellation signal (port of the TS Agent runtime face, minus
-/// the loop-owned drive API). The loop (Dsh.AgentLoop) drives status, steps, and inbox claims;
+/// the loop-owned drive API). The loop (Harness.AgentLoop) drives status, steps, and inbox claims;
 /// everything here is the state and event surface the loop and observers share.
 /// </summary>
 public sealed class Agent : IInboxNotifications
@@ -25,7 +25,7 @@ public sealed class Agent : IInboxNotifications
     /// <param name="session">the live session this agent drives; its log is the durable source of truth.</param>
     /// <param name="options">provider route, model, and token ceiling for this agent's requests.</param>
     /// <param name="config">deployment-varying limits; absent fields take their documented defaults.</param>
-    public Agent(Context owner, Dsh.Session.Session session, AgentOptions? options = null, AgentConfig? config = null)
+    public Agent(Context owner, Harness.Session.Session session, AgentOptions? options = null, AgentConfig? config = null)
     {
         _owner = owner ?? throw new ArgumentNullException(nameof(owner));
         Session = session ?? throw new ArgumentNullException(nameof(session));
@@ -44,12 +44,12 @@ public sealed class Agent : IInboxNotifications
 
     /// <summary>
     /// The agent-scoped context: effects, services, and listeners registered through it unwind when
-    /// the agent's scope disposes (see Dsh.Scope for the scoped-registration primitive).
+    /// the agent's scope disposes (see Harness.Scope for the scoped-registration primitive).
     /// </summary>
     public Context Ctx => _scope;
 
     /// <summary>The live session this agent drives; its log is the durable source of truth.</summary>
-    public Dsh.Session.Session Session { get; }
+    public Harness.Session.Session Session { get; }
 
     /// <summary>The agent-owned projection of durable pending work.</summary>
     public Inbox Inbox { get; }

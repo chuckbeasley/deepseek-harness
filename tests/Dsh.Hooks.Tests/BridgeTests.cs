@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Dsh.Hooks;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Hooks;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Hooks.Tests;
+namespace Harness.Hooks.Tests;
 
 /// <summary>The two bridges over a real loop harness: hook runs, payloads, decisions, context, and the log pairs.</summary>
 public static class BridgeTests
@@ -70,10 +70,10 @@ public static class BridgeTests
         using var harness = Harness.Create();
         using var bridge = new ClaudeCodeBridge(harness.Ctx,
             new ClaudeCodeBridgeConfig(HookScripts.WriteClaudePreTool(temp.Path, hook, "*", point: "SessionStart")));
-        var handle = harness.Loop.Create(new SessionId("session-cc-start"), new Dsh.Agent.AgentOptions
+        var handle = harness.Loop.Create(new SessionId("session-cc-start"), new Harness.Agent.AgentOptions
         {
-            Provider = Dsh.Spike.MockLlmProvider.Provider,
-            Model = Dsh.Spike.MockLlmProvider.Model,
+            Provider = global::Harness.Spike.MockLlmProvider.Provider,
+            Model = global::Harness.Spike.MockLlmProvider.Model,
         });
         // The detached hook runs beside the create; wait for its capture, then a short settle for
         // the inject continuation, before the first prompt observes the context.
@@ -150,5 +150,5 @@ public static class BridgeTests
 /// <summary>The mock's fixture-fixed tool-call id (aliased for the bridge tests).</summary>
 internal static class MockSpike
 {
-    public const string ToolCallId = Dsh.Spike.MockLlmProvider.ToolCallIdValue;
+    public const string ToolCallId = global::Harness.Spike.MockLlmProvider.ToolCallIdValue;
 }

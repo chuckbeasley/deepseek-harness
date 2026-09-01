@@ -1,8 +1,8 @@
-﻿using System.Text.Json;
-using Cordis.Core;
-using Dsh.Web.Host;
+using System.Text.Json;
+using Harness.Cordis.Core;
+using Harness.Web.Host;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The directoryPicker stub: every verb answers <c>directory-picker/unavailable</c> (no picking
@@ -81,9 +81,9 @@ public static class DirectoryPickerTests
     {
         var ctx = new Context();
         var registry = new DshRpcRegistry(ctx);
-        _ = registry.Register(Dsh.Web.Host.DirectoryPickerRemotes.Pick(ctx));
-        _ = registry.Register(Dsh.Web.Host.DirectoryPickerRemotes.List(ctx));
-        _ = registry.Register(Dsh.Web.Host.DirectoryPickerRemotes.CreateDirectory(ctx));
+        _ = registry.Register(global::Harness.Web.Host.DirectoryPickerRemotes.Pick(ctx));
+        _ = registry.Register(global::Harness.Web.Host.DirectoryPickerRemotes.List(ctx));
+        _ = registry.Register(global::Harness.Web.Host.DirectoryPickerRemotes.CreateDirectory(ctx));
         return (ctx, registry);
     }
 }

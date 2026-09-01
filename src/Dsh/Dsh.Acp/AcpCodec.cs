@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Acp;
+namespace Harness.Acp;
 
 /// <summary>Pure translation between the harness lifecycle and the automation-only ACP wire (port of the TS <c>codec.ts</c>).</summary>
 public static class AcpCodec

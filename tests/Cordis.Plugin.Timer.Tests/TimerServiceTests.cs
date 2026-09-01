@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Cordis.Plugin.Timer;
+using Harness.Cordis.Core;
+using Harness.Cordis.Plugin.Timer;
 
-namespace Cordis.Plugin.Timer.Tests;
+namespace Harness.Cordis.Plugin.Timer.Tests;
 
 /// <summary>
 /// Behavioral tests for the timer plugin port. Timing assertions use short real delays with

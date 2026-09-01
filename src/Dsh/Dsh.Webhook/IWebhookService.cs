@@ -1,4 +1,4 @@
-﻿namespace Dsh.Webhook;
+namespace Harness.Webhook;
 
 /// <summary>
 /// Service Definition of the webhook capability seam (port of <c>@deepseek-ai/dsh-webhook</c>):

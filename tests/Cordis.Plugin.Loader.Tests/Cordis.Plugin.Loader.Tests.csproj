@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>Cordis.Plugin.Loader.Tests</RootNamespace>
+    <RootNamespace>Harness.Cordis.Plugin.Loader.Tests</RootNamespace>
     <AssemblyName>Cordis.Plugin.Loader.Tests</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

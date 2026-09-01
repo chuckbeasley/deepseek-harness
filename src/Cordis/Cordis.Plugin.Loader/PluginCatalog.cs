@@ -1,7 +1,7 @@
 using System.Reflection;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Cordis.Plugin.Loader;
+namespace Harness.Cordis.Plugin.Loader;
 
 /// <summary>
 /// Marks a class as a loadable Cordis plugin and gives it a catalog name. This is the C#
@@ -26,7 +26,7 @@ public sealed class CordisPluginAttribute : Attribute
 /// register services and effects on <paramref name="ctx"/> and return the disposer that undoes
 /// them; the loader runs that disposer when the owning entry is removed. Effects registered
 /// outside the returned disposer stay on the shared context until the context disposes (Cordis
-/// scopes them to the entry fiber; the port scopes by the plugin disposer because Cordis.Core
+/// scopes them to the entry fiber; the port scopes by the plugin disposer because Harness.Cordis.Core
 /// keeps one fiber per context).
 /// </summary>
 public interface ILoaderPlugin

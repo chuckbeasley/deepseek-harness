@@ -1,4 +1,4 @@
-namespace Dsh.Workspace.Tests;
+namespace Harness.Workspace.Tests;
 
 /// <summary>Behavior tests for the workspace capability seam (identity/root + open/close lifecycle).</summary>
 public static class WorkspaceTests

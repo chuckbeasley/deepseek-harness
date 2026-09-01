@@ -1,7 +1,7 @@
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Compaction;
+namespace Harness.Compaction;
 
 /// <summary>
 /// Plugin-merged session events recording the compaction transaction (port of the declaration-merged

@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Cordis.Cosmokit;
+namespace Harness.Cordis.Cosmokit;
 
 /// <summary>Workspace path and display helpers (port of <c>@deepseek-ai/dsh-util-workspace-path</c>).</summary>
 public static class WorkspacePaths

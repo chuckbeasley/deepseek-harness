@@ -1,8 +1,8 @@
-﻿using System.Text.Json;
-using Cordis.Core;
-using Dsh.Credentials;
+using System.Text.Json;
+using Harness.Cordis.Core;
+using Harness.Credentials;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The credentials remote methods (port of the TS CredentialsController): the batched describe and

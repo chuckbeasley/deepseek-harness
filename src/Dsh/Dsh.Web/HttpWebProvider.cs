@@ -2,7 +2,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json.Nodes;
 
-namespace Dsh.Web;
+namespace Harness.Web;
 
 /// <summary>
 /// Resolved transport and response limits for <see cref="HttpWebProvider"/> (the plugin's default

@@ -1,4 +1,4 @@
-namespace Dsh.Subagent.Tests;
+namespace Harness.Subagent.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

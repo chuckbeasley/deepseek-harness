@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Llm.Replay;
+namespace Harness.Llm.Replay;
 
 /// <summary>
 /// Handle returned by <see cref="ReplayInstall.Install"/>: removal plus the end-of-run consumption

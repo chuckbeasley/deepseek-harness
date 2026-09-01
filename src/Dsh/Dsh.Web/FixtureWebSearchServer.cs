@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Dsh.Web;
+namespace Harness.Web;
 
 /// <summary>
 /// The recorded web-search error fixture: a loopback Messages endpoint on the recorded authority

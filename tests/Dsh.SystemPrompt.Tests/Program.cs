@@ -1,4 +1,4 @@
-namespace Dsh.SystemPrompt.Tests;
+namespace Harness.SystemPrompt.Tests;
 
 /// <summary>Zero-dependency console runner for the SystemPrompt port tests.</summary>
 public static class Program

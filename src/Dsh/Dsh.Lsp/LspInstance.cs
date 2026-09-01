@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Dsh.Lsp;
+namespace Harness.Lsp;
 
 /// <summary>Everything an instance needs beyond the connection spec.</summary>
 public sealed record LspInstanceSpec(

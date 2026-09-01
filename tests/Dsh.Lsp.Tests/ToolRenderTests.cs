@@ -1,4 +1,4 @@
-namespace Dsh.Lsp.Tests;
+namespace Harness.Lsp.Tests;
 
 /// <summary>The model-facing tool argument parsing and the pure renderers (mirrors the Wave 3 tool tests).</summary>
 public static class ToolRenderTests

@@ -1,4 +1,4 @@
-namespace Dsh.Compaction;
+namespace Harness.Compaction;
 
 /// <summary>
 /// Compaction Service Definition (ctx.compaction): providers decide when to compact and replace a
@@ -25,5 +25,5 @@ public interface ICompactionService
 
     /// <summary>Select the head-anchored compactable region for one session under a retained-tail token budget.</summary>
     /// <returns>the inclusive positional region, or null when nothing compactable remains.</returns>
-    SurfaceSelection? SelectRange(Dsh.Session.Session session, long retainTokens);
+    SurfaceSelection? SelectRange(Harness.Session.Session session, long retainTokens);
 }

@@ -1,10 +1,10 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Cordis.Core;
-using Dsh.Web.Host;
+using Harness.Cordis.Core;
+using Harness.Web.Host;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The Kestrel host: boot on a free loopback port, HTTP GET round-trip, and the SignalR hub

@@ -1,4 +1,4 @@
-namespace Dsh.Identity.Tests;
+namespace Harness.Identity.Tests;
 
 /// <summary>
 /// One test context plus its temp harness home. A fresh home per test keeps the persisted id

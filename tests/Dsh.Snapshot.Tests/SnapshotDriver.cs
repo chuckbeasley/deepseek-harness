@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 
-namespace Dsh.Snapshot.Tests;
+namespace Harness.Snapshot.Tests;
 
 /// <summary>One completed CLI subprocess run.</summary>
 public sealed record CliRunResult(int ExitCode, string Stdout, string Stderr);

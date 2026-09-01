@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
 
-namespace Dsh.Code.Tests;
+namespace Harness.Code.Tests;
 
 /// <summary>The run_code tool over a real ToolRuntime with a fake echo tool.</summary>
 public static class RunCodeToolTests
@@ -63,7 +63,7 @@ public static class RunCodeToolTests
     private static JsonElement Args(string code)
         => JsonSerializer.SerializeToElement(new { code, description = "test program" });
 
-    private static async Task<(string Text, Dsh.Session.Session Session)> RunWith(this ToolDefinition tool, JsonElement args, ToolRuntime runtime)
+    private static async Task<(string Text, global::Harness.Session.Session Session)> RunWith(this ToolDefinition tool, JsonElement args, ToolRuntime runtime)
     {
         var ctx = new Context();
         var store = new SessionStore(ctx);

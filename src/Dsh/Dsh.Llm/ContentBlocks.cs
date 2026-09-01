@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>Merge-extensible content blocks keyed by <see cref="BlockType"/>.</summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]

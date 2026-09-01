@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Dsh.CordisRunner;
+namespace Harness.CordisRunner;
 
 /// <summary>One declared read-only query of a Cordis inspect provider.</summary>
 public sealed record CordisInspectMethod(

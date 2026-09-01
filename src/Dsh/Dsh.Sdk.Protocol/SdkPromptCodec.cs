@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Dsh.Sdk.Protocol;
+namespace Harness.Sdk.Protocol;
 
 /// <summary>
 /// The wire codec for <see cref="SdkPromptContentBlock"/>: a block with <c>type: "image"</c>
@@ -12,7 +12,7 @@ namespace Dsh.Sdk.Protocol;
 public sealed class SdkPromptContentBlockConverter : JsonConverter<SdkPromptContentBlock>
 {
     private static readonly JsonSerializerOptions ContentOptions =
-        Dsh.Session.SessionEventTypes.CreateSerializerOptions();
+        Harness.Session.SessionEventTypes.CreateSerializerOptions();
 
     /// <inheritdoc />
     public override SdkPromptContentBlock? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -28,7 +28,7 @@ public sealed class SdkPromptContentBlockConverter : JsonConverter<SdkPromptCont
                 root.GetProperty("data").GetString()!,
                 root.GetProperty("mimeType").GetString()!));
         }
-        var block = root.Deserialize<Dsh.Llm.ContentBlock>(ContentOptions)
+        var block = root.Deserialize<Harness.Llm.ContentBlock>(ContentOptions)
             ?? throw new JsonException("unparsable SDK prompt content block");
         return new SdkPromptContentBlock.Block(block);
     }

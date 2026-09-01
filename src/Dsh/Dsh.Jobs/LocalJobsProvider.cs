@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Llm;
+using Harness.Cordis.Core;
+using Harness.Llm;
 
-namespace Dsh.Jobs;
+namespace Harness.Jobs;
 
 /// <summary>
 /// The registry's mutable per-job record (never handed out — see <see cref="Snapshot"/>).

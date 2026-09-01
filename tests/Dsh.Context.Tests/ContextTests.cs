@@ -1,15 +1,15 @@
-using Cordis.Core;
-using Dsh.Context;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Context;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Context.Tests;
+namespace Harness.Context.Tests;
 
 public static class ContextTests
 {
     public static void EachContributorText_AppearsInAssembly()
     {
-        using var ctx = new Cordis.Core.Context();
+        using var ctx = new global::Harness.Cordis.Core.Context();
         var store = new SessionStore(ctx);
         var session = store.Create();
         var tempRoot = CreateTempRoot(out var cleanup);
@@ -51,7 +51,7 @@ public static class ContextTests
 
     public static void EmptyContributors_ContributeNothing()
     {
-        using var ctx = new Cordis.Core.Context();
+        using var ctx = new global::Harness.Cordis.Core.Context();
         var store = new SessionStore(ctx);
         var session = store.Create();
         var service = new LocalContextProvider(ctx);
@@ -66,7 +66,7 @@ public static class ContextTests
 
     public static void FileReferences_ResolveWithinRoot_AndFailLoudOutside()
     {
-        using var ctx = new Cordis.Core.Context();
+        using var ctx = new global::Harness.Cordis.Core.Context();
         var store = new SessionStore(ctx);
         var tempRoot = CreateTempRoot(out var cleanup);
         try
@@ -103,7 +103,7 @@ public static class ContextTests
 
     public static void RegistrationOrder_IsPreserved_AndDisposerUnregisters()
     {
-        using var ctx = new Cordis.Core.Context();
+        using var ctx = new global::Harness.Cordis.Core.Context();
         var store = new SessionStore(ctx);
         var session = store.Create();
         var service = new LocalContextProvider(ctx);
@@ -127,7 +127,7 @@ public static class ContextTests
 
     public static void TimeContext_UsesInjectedClock()
     {
-        using var ctx = new Cordis.Core.Context();
+        using var ctx = new global::Harness.Cordis.Core.Context();
         var store = new SessionStore(ctx);
         var session = store.Create();
         var clock = new DateTimeOffset(2026, 6, 7, 8, 9, 10, TimeSpan.FromHours(2));
@@ -141,7 +141,7 @@ public static class ContextTests
 
     public static void SessionReference_Resolves_AndFailsLoudOnSelfAndUnknown()
     {
-        using var ctx = new Cordis.Core.Context();
+        using var ctx = new global::Harness.Cordis.Core.Context();
         var store = new SessionStore(ctx);
         var referenced = store.Create(new SessionId("referenced-1"));
         AppendUserMessage(referenced, "remembered fact");
@@ -172,7 +172,7 @@ public static class ContextTests
 
     public static void RegistersAsTheContextService()
     {
-        using var ctx = new Cordis.Core.Context();
+        using var ctx = new global::Harness.Cordis.Core.Context();
         var provider = new LocalContextProvider(ctx);
 
         Assert.Same(provider, ctx.Get<IContextService>("context"));
@@ -199,7 +199,7 @@ public static class ContextTests
         return root;
     }
 
-    private static void AppendUserMessage(Dsh.Session.Session session, string text)
+    private static void AppendUserMessage(global::Harness.Session.Session session, string text)
         => session.Append(new UserMessageEvent
         {
             Message = Messages.CreateUserMessage(new ContentBlock[] { new TextBlock(text) }),

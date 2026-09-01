@@ -1,4 +1,4 @@
-namespace Dsh.Llm.DeepSeek;
+namespace Harness.Llm.DeepSeek;
 
 /// <summary>
 /// Serialize harness requests into the DeepSeek chat-completions wire format (text-only; the seam

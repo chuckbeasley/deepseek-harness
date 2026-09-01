@@ -1,8 +1,8 @@
-using Cordis.Core;
-using Cordis.Plugin.Include;
-using IncludePlugin = Cordis.Plugin.Include.Include;
+using Harness.Cordis.Core;
+using Harness.Cordis.Plugin.Include;
+using IncludePlugin = Harness.Cordis.Plugin.Include.Include;
 
-namespace Cordis.Plugin.Hmr;
+namespace Harness.Cordis.Plugin.Hmr;
 
 /// <summary>
 /// Watches exact config files and refreshes their target on change (C# port of the vendored Hmr

@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>The kind of one settled remote waterfall outcome (the TS <c>RemoteEventResult</c> outcome union).</summary>
 public enum RemoteEventOutcomeKind

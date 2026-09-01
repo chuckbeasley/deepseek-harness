@@ -1,4 +1,4 @@
-namespace Dsh.Context;
+namespace Harness.Context;
 
 /// <summary>One named text contribution produced by a context contributor.</summary>
 public sealed record ContextSection(string Key, string Text);

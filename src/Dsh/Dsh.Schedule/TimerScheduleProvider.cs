@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Cordis.Plugin.Timer;
+using Harness.Cordis.Core;
+using Harness.Cordis.Plugin.Timer;
 
-namespace Dsh.Schedule;
+namespace Harness.Schedule;
 
 /// <summary>
 /// ctx.schedule: the timer-backed schedule provider. Every registration is an effect on the
@@ -25,7 +25,7 @@ public sealed class TimerScheduleProvider : Service, IScheduleService
         : base(ctx, "schedule")
     {
         _timer = ctx.Get<TimerService>("timer")
-            ?? throw new InvalidOperationException("schedule requires the \"timer\" service; apply Cordis.Plugin.Timer first");
+            ?? throw new InvalidOperationException("schedule requires the \"timer\" service; apply Harness.Cordis.Plugin.Timer first");
     }
 
     /// <inheritdoc />

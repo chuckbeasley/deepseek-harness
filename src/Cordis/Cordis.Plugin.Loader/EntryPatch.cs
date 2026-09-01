@@ -1,4 +1,4 @@
-namespace Cordis.Plugin.Loader;
+namespace Harness.Cordis.Plugin.Loader;
 
 /// <summary>
 /// Partial entry options used to update one row (port of the TS <c>Partial&lt;EntryOptions&gt;</c>

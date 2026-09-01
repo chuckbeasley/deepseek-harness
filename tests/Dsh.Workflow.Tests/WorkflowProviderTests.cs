@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Workflow;
+using Harness.Cordis.Core;
+using Harness.Workflow;
 
-namespace Dsh.Workflow.Tests;
+namespace Harness.Workflow.Tests;
 
 /// <summary>
 /// The worker-task workflow engine: register + start, ordered execution on worker tasks,

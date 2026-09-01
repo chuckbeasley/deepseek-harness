@@ -1,4 +1,4 @@
-namespace Cordis.Core;
+namespace Harness.Cordis.Core;
 
 /// <summary>
 /// Inspection surface over the services, listeners, and effects registered on a context (Phase 0

@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Preset;
-using Dsh.Settings;
+using Harness.Cordis.Core;
+using Harness.Preset;
+using Harness.Settings;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The settings remote methods (port of the TS SettingsController): the redacted describe, the
@@ -219,7 +219,7 @@ public static class SettingsRemotes
                     await settings.ReplaceAsync(ns, input!, expectedRevision);
                     break;
                 default:
-                    await settings.MutateAsync(ns, (IReadOnlyList<Dsh.Settings.SettingsPathOp>)input!, expectedRevision);
+                    await settings.MutateAsync(ns, (IReadOnlyList<Harness.Settings.SettingsPathOp>)input!, expectedRevision);
                     break;
             }
         }
@@ -239,7 +239,7 @@ public static class SettingsRemotes
     /// with a value for <c>set</c>. The seam re-validates the shape (the TS controller and seam
     /// both guard it); wire-level violations refuse before the write.
     /// </summary>
-    private static Dsh.Settings.SettingsPathOp[] OpsArg(JsonElement? args)
+    private static Harness.Settings.SettingsPathOp[] OpsArg(JsonElement? args)
     {
         if (args is not JsonElement element
             || !element.TryGetProperty("ops", out var opsValue)
@@ -247,7 +247,7 @@ public static class SettingsRemotes
         {
             throw new RpcBadRequestException("settings/mutate requires an ops array");
         }
-        var ops = new List<Dsh.Settings.SettingsPathOp>();
+        var ops = new List<Harness.Settings.SettingsPathOp>();
         foreach (var item in opsValue.EnumerateArray())
         {
             if (item.ValueKind != JsonValueKind.Object
@@ -277,7 +277,7 @@ public static class SettingsRemotes
                 }
                 value = SettingsWireValues.FromJsonElement(valueElement);
             }
-            ops.Add(new Dsh.Settings.SettingsPathOp(opValue.GetString()!, path, value));
+            ops.Add(new Harness.Settings.SettingsPathOp(opValue.GetString()!, path, value));
         }
         return ops.ToArray();
     }

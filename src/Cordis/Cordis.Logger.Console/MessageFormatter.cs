@@ -1,9 +1,9 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
-namespace Cordis.Logger.Console;
+namespace Harness.Cordis.Logger.Console;
 
 /// <summary>
 /// Message body rendering (port of the TS <c>Logger.format</c> with the default placeholder

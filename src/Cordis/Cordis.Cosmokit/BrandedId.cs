@@ -1,4 +1,4 @@
-namespace Cordis.Cosmokit;
+namespace Harness.Cordis.Cosmokit;
 
 /// <summary>
 /// A nominal (branded) identifier wrapping a string, the C# equivalent of

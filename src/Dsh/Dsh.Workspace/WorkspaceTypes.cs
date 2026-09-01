@@ -1,6 +1,6 @@
-namespace Dsh.Workspace;
+namespace Harness.Workspace;
 
-using Dsh.Session;
+using Harness.Session;
 
 /// <summary>
 /// Stable identifier of one workspace (port of the TS <c>WorkspaceId</c> brand). A generated uuid,

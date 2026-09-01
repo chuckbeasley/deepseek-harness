@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>Cordis.Schemastery</RootNamespace>
+    <RootNamespace>Harness.Cordis.Schemastery</RootNamespace>
     <AssemblyName>Cordis.Schemastery</AssemblyName>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>

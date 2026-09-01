@@ -1,6 +1,6 @@
-using Cordis.Schemastery;
+using Harness.Cordis.Schemastery;
 
-namespace Dsh.Settings;
+namespace Harness.Settings;
 
 /// <summary>A value with every <c>role("secret")</c> field removed, plus the removal record.</summary>
 /// <param name="Value">Detached copy of the input with secret fields absent.</param>

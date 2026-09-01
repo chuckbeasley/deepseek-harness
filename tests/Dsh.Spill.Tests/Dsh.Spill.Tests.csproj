@@ -5,7 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Dsh.Spill.Tests</RootNamespace>
+    <RootNamespace>Harness.Spill.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

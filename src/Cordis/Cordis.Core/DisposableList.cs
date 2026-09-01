@@ -1,4 +1,4 @@
-namespace Cordis.Core;
+namespace Harness.Cordis.Core;
 
 /// <summary>
 /// Ordered collection with removal by value (port of the vendored Cordis DisposableList).

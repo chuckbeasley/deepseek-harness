@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Sandbox;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Sandbox;
+using Harness.Tools;
 
-namespace Dsh.Shell;
+namespace Harness.Shell;
 
 /// <summary>
 /// Model-facing Consumer of the shell capability: the <c>bash</c> tool (port of the tool-bash

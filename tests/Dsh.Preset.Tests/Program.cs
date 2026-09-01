@@ -1,4 +1,4 @@
-namespace Dsh.Preset.Tests;
+namespace Harness.Preset.Tests;
 
 /// <summary>Zero-dependency console test runner.</summary>
 public static class Program

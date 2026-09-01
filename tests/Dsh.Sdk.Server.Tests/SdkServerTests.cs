@@ -1,19 +1,19 @@
 using System.IO.Pipelines;
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Llm;
-using Dsh.Sdk.Protocol;
-using Dsh.Sdk.Server;
-using Dsh.Session;
-using Dsh.Session.Persistence;
-using Dsh.Spike;
-using Dsh.SystemPrompt;
-using Dsh.Todo;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Llm;
+using Harness.Sdk.Protocol;
+using Harness.Sdk.Server;
+using Harness.Session;
+using Harness.Session.Persistence;
+using Harness.Spike;
+using Harness.SystemPrompt;
+using Harness.Todo;
+using Harness.Tools;
 
-namespace Dsh.Sdk.Server.Tests;
+namespace Harness.Sdk.Server.Tests;
 
 /// <summary>
 /// The SDK runtime server over a real transport: the handshake validation and route recording,
@@ -212,7 +212,7 @@ public static class SdkServerTests
         public required Context Ctx { get; init; }
         public required LlmRuntime Llm { get; init; }
         public required SessionStore Sessions { get; init; }
-        public required Dsh.AgentLoop.AgentLoop Loop { get; init; }
+        public required global::Harness.AgentLoop.AgentLoop Loop { get; init; }
         public required JsonRpcLineTransport Client { get; init; }
         public required JsonRpcLineTransport Server { get; init; }
         private readonly Pipe[] _pipes;
@@ -236,7 +236,7 @@ public static class SdkServerTests
             llm.RegisterAdapter(new[] { MockLlmProvider.Provider }, new MockLlmProvider());
             _ = new TodoService(ctx, allowParallelInProgress: false);
             tools.Register(TodoTool.Definition(ctx, allowParallelInProgress: false));
-            var loop = new Dsh.AgentLoop.AgentLoop(ctx);
+            var loop = new global::Harness.AgentLoop.AgentLoop(ctx);
             var pipes = new[] { new Pipe(), new Pipe() };
             var serverTransport = new JsonRpcLineTransport(pipes[0].Reader.AsStream(), pipes[1].Writer.AsStream());
             var clientTransport = new JsonRpcLineTransport(pipes[1].Reader.AsStream(), pipes[0].Writer.AsStream());

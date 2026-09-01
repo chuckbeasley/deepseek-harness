@@ -1,6 +1,6 @@
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.SystemPrompt;
+namespace Harness.SystemPrompt;
 
 /// <summary>
 /// Context for one prompt assembly. The TS original is merge-extensible (dsh-agent adds the live

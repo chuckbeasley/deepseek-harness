@@ -1,4 +1,4 @@
-namespace Cordis.Core;
+namespace Harness.Cordis.Core;
 
 /// <summary>
 /// Base class for services that expose a named API on <c>ctx</c> (C# port of the vendored Cordis

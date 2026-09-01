@@ -1,11 +1,11 @@
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Tools;
-using Dsh.Workflow;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Tools;
+using Harness.Workflow;
 
-namespace Dsh.Workflow.Tests;
+namespace Harness.Workflow.Tests;
 
 /// <summary>
 /// The <c>workflow</c> tool executed through <see cref="ToolRuntime"/>: running a registered
@@ -17,7 +17,7 @@ public static class WorkflowToolsTests
     private static JsonElement Args(object arguments)
         => JsonSerializer.SerializeToElement(arguments);
 
-    private static ToolRuntime Boot(Context ctx, Dsh.Session.Session? session, out WorkerThreadWorkflowProvider workflow)
+    private static ToolRuntime Boot(Context ctx, global::Harness.Session.Session? session, out WorkerThreadWorkflowProvider workflow)
     {
         var tools = new ToolRuntime(ctx);
         workflow = new WorkerThreadWorkflowProvider(ctx);
@@ -25,7 +25,7 @@ public static class WorkflowToolsTests
         return tools;
     }
 
-    private static ToolExecutionInput Input(string callId, JsonElement args, Dsh.Session.Session? session = null)
+    private static ToolExecutionInput Input(string callId, JsonElement args, global::Harness.Session.Session? session = null)
         => new(new ToolCallId(callId), "workflow", args, CancellationToken.None) { Session = session };
 
     public static void WorkflowTool_ExecutesRegisteredDefinition_AndRecordsTheRun()

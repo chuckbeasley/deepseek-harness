@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Llm.Replay;
+namespace Harness.Llm.Replay;
 
 /// <summary>One parsed record of a recorded session log that the script derivation consumes.</summary>
 internal abstract record ReplayLogEvent;

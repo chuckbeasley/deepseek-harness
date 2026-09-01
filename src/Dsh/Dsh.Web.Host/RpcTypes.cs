@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Dsh.Rpc.Generator;
+using Harness.Rpc.Generator;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>One RPC invocation: the canonical <c>&lt;namespace&gt;/&lt;method&gt;</c> endpoint and the wire args object.</summary>
 public sealed record RpcRequest(

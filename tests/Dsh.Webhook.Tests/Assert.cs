@@ -1,4 +1,4 @@
-﻿namespace Dsh.Webhook.Tests;
+namespace Harness.Webhook.Tests;
 
 /// <summary>Thrown by <see cref="Assert"/> when a check fails; aborts the current test.</summary>
 public sealed class AssertionException : Exception

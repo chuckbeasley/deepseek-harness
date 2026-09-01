@@ -1,4 +1,4 @@
-namespace Dsh.Agent;
+namespace Harness.Agent;
 
 /// <summary>
 /// An agent's lifecycle state, emitted on every transition as <c>agent/status</c> (port of the TS

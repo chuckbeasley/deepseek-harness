@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Context;
+namespace Harness.Context;
 
 /// <summary>
 /// ctx.context: the local request-context provider. Holds the contributor registry and assembles
@@ -16,7 +16,7 @@ public sealed class LocalContextProvider : Service, IContextService
     /// <summary>Create and register the service as <c>context</c>.</summary>
     /// <param name="ctx">the owner context.</param>
     /// <param name="contributors">contributors registered immediately, in order.</param>
-    public LocalContextProvider(Cordis.Core.Context ctx, IEnumerable<IContextContributor>? contributors = null)
+    public LocalContextProvider(Harness.Cordis.Core.Context ctx, IEnumerable<IContextContributor>? contributors = null)
         : base(ctx, "context")
     {
         if (contributors is not null)
@@ -26,7 +26,7 @@ public sealed class LocalContextProvider : Service, IContextService
     }
 
     /// <summary>Read the context service from a context, failing explicitly when it is absent.</summary>
-    public static LocalContextProvider Require(Cordis.Core.Context ctx) => ctx.Require<LocalContextProvider>("context");
+    public static LocalContextProvider Require(Harness.Cordis.Core.Context ctx) => ctx.Require<LocalContextProvider>("context");
 
     /// <inheritdoc />
     public IReadOnlyList<IContextContributor> Contributors => _contributors.ToArray();
@@ -40,7 +40,7 @@ public sealed class LocalContextProvider : Service, IContextService
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<ContextSection>> CollectAsync(Dsh.Session.Session session, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ContextSection>> CollectAsync(Harness.Session.Session session, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(session);
         var sections = new List<ContextSection>();
@@ -53,7 +53,7 @@ public sealed class LocalContextProvider : Service, IContextService
     }
 
     /// <inheritdoc />
-    public async Task<string> AssembleAsync(Dsh.Session.Session session, CancellationToken cancellationToken = default)
+    public async Task<string> AssembleAsync(Harness.Session.Session session, CancellationToken cancellationToken = default)
     {
         var sections = await CollectAsync(session, cancellationToken).ConfigureAwait(false);
         if (sections.Count == 0) return string.Empty;

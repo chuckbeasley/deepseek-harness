@@ -1,9 +1,9 @@
-using Cordis.Core;
-using Cordis.Schemastery;
-using Dsh.Settings;
-using Dsh.Web.Host;
+using Harness.Cordis.Core;
+using Harness.Cordis.Schemastery;
+using Harness.Settings;
+using Harness.Web.Host;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The settings remotes: the redacted catalog, the update/replace writes over a real file provider,
@@ -183,7 +183,7 @@ public static class SettingsRemotesTests
         try
         {
             var registry = new DshRpcRegistry(ctx);
-            _ = registry.Register(Dsh.Web.Host.SettingsRemotes.Describe(ctx));
+            _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.Describe(ctx));
             var response = registry.InvokeAsync(new RpcRequest("settings/describe", null)).GetAwaiter().GetResult();
             Assert.False(response.Ok, "no provider means no catalog");
             Assert.Equal("gateway/internal", response.Error!.Code);
@@ -290,10 +290,10 @@ public static class SettingsRemotesTests
         var settings = new FileSettingsProvider(ctx, Path.Combine(root, "settings.json"));
         settings.StartAsync().GetAwaiter().GetResult();
         var registry = new DshRpcRegistry(ctx);
-        _ = registry.Register(Dsh.Web.Host.SettingsRemotes.Describe(ctx));
-        _ = registry.Register(Dsh.Web.Host.SettingsRemotes.Update(ctx));
-        _ = registry.Register(Dsh.Web.Host.SettingsRemotes.Replace(ctx));
-        _ = registry.Register(Dsh.Web.Host.SettingsRemotes.Mutate(ctx));
+        _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.Describe(ctx));
+        _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.Update(ctx));
+        _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.Replace(ctx));
+        _ = registry.Register(global::Harness.Web.Host.SettingsRemotes.Mutate(ctx));
         return (ctx, registry, settings);
     }
 

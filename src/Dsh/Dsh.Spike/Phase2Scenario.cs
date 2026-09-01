@@ -1,14 +1,14 @@
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Session.Persistence;
-using Dsh.SystemPrompt;
-using Dsh.Todo;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Session.Persistence;
+using Harness.SystemPrompt;
+using Harness.Todo;
+using Harness.Tools;
 
-namespace Dsh.Spike;
+namespace Harness.Spike;
 
 /// <summary>
 /// The Phase 2 gate smoke: one headless task end-to-end through the real <see cref="AgentLoop"/>
@@ -32,11 +32,11 @@ public static class Phase2Scenario
         var todoService = new TodoService(context, allowParallelInProgress: false);
         tools.Register(TodoTool.Definition(context, allowParallelInProgress: false));
         persistence.Attach(sessions);
-        var loop = new Dsh.AgentLoop.AgentLoop(context);
+        var loop = new Harness.AgentLoop.AgentLoop(context);
 
         try
         {
-            output.WriteLine("== Dsh.Phase2 agent-loop smoke ==");
+            output.WriteLine("== Harness.Phase2 agent-loop smoke ==");
             var handle = loop.Create(
                 new SessionId("session-phase2"),
                 new AgentOptions { Provider = MockLlmProvider.Provider, Model = MockLlmProvider.Model });

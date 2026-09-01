@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Jobs;
+using Harness.Cordis.Core;
+using Harness.Jobs;
 
-namespace Dsh.Jobs.Tests;
+namespace Harness.Jobs.Tests;
 
 /// <summary>
 /// The process-local job registry: id assignment, settlement, consuming reads, kill, teardown,

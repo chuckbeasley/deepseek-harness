@@ -1,4 +1,4 @@
-﻿namespace Dsh.Web.App;
+namespace Harness.Web.App;
 
 /// <summary>
 /// The shell's cross-component action bus (scoped per circuit): slot contributions publish

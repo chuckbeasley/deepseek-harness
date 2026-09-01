@@ -1,10 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Dsh.Llm;
-using Dsh.Shell;
-using Dsh.Tools;
+using Harness.Llm;
+using Harness.Shell;
+using Harness.Tools;
 
-namespace Dsh.Sandbox.Tests;
+namespace Harness.Sandbox.Tests;
 
 /// <summary>
 /// The additive shell wiring: the bash tool result JSON carries the sandbox facts and the render

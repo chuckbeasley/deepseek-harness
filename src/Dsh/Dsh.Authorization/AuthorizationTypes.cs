@@ -1,4 +1,4 @@
-namespace Dsh.Authorization;
+namespace Harness.Authorization;
 
 /// <summary>One way a flow can obtain its credential, named by the flow that offers it.</summary>
 public sealed record AuthorizationMethod(

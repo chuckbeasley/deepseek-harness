@@ -1,4 +1,4 @@
-namespace Dsh.Credentials.Tests;
+namespace Harness.Credentials.Tests;
 
 /// <summary>
 /// Zero-dependency console test runner for the credentials capability seam. The host sandbox
@@ -15,7 +15,7 @@ public static class Program
     /// <summary>Runs every registered test and returns the process exit code.</summary>
     public static int Main()
     {
-        Console.WriteLine("Dsh.Credentials - console assertions");
+        Console.WriteLine("Harness.Credentials - console assertions");
         Console.WriteLine();
 
         Run("Dotenv: comments and empty lines are skipped", DotenvParserTests.CommentsAndEmptyLines_AreSkipped);

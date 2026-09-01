@@ -1,10 +1,10 @@
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.Jobs;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.Jobs;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Jobs.Tests;
+namespace Harness.Jobs.Tests;
 
 /// <summary>The tool-jobs completion-notice delivery over the registry and the agent inbox.</summary>
 public static class JobNoticeTests
@@ -26,7 +26,7 @@ public static class JobNoticeTests
         var registry = new AgentRegistry(ctx);
         var sessions = new SessionStore(ctx);
         var session = sessions.Create();
-        var agent = new Dsh.Agent.Agent(ctx, session);
+        var agent = new global::Harness.Agent.Agent(ctx, session);
         var handle = registry.Register(agent);
         var jobs = new LocalJobsProvider(ctx);
         var notice = JobNoticeDelivery.Install(ctx, jobs);
@@ -67,7 +67,7 @@ public static class JobNoticeTests
         var registry = new AgentRegistry(ctx);
         var sessions = new SessionStore(ctx);
         var session = sessions.Create();
-        var agent = new Dsh.Agent.Agent(ctx, session);
+        var agent = new global::Harness.Agent.Agent(ctx, session);
         var handle = registry.Register(agent);
         var jobs = new LocalJobsProvider(ctx);
         var notice = JobNoticeDelivery.Install(ctx, jobs);

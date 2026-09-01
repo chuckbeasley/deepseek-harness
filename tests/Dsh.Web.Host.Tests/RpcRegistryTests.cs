@@ -1,8 +1,8 @@
-﻿using System.Text.Json;
-using Cordis.Core;
-using Dsh.Web.Host;
+using System.Text.Json;
+using Harness.Cordis.Core;
+using Harness.Web.Host;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The RPC registry: registration, dispatch, the coded failure vocabulary, and the effect-owned

@@ -1,8 +1,8 @@
-using Cordis.Core;
-using Dsh.Llm;
-using Dsh.Tools;
+using Harness.Cordis.Core;
+using Harness.Llm;
+using Harness.Tools;
 
-namespace Dsh.SystemPrompt;
+namespace Harness.SystemPrompt;
 
 /// <summary>
 /// Registry service for the prompt inputs assembled before each model step (ctx.systemPrompt).

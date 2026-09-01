@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Dsh.Sdk.Protocol;
-using Dsh.Spike;
+using Harness.Sdk.Protocol;
+using Harness.Spike;
 
-namespace Dsh.Sdk.Client.Tests;
+namespace Harness.Sdk.Client.Tests;
 
 /// <summary>
 /// The SDK client against the REAL runtime: the built dsh CLI booting the <c>sdk</c> profile

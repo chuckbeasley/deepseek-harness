@@ -1,9 +1,9 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
-/// The generated typed codec (Dsh.Rpc.Generator): the exact error-vocabulary wire shape, the
+/// The generated typed codec (global::Harness.Rpc.Generator): the exact error-vocabulary wire shape, the
 /// round trip, and the loud refusal vocabulary. The gateway and mux suites pin the same shape
 /// through the real carriers.
 /// </summary>

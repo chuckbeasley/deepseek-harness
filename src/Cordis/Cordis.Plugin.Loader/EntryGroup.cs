@@ -1,6 +1,6 @@
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Cordis.Plugin.Loader;
+namespace Harness.Cordis.Plugin.Loader;
 
 /// <summary>Runtime owner for a list of child loader entries (port of the vendored EntryGroup).</summary>
 public sealed class EntryGroup

@@ -1,4 +1,4 @@
-namespace Dsh.Fs;
+namespace Harness.Fs;
 
 /// <summary>One applied-hunk diff card entry (port of the TS <c>FileDiff</c>).</summary>
 public sealed record FsFileDiff(string Path, string? OldText, string NewText);

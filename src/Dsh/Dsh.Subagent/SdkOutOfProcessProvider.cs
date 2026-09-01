@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
-namespace Dsh.Subagent;
+namespace Harness.Subagent;
 
 /// <summary>Configuration for the DSH SDK out-of-process driver; validated once at construction.</summary>
 public sealed record SdkOutOfProcessConfig(

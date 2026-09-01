@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using Dsh.Sdk.Protocol;
+using Harness.Sdk.Protocol;
 
-namespace Dsh.Sdk.Client;
+namespace Harness.Sdk.Client;
 
 /// <summary>The runtime subprocess is gone or unusable: it exited, its stdio closed, or it was never launchable.</summary>
 public sealed class TransportClosedError : Exception

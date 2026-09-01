@@ -1,4 +1,4 @@
-namespace Dsh.Context;
+namespace Harness.Context;
 
 /// <summary>
 /// One request-context contributor: produces a named text section for a session, or null when it
@@ -11,7 +11,7 @@ public interface IContextContributor
     string Key { get; }
 
     /// <summary>Produce the contributor's section for one session, or null when nothing applies.</summary>
-    Task<ContextSection?> ContributeAsync(Dsh.Session.Session session, CancellationToken cancellationToken = default);
+    Task<ContextSection?> ContributeAsync(Harness.Session.Session session, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -31,8 +31,8 @@ public interface IContextService
     IReadOnlyList<IContextContributor> Contributors { get; }
 
     /// <summary>Collect every contributor's non-null section for one session, in registration order.</summary>
-    Task<IReadOnlyList<ContextSection>> CollectAsync(Dsh.Session.Session session, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ContextSection>> CollectAsync(Harness.Session.Session session, CancellationToken cancellationToken = default);
 
     /// <summary>Assemble the combined request-context text for one session; empty when no contributor produced a section.</summary>
-    Task<string> AssembleAsync(Dsh.Session.Session session, CancellationToken cancellationToken = default);
+    Task<string> AssembleAsync(Harness.Session.Session session, CancellationToken cancellationToken = default);
 }

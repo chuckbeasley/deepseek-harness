@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Dsh.Fs.Tests;
+namespace Harness.Fs.Tests;
 
 /// <summary>Consumer coverage: read/write registered on the tool runtime and executed with valid and invalid args.</summary>
 public static class FileSystemToolTests
@@ -17,7 +17,7 @@ public static class FileSystemToolTests
     private static ToolExecutionResult Execute(Harness h, string name, JsonElement args)
         => h.Tools.ExecuteAsync(new ToolExecutionInput(new ToolCallId("call-1"), name, args, CancellationToken.None), CancellationToken.None).GetAwaiter().GetResult();
 
-    private static ToolExecutionResult ExecuteWithSession(Harness h, Dsh.Session.Session session, string name, JsonElement args)
+    private static ToolExecutionResult ExecuteWithSession(Harness h, global::Harness.Session.Session session, string name, JsonElement args)
         => h.Tools.ExecuteAsync(new ToolExecutionInput(new ToolCallId("call-1"), name, args, CancellationToken.None)
         {
             Session = session,

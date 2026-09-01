@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Feedback;
+namespace Harness.Feedback;
 
 /// <summary>The human's overall judgment of one assistant message. Serialized with the TS wire strings.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]

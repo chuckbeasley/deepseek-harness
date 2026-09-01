@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Dsh.Web.App.Slots;
+namespace Harness.Web.App.Slots;
 
 /// <summary>
 /// One UI plugin contribution to a named slot (port of the ui-slots registration): the slot name,

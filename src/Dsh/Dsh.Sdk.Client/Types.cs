@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Dsh.Sdk.Protocol;
+using Harness.Sdk.Protocol;
 
-namespace Dsh.Sdk.Client;
+namespace Harness.Sdk.Client;
 
 /// <summary>One server-to-client notification as received off the wire.</summary>
 public sealed record HarnessNotification(

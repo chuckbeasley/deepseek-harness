@@ -1,6 +1,6 @@
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Feedback;
+namespace Harness.Feedback;
 
 /// <summary>
 /// The message-feedback capability surface (ctx.feedback): per-message feedback as logged state,
@@ -12,7 +12,7 @@ public interface IFeedbackService
     /// <summary>Read the current feedback state for one session, folded from its log.</summary>
     /// <param name="session">the session whose log is folded.</param>
     /// <returns>one item per message with feedback, in first-creation order.</returns>
-    FeedbackState Current(Dsh.Session.Session session);
+    FeedbackState Current(Harness.Session.Session session);
 
     /// <summary>Create or replace feedback for one assistant message, appending the durable event.</summary>
     /// <param name="session">the owning session.</param>
@@ -20,11 +20,11 @@ public interface IFeedbackService
     /// <param name="rating">the overall positive or negative judgment.</param>
     /// <param name="note">an optional explanation; must contain a non-whitespace character and fit the configured UTF-8 byte limit.</param>
     /// <returns>the committed item (creation time retained across rewrites).</returns>
-    FeedbackItem Put(Dsh.Session.Session session, MessageId messageId, MessageFeedbackRating rating, string? note = null);
+    FeedbackItem Put(Harness.Session.Session session, MessageId messageId, MessageFeedbackRating rating, string? note = null);
 
     /// <summary>Delete one message's feedback by appending a durable delete event.</summary>
     /// <param name="session">the owning session.</param>
     /// <param name="messageId">the message whose feedback should be absent afterwards.</param>
     /// <returns>true when an item existed and was deleted; false when it was already absent (no event appended).</returns>
-    bool Delete(Dsh.Session.Session session, MessageId messageId);
+    bool Delete(Harness.Session.Session session, MessageId messageId);
 }

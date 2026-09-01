@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace Dsh.AgentLoop.Tests;
+namespace Harness.AgentLoop.Tests;
 
 /// <summary>
 /// Canned adapter for cancellation coverage: yields one text block's start plus a partial delta,

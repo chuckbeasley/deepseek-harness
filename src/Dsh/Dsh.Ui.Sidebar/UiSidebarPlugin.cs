@@ -1,8 +1,8 @@
-using Dsh.Web.App;
-using Dsh.Web.App.Slots;
+using Harness.Web.App;
+using Harness.Web.App.Slots;
 using Microsoft.AspNetCore.Components;
 
-namespace Dsh.Ui.Sidebar;
+namespace Harness.Ui.Sidebar;
 
 /// <summary>
 /// The sidebar chrome contribution (port of the TS ui-sidebar shell controls): the brand row and

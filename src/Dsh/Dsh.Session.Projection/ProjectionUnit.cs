@@ -1,6 +1,6 @@
-using Dsh.Session;
+using Harness.Session;
 
-namespace Dsh.Session.Projection;
+namespace Harness.Session.Projection;
 
 /// <summary>
 /// One domain's state-driven computation unit: a pure synchronous fold over committed session

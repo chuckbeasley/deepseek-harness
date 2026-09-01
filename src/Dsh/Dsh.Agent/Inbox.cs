@@ -1,6 +1,6 @@
-using Dsh.Llm;
+using Harness.Llm;
 
-namespace Dsh.Agent;
+namespace Harness.Agent;
 
 /// <summary>One of the two ordered pending-message lists owned by an agent (port of InboxTarget).</summary>
 public enum InboxTarget

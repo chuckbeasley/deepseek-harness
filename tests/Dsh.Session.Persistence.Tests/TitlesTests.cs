@@ -1,8 +1,8 @@
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Session.Titles;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Session.Titles;
 
-namespace Dsh.Session.Persistence.Tests;
+namespace Harness.Session.Persistence.Tests;
 
 internal static class TitlesTests
 {

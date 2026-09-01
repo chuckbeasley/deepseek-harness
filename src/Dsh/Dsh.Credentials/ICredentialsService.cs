@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Dsh.Credentials;
+namespace Harness.Credentials;
 
 /// <summary>
 /// Service Definition of the credential-reference capability seam (ctx.credentials). Settings and

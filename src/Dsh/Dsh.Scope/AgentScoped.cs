@@ -1,7 +1,7 @@
-using Cordis.Core;
-using Dsh.Agent;
+using Harness.Cordis.Core;
+using Harness.Agent;
 
-namespace Dsh.Scope;
+namespace Harness.Scope;
 
 /// <summary>
 /// Opaque, identity-compared scope key (port of the TS <c>ScopeKey = object</c>). The port's scope
@@ -33,7 +33,7 @@ public static class AgentScoped
     /// <param name="effect">the effect body; returns the cleanup disposer, or <c>null</c>.</param>
     /// <param name="label">effect label shown in fiber diagnostics.</param>
     /// <returns>a single-shot disposer running the cleanup.</returns>
-    public static IDisposable RegisterEffect(Dsh.Agent.Agent agent, Func<IDisposable?> effect, string? label = null)
+    public static IDisposable RegisterEffect(Harness.Agent.Agent agent, Func<IDisposable?> effect, string? label = null)
     {
         ArgumentNullException.ThrowIfNull(agent);
         ArgumentNullException.ThrowIfNull(effect);
@@ -43,7 +43,7 @@ public static class AgentScoped
     /// <summary>
     /// Async-teardown variant of <see cref="RegisterEffect"/>.
     /// </summary>
-    public static IAsyncDisposable RegisterEffectAsync(Dsh.Agent.Agent agent, Func<IAsyncDisposable?> effect, string? label = null)
+    public static IAsyncDisposable RegisterEffectAsync(Harness.Agent.Agent agent, Func<IAsyncDisposable?> effect, string? label = null)
     {
         ArgumentNullException.ThrowIfNull(agent);
         ArgumentNullException.ThrowIfNull(effect);
@@ -54,7 +54,7 @@ public static class AgentScoped
     /// Register a service in the agent's scoped context; the entry is removed when the agent's
     /// scope unwinds.
     /// </summary>
-    public static void SetService<T>(Dsh.Agent.Agent agent, string key, T service) where T : class
+    public static void SetService<T>(Harness.Agent.Agent agent, string key, T service) where T : class
     {
         ArgumentNullException.ThrowIfNull(agent);
         agent.Ctx.Set(key, service);
@@ -71,7 +71,7 @@ public static class AgentScoped
     /// <param name="listener">the typed payload listener.</param>
     /// <param name="options">placement and filtering options.</param>
     /// <returns>a disposer removing the listener.</returns>
-    public static IDisposable OnAgentEvent<T>(Dsh.Agent.Agent agent, string name, Action<T> listener, EventOptions? options = null)
+    public static IDisposable OnAgentEvent<T>(Harness.Agent.Agent agent, string name, Action<T> listener, EventOptions? options = null)
         where T : IAgentEventPayload
     {
         ArgumentNullException.ThrowIfNull(agent);

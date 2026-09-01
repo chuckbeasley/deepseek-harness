@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Cordis.Plugin.Include;
+namespace Harness.Cordis.Plugin.Include;
 
 /// <summary>Error thrown when a config expression uses a construct outside the restricted language.</summary>
 public sealed class ConfigExpressionException : Exception

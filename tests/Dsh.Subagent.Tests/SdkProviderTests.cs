@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using Dsh.Subagent;
+using Harness.Subagent;
 
-namespace Dsh.Subagent.Tests;
+namespace Harness.Subagent.Tests;
 
 /// <summary>
 /// Out-of-process driver behavior of <see cref="SdkOutOfProcessProvider"/> over the scripted fake
@@ -60,7 +60,7 @@ public static class SdkProviderTests
     {
         using var home = new TempHome();
         var provider = Provider(home, Script(("FAKE_TEXT", "the answer is 42")));
-        using var registry = new InProcessSubagentProvider(new Cordis.Core.Context());
+        using var registry = new InProcessSubagentProvider(new global::Harness.Cordis.Core.Context());
         using var registration = registry.RegisterProvider(provider);
         var run1 = registry.StartAsync("dsh-sdk", new SubagentRequest("task one", "t1")).GetAwaiter().GetResult();
         var run2 = registry.StartAsync("dsh-sdk", new SubagentRequest("task two", "t2")).GetAwaiter().GetResult();
@@ -85,7 +85,7 @@ public static class SdkProviderTests
             ("FAKE_ECHO_CWD", "1"),
             ("FAKE_ECHO_ENV", "DEEPSEEK_API_KEY,DSH_HOME"),
             ("DEEPSEEK_API_KEY", "sk-explicit")), cwd: childCwd);
-        using var registry = new InProcessSubagentProvider(new Cordis.Core.Context());
+        using var registry = new InProcessSubagentProvider(new global::Harness.Cordis.Core.Context());
         using var registration = registry.RegisterProvider(provider);
         var run = registry.StartAsync("dsh-sdk", new SubagentRequest("task")).GetAwaiter().GetResult();
         var result = run.Result.GetAwaiter().GetResult();
@@ -129,7 +129,7 @@ public static class SdkProviderTests
         var entries = new List<(string Name, string Value)> { ("FAKE_REASON_KIND", reasonKind) };
         entries.AddRange(extra);
         var provider = Provider(home, Script(entries.ToArray()));
-        using var registry = new InProcessSubagentProvider(new Cordis.Core.Context());
+        using var registry = new InProcessSubagentProvider(new global::Harness.Cordis.Core.Context());
         using var registration = registry.RegisterProvider(provider);
         var run = registry.StartAsync("dsh-sdk", new SubagentRequest("task")).GetAwaiter().GetResult();
         var result = run.Result.GetAwaiter().GetResult();
@@ -200,7 +200,7 @@ public static class SdkProviderTests
     {
         using var home = new TempHome();
         var provider = Provider(home, Script(("FAKE_HANG_PROMPT", "1")));
-        using var registry = new InProcessSubagentProvider(new Cordis.Core.Context());
+        using var registry = new InProcessSubagentProvider(new global::Harness.Cordis.Core.Context());
         using var registration = registry.RegisterProvider(provider);
         using var cts = new CancellationTokenSource();
         var run = registry.StartAsync("dsh-sdk", new SubagentRequest("task"), cts.Token).GetAwaiter().GetResult();
@@ -215,7 +215,7 @@ public static class SdkProviderTests
     {
         using var home = new TempHome();
         var provider = Provider(home, Script(("FAKE_HANG_PROMPT", "1")));
-        using var registry = new InProcessSubagentProvider(new Cordis.Core.Context());
+        using var registry = new InProcessSubagentProvider(new global::Harness.Cordis.Core.Context());
         using var registration = registry.RegisterProvider(provider);
         var run = registry.StartAsync("dsh-sdk", new SubagentRequest("task")).GetAwaiter().GetResult();
         var resultTask = run.Result;
@@ -231,7 +231,7 @@ public static class SdkProviderTests
         var provider = Provider(home, Script(
             ("FAKE_EXIT_DURING_PROMPT", "1"),
             ("FAKE_TEXT", "partial before exit")));
-        using var registry = new InProcessSubagentProvider(new Cordis.Core.Context());
+        using var registry = new InProcessSubagentProvider(new global::Harness.Cordis.Core.Context());
         using var registration = registry.RegisterProvider(provider);
         var run = registry.StartAsync("dsh-sdk", new SubagentRequest("task")).GetAwaiter().GetResult();
         var result = run.Result.GetAwaiter().GetResult();
@@ -245,7 +245,7 @@ public static class SdkProviderTests
     {
         using var home = new TempHome();
         var provider = Provider(home, Script(("FAKE_MALFORMED_PROMPT", "1")));
-        using var registry = new InProcessSubagentProvider(new Cordis.Core.Context());
+        using var registry = new InProcessSubagentProvider(new global::Harness.Cordis.Core.Context());
         using var registration = registry.RegisterProvider(provider);
         var run = registry.StartAsync("dsh-sdk", new SubagentRequest("task")).GetAwaiter().GetResult();
         var result = run.Result.GetAwaiter().GetResult();
@@ -257,7 +257,7 @@ public static class SdkProviderTests
     public static void Registry_RejectsDuplicateAndUnknownProviders()
     {
         using var home = new TempHome();
-        using var registry = new InProcessSubagentProvider(new Cordis.Core.Context());
+        using var registry = new InProcessSubagentProvider(new global::Harness.Cordis.Core.Context());
         var provider = Provider(home, Script());
         using var first = registry.RegisterProvider(provider);
         var duplicate = Assert.Throws<SubagentError>(() => registry.RegisterProvider(provider));
@@ -291,7 +291,7 @@ public static class SdkProviderTests
     {
         using var home = new TempHome();
         var provider = Provider(home, Script(("FAKE_TEXT", "done")));
-        using var registry = new InProcessSubagentProvider(new Cordis.Core.Context());
+        using var registry = new InProcessSubagentProvider(new global::Harness.Cordis.Core.Context());
         using var registration = registry.RegisterProvider(provider);
         var run = registry.StartAsync("dsh-sdk", new SubagentRequest("task")).GetAwaiter().GetResult();
         var result = run.Result.GetAwaiter().GetResult();

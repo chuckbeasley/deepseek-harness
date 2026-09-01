@@ -1,4 +1,4 @@
-﻿namespace Dsh.Interaction.Tests;
+namespace Harness.Interaction.Tests;
 
 /// <summary>Zero-dependency console test runner for the interaction capability seam.</summary>
 public static class Program

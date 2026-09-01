@@ -1,4 +1,4 @@
-namespace Dsh.AgentLoop.Tests;
+namespace Harness.AgentLoop.Tests;
 
 /// <summary>A pre-step listener may reject the turn before any model call or step boundary.</summary>
 public static class PreStepTests

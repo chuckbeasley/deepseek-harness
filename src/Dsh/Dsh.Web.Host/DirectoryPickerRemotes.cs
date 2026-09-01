@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
-using Cordis.Core;
+using System.Text.Json;
+using Harness.Cordis.Core;
 
-namespace Dsh.Web.Host;
+namespace Harness.Web.Host;
 
 /// <summary>
 /// The directoryPicker remote methods (the Wave-1 stub the port spec names: native directory

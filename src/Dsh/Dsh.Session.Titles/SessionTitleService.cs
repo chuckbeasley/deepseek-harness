@@ -1,9 +1,9 @@
-using Cordis.Core;
-using Dsh.AgentLoop;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Cordis.Core;
+using Harness.AgentLoop;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Session.Titles;
+namespace Harness.Session.Titles;
 
 /// <summary>
 /// ctx.sessionTitle: the session-title capability. Exactly one typed

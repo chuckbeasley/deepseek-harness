@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Cordis.Core;
+using Harness.Cordis.Core;
 
-namespace Dsh.Storage;
+namespace Harness.Storage;
 
 /// <summary>Configuration for the JSON file backend: the directory holding one <c>&lt;unit&gt;.json</c> file per store.</summary>
 /// <remarks>

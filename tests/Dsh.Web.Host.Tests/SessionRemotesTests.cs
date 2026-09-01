@@ -3,17 +3,17 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using Cordis.Core;
-using Dsh.Agent;
-using Dsh.AgentLoop;
-using Dsh.Llm;
-using Dsh.Session;
-using Dsh.Spike;
-using Dsh.SystemPrompt;
-using Dsh.Tools;
-using Dsh.Web.Host;
+using Harness.Cordis.Core;
+using Harness.Agent;
+using Harness.AgentLoop;
+using Harness.Llm;
+using Harness.Session;
+using Harness.Spike;
+using Harness.SystemPrompt;
+using Harness.Tools;
+using Harness.Web.Host;
 
-namespace Dsh.Web.Host.Tests;
+namespace Harness.Web.Host.Tests;
 
 /// <summary>
 /// The session remotes: the wire event projection, the history page, and the live follow stream
@@ -31,21 +31,21 @@ public static class SessionRemotesTests
     }
 
     /// <summary>Boot the loop spine with the mock adapter mounted.</summary>
-    private static Context BootSpine(out SessionStore sessions, out Dsh.AgentLoop.AgentLoop loop)
+    private static Context BootSpine(out SessionStore sessions, out global::Harness.AgentLoop.AgentLoop loop)
     {
         var ctx = new Context();
         sessions = new SessionStore(ctx);
         var llm = new LlmRuntime(ctx);
         _ = new ToolRuntime(ctx);
-        _ = new Dsh.SystemPrompt.SystemPromptService(ctx);
+        _ = new global::Harness.SystemPrompt.SystemPromptService(ctx);
         _ = new AgentRegistry(ctx);
-        loop = new Dsh.AgentLoop.AgentLoop(ctx);
+        loop = new global::Harness.AgentLoop.AgentLoop(ctx);
         llm.RegisterAdapter(new[] { MockLlmProvider.Provider }, new MockLlmProvider());
         return ctx;
     }
 
     /// <summary>Run one real mock-LLM turn on a session.</summary>
-    private static async Task<Dsh.Session.Session> RunTurnAsync(Context ctx, SessionStore sessions, Dsh.AgentLoop.AgentLoop loop)
+    private static async Task<global::Harness.Session.Session> RunTurnAsync(Context ctx, SessionStore sessions, global::Harness.AgentLoop.AgentLoop loop)
     {
         var id = new SessionId($"session-{Guid.NewGuid():N}");
         _ = loop.Create(id, new AgentOptions { Provider = MockLlmProvider.Provider, Model = MockLlmProvider.Model });

@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Dsh.Llm;
-using Dsh.Session;
+using Harness.Llm;
+using Harness.Session;
 
-namespace Dsh.Code;
+namespace Harness.Code;
 
 /// <summary>One programmatic tool dispatch opened inside a run_code run (the PTC record events).</summary>
 public sealed record ToolCodeDispatchStartEvent : SessionEvent

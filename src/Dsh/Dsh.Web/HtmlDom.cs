@@ -1,4 +1,4 @@
-namespace Dsh.Web;
+namespace Harness.Web;
 
 /// <summary>
 /// Minimal HTML DOM for the turndown port (the subset domino provides for converted pages): a

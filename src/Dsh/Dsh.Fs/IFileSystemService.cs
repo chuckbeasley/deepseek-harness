@@ -1,4 +1,4 @@
-namespace Dsh.Fs;
+namespace Harness.Fs;
 
 /// <summary>
 /// Filesystem Service Definition for one execution world (wave-1 C# port of

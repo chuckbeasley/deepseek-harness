@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Dsh.Llm;
+namespace Harness.Llm;
 
 /// <summary>Where a message came from. Merge-extensible sum type; plugins add their own kinds.</summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]

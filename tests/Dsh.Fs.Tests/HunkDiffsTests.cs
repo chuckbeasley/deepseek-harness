@@ -1,4 +1,4 @@
-namespace Dsh.Fs.Tests;
+namespace Harness.Fs.Tests;
 
 /// <summary>
 /// Parity tests for <see cref="HunkDiffs"/> against jsdiff 9.0.0 <c>structuredPatch</c> with

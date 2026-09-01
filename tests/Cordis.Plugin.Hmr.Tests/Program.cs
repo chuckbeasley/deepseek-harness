@@ -1,4 +1,4 @@
-namespace Cordis.Plugin.Hmr.Tests;
+namespace Harness.Cordis.Plugin.Hmr.Tests;
 
 /// <summary>
 /// Zero-dependency console test runner for the Phase 1 HMR port. The host sandbox blocks
@@ -14,7 +14,7 @@ public static class Program
     /// <summary>Runs every registered test and returns the process exit code.</summary>
     public static int Main()
     {
-        Console.WriteLine("Cordis.Plugin.Hmr Phase 1 - console assertions");
+        Console.WriteLine("Harness.Cordis.Plugin.Hmr Phase 1 - console assertions");
         Console.WriteLine();
 
         RunAsync("Register: watches its file and refreshes on change", HmrTests.RegisterWatchesFileAndRefreshes);

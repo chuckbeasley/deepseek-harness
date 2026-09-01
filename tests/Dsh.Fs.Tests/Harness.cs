@@ -1,4 +1,4 @@
-namespace Dsh.Fs.Tests;
+namespace Harness.Fs.Tests;
 
 /// <summary>
 /// One booted fs spine: context, the local filesystem provider over a fresh temp workspace root,
@@ -18,7 +18,7 @@ public sealed class Harness : IAsyncDisposable
     public FsObservations? Observations { get; init; }
 
     /// <summary>The session store for policy tests (null in the bare harness).</summary>
-    public Dsh.Session.SessionStore? Sessions { get; init; }
+    public global::Harness.Session.SessionStore? Sessions { get; init; }
 
     /// <summary>Boot the spine with a fresh temp workspace root.</summary>
     public static Harness Create()
@@ -50,7 +50,7 @@ public sealed class Harness : IAsyncDisposable
             Tools = tools,
             WorkspaceRoot = workspaceRoot,
             Observations = observations,
-            Sessions = new Dsh.Session.SessionStore(ctx),
+            Sessions = new global::Harness.Session.SessionStore(ctx),
         };
     }
 
