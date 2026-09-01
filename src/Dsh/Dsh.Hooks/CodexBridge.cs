@@ -43,6 +43,7 @@ public sealed class CodexBridge : IDisposable
     private readonly IShellService _shell;
     private readonly Dsh.AgentLoop.AgentLoop? _loop;
     private readonly SessionPersistenceService? _persistence;
+    private readonly Dictionary<(string Session, string CallId), UserMessage> _pendingContext = new();
     private int _handlerCounter;
 
     /// <summary>Create the bridge over one context: parse the config once, then register the extension-point listeners.</summary>
@@ -143,12 +144,25 @@ public sealed class CodexBridge : IDisposable
                 var context = ContextFrom(merged);
                 if (merged.Decision == "deny")
                 {
-                    InjectNextStep(exec.Session, context);
+                    // The recorded corpus appends the durable tool/result BEFORE the injected
+                    // context splice, so the delivery is deferred to the session event.
+                    QueueNextStep(exec.Session, exec.CallId, context);
                     return new BlockDecision(new ContentBlock[] { new TextBlock(merged.Reason ?? "blocked by PostToolUse hook") });
                 }
-                InjectNextStep(exec.Session, context);
+                QueueNextStep(exec.Session, exec.CallId, context);
                 return await next();
             })));
+
+        // Deliver post-tool contexts once the durable tool/result event commits, so the recorded
+        // event order (result, then the next-step context splice) reproduces exactly.
+        _disposers.Add(_ctx.On("session/event", new Action<Dsh.Session.Session, SessionEvent>((session, evt) =>
+        {
+            if (evt is not ToolResultEvent toolResult) return;
+            var callId = (toolResult.Message.Source as ToolSource)?.CallId;
+            if (callId is null) return;
+            if (!_pendingContext.Remove((session.Id.Value, callId.Value), out var context)) return;
+            _loop?.GetLoop(session.Id)?.Inject(context);
+        })));
 
         // A blocking Stop hook steers at the stopping boundary (the TS's stop-loop-guard TODO
         // applies: an unconditionally blocking hook force-continues every step until it self-limits).
@@ -228,6 +242,12 @@ public sealed class CodexBridge : IDisposable
         Content = new ContentBlock[] { new TextBlock(text) },
         Source = new PluginSource { Plugin = PluginName },
     };
+
+    private void QueueNextStep(Dsh.Session.Session? session, ToolCallId callId, UserMessage? context)
+    {
+        if (context is null || session is null) return;
+        _pendingContext[(session.Id.Value, callId.Value)] = context;
+    }
 
     private void InjectNextStep(Dsh.Session.Session? session, UserMessage? context)
     {

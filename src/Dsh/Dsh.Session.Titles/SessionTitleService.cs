@@ -1,4 +1,5 @@
 using Cordis.Core;
+using Dsh.AgentLoop;
 using Dsh.Llm;
 using Dsh.Session;
 
@@ -71,10 +72,10 @@ public sealed record SessionTitleConfig
 /// <summary>
 /// The fallback-capable session-title service (port of the TS session-title service): the first
 /// eligible direct-human <c>user/message</c> queues the deterministic fallback, and the
-/// runtime-context snapshot message (the last user-role append before the model request) flushes
-/// it as a durable <c>session/title</c> event — reproducing the recorded fixture position
-/// (context message, then title, then request header) without a microtask deferral. The
-/// asynchronous provider surface stays deferred.
+/// <c>agent/request</c> waterfall flushes it as a durable <c>session/title</c> event — that point
+/// fires after the whole pre-step message batch commits (including hook-injected contexts) and
+/// before the request header, reproducing the recorded fixture position without a microtask
+/// deferral. The asynchronous provider surface stays deferred.
 /// </summary>
 public sealed class FallbackSessionTitleService : Service
 {
@@ -89,29 +90,30 @@ public sealed class FallbackSessionTitleService : Service
         _config = config ?? new SessionTitleConfig();
         Ctx.On("session/event", (Delegate)(Action<Session, SessionEvent>)((session, evt) =>
         {
-            switch (evt)
+            if (evt is UserMessageEvent { Message.Source: UserSource } user
+                && !session.Events.OfType<SessionTitleEvent>().Any())
             {
-                case UserMessageEvent { Message.Source: UserSource } user when !session.Events.OfType<SessionTitleEvent>().Any():
+                var text = string.Concat(user.Message.Content.OfType<TextBlock>().Select(block => block.Text));
+                var title = TitleText.FallbackTitle(text, _config.FallbackMaxWords, _config.FallbackMaxBytes);
+                if (title.Length > 0)
                 {
-                    var text = string.Concat(user.Message.Content.OfType<TextBlock>().Select(block => block.Text));
-                    var title = TitleText.FallbackTitle(text, _config.FallbackMaxWords, _config.FallbackMaxBytes);
-                    if (title.Length > 0)
-                    {
-                        _pending[session.Id] = new PendingTitle(evt.Seq, title);
-                    }
-                    break;
+                    _pending[session.Id] = new PendingTitle(evt.Seq, title);
                 }
-                case UserMessageEvent { Message.Source: PluginSource { Form: "snapshot" } }
-                    when _pending.Remove(session.Id, out var pending)
-                        && !session.Events.OfType<SessionTitleEvent>().Any():
-                    session.Append(new SessionTitleEvent
-                    {
-                        Title = pending.Title,
-                        MessageSeqs = new long[] { pending.MessageSeq },
-                        Source = new FallbackTitleSource(),
-                    });
-                    break;
             }
+        }));
+        Ctx.On("agent/request", new Func<RequestProposal, Func<Task<LlmCallConfig>>, Task<LlmCallConfig>>((proposal, next) =>
+        {
+            if (_pending.Remove(proposal.Agent.Session.Id, out var pending)
+                && !proposal.Agent.Session.Events.OfType<SessionTitleEvent>().Any())
+            {
+                proposal.Agent.Session.Append(new SessionTitleEvent
+                {
+                    Title = pending.Title,
+                    MessageSeqs = new long[] { pending.MessageSeq },
+                    Source = new FallbackTitleSource(),
+                });
+            }
+            return next();
         }));
     }
 

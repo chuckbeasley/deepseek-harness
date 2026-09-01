@@ -104,6 +104,8 @@ public static class CorpusTests
             var env = new Dictionary<string, string>(scenario.Environment);
             if (scenario.Permission is not null) env["DSH_PERMISSION_MODE"] = scenario.Permission;
             ApplyScenarioEnv(env, scenario, model.Model, scenariosDir, compositionOwners);
+            var childFiles = ChildFilesEnv(dir);
+            if (childFiles is not null) env["DSH_SNAPSHOT_CHILD_FILES"] = childFiles;
             var result = SnapshotDriver.RunHeadless(home, cwd, task, fixtureFile,
                 provider: model.Provider, model: model.Model, extraEnv: env);
             var actualLog = SnapshotDriver.HarvestSessionLog(home);
@@ -129,7 +131,7 @@ public static class CorpusTests
             }
             var fixtureLogs = FixtureLogs(dir);
             var fixtureCount = fixtureLogs.Length;
-            var actualCount = 1;
+            var actualCount = SessionLogCount(home);
             if (actualCount != fixtureCount)
             {
                 reasons.Add($"session count: expected {fixtureCount} got {actualCount}");
@@ -213,6 +215,8 @@ public static class CorpusTests
             var env = new Dictionary<string, string>(manifest.Environment);
             if (manifest.Permission is not null) env["DSH_PERMISSION_MODE"] = manifest.Permission;
             ApplyScenarioEnv(env, manifest, model.Model, scenariosDir, compositionOwners);
+            var childFiles = ChildFilesEnv(dir);
+            if (childFiles is not null) env["DSH_SNAPSHOT_CHILD_FILES"] = childFiles;
             var result = SnapshotDriver.RunHeadless(home, cwd, task, fixtureFile,
                 provider: model.Provider, model: model.Model, extraEnv: env);
             var actualLog = SnapshotDriver.HarvestSessionLog(home) ?? "";
@@ -259,6 +263,15 @@ public static class CorpusTests
             .Select(File.ReadAllText)
             .ToArray();
 
+    /// <summary>The persisted session-log count under the run home (parent plus any child sessions).</summary>
+    private static int SessionLogCount(string home)
+    {
+        var root = Path.Combine(home, "profiles", "headless", "sessions");
+        return Directory.Exists(root)
+            ? Directory.EnumerateFiles(root, "session.jsonl", SearchOption.AllDirectories).Count()
+            : 0;
+    }
+
     private static string? CwdOf(string log)
     {
         var first = log.Split('\n').First(line => line.Trim().Length > 0);
@@ -277,7 +290,7 @@ public static class CorpusTests
                 && name != "goal_write" && name != "plan_write" && name != "web_fetch" && name != "web_search"
                 && name != "job_list" && name != "job_output" && name != "job_kill" && name != "workflow"
                 && name != "message_feedback" && name != "terminal_open" && name != "terminal_read" && name != "terminal_send"
-                && name != "list_agents" && name != "send_message")
+                && name != "list_agents" && name != "send_message" && name != "subagent" && name != "ask_user_question")
             {
                 return name;
             }
@@ -565,6 +578,48 @@ public static class CorpusTests
         var spillCap = SpillCapEnv(scenariosDir, scenario.Name, scenario.Composition, compositionOwners);
         if (spillCap is not null) env["DSH_SNAPSHOT_SPILL_MAX_BYTES"] = spillCap;
         env["DSH_SNAPSHOT_SPILL_ROOT"] = SpillRoot(scenario.Name);
+        var hooks = HookConfigEnv(Path.Combine(scenariosDir, scenario.Name));
+        if (hooks is not null)
+        {
+            foreach (var pair in hooks) env[pair.Key] = pair.Value;
+        }
+    }
+
+    /// <summary>The recorded child-session logs the replay provider binds (session.1.jsonl, …), path-separator joined.</summary>
+    private static string? ChildFilesEnv(string dir)
+    {
+        var children = new List<string>();
+        for (var index = 1; ; index++)
+        {
+            var path = Path.Combine(dir, $"session.{index}.jsonl");
+            if (!File.Exists(path)) break;
+            children.Add(path);
+        }
+        return children.Count > 0 ? string.Join(Path.PathSeparator, children) : null;
+    }
+
+    /// <summary>
+    /// The scenario's workspace hooks.json and the bridge dialect its fixture records: the .NET
+    /// headless profile mounts the claude-code/codex hook bridges per scenario via
+    /// DSH_HOOKS_CC_CONFIG / DSH_HOOKS_CODEX_CONFIG (the scenario's own cordis patches mount the
+    /// TS hook plugins; the port reads the same files through the env channel).
+    /// </summary>
+    private static IReadOnlyDictionary<string, string>? HookConfigEnv(string dir)
+    {
+        var hooksJson = Path.Combine(dir, "workspace", "hooks.json");
+        var codexHooksJson = Path.Combine(dir, "workspace", "codex-hooks.json");
+        var fixture = Path.Combine(dir, "session.jsonl");
+        if ((!File.Exists(hooksJson) && !File.Exists(codexHooksJson)) || !File.Exists(fixture)) return null;
+        var text = File.ReadAllText(fixture);
+        var dialect = text.Contains("\"dialect\":\"codex\"", StringComparison.Ordinal) ? "codex"
+            : text.Contains("\"dialect\":\"claude-code\"", StringComparison.Ordinal) ? "claude-code"
+            : null;
+        if (dialect is null) return null;
+        var path = dialect == "codex" && File.Exists(codexHooksJson) ? codexHooksJson : hooksJson;
+        return new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [dialect == "codex" ? "DSH_HOOKS_CODEX_CONFIG" : "DSH_HOOKS_CC_CONFIG"] = Path.GetFullPath(path),
+        };
     }
 
     /// <summary>The scenario dir that owns each composition (a scenario with a cordis.yml registers its composition).</summary>

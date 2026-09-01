@@ -104,11 +104,22 @@
     - id: guard
       name: guard
 
+    - id: userQuestions
+      name: userQuestions
+
+    - id: toolAskUser
+      name: toolAskUser
+
     - id: terminal
       name: terminal
 
     - id: subagent
       name: subagent
+
+    - id: subagentTool
+      name: subagentTool
+      config:
+        provider: subagent
 
     - id: jobs
       name: jobs
@@ -118,3 +129,9 @@
 
     - id: webhook
       name: webhook
+
+    - id: hooksClaudeCode
+      name: hooksClaudeCode
+
+    - id: hooksCodex
+      name: hooksCodex

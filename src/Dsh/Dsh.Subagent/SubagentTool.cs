@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+using System.Text.Json;
+using Dsh.Llm;
+using Dsh.Session;
 using Dsh.Tools;
 
 namespace Dsh.Subagent;
@@ -43,7 +45,14 @@ public static class SubagentTool
             Description,
             JsonSerializer.Deserialize<JsonElement>(ParametersSchema),
             JsonSerializer.Deserialize<JsonElement>(OutputSchema),
-            (args, context) => ExecuteAsync(service, providerName, name, args, context));
+            (args, context) => ExecuteAsync(service, providerName, name, args, context),
+            Render: (_, value) =>
+            {
+                // The model-facing result is the child's final text (the recorded corpus shape).
+                var text = value.TryGetProperty("text", out var textValue) ? textValue.GetString() ?? "" : "";
+                return new ContentBlock[] { new TextBlock(text) };
+            },
+            PersistMeta: false);
     }
 
     private static async Task<JsonElement> ExecuteAsync(
@@ -51,7 +60,22 @@ public static class SubagentTool
     {
         var prompt = StringArg(args, "prompt", "invalid prompt: expected a non-empty string");
         var description = StringArg(args, "description", "invalid description: expected a non-empty string");
-        var run = await service.StartAsync(providerName, new SubagentRequest(prompt, description), context.CancellationToken)
+        // The parent session's route facts travel on the request so the in-process driver can
+        // spawn the child loop under the recorded provider/model and session ancestry.
+        var session = context.Session;
+        var parentId = session?.Id.Value;
+        var route = session is null
+            ? (null, null)
+            : session.Events.OfType<RequestHeaderEvent>().Select(evt => evt.Header.Config).LastOrDefault() is { } config
+                ? (config.Provider, config.Model)
+                : (null, null);
+        var run = await service.StartAsync(providerName, new SubagentRequest(
+            prompt,
+            description,
+            ParentSessionId: parentId,
+            ParentDelegationDepth: session?.Header.DelegationDepth,
+            Provider: route.Item1,
+            Model: route.Item2), context.CancellationToken)
             .ConfigureAwait(false);
         var result = await run.Result.ConfigureAwait(false);
         if (result.StopReason != SubagentStopReason.Completed)

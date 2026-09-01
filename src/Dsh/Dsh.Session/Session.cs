@@ -27,6 +27,7 @@ public sealed record SessionHeader(
     string Cwd,
     int DelegationDepth,
     string? ParentSessionId = null,
+    string? Origin = null,
     int? SeedLength = null);
 
 /// <summary>
@@ -41,11 +42,11 @@ public sealed class Session
     private IReadOnlyList<SessionEvent>? _eventsSnapshot;
     private readonly SessionStore? _store;
 
-    internal Session(SessionId id, SessionStore? store, string cwd, int delegationDepth = 0, string? parentSessionId = null)
+    internal Session(SessionId id, SessionStore? store, string cwd, int delegationDepth = 0, string? parentSessionId = null, string? origin = null)
     {
         _store = store;
         Header = new SessionHeader(
-            SessionFormat.Version, id, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), cwd, delegationDepth, parentSessionId);
+            SessionFormat.Version, id, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), cwd, delegationDepth, parentSessionId, origin);
     }
 
     /// <summary>Detached creation metadata (format version, identity, creation time).</summary>

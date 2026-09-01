@@ -39,6 +39,9 @@ public sealed record AgentOptions
 
     /// <summary>The parent session id for a subagent child session.</summary>
     public string? ParentSessionId { get; init; }
+
+    /// <summary>The child-session origin (e.g. "subagent"); absent for a top-level session.</summary>
+    public string? Origin { get; init; }
 }
 
 /// <summary>

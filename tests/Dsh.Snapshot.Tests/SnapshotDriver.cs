@@ -111,16 +111,24 @@ public static class SnapshotDriver
         return new CliRunResult(process.ExitCode, stdout, stderr);
     }
 
-    /// <summary>Harvest the primary persisted session log under a profile home, or <c>null</c>.</summary>
+    /// <summary>
+    /// Harvest the primary persisted session log under a profile home, or <c>null</c>. With child
+    /// sessions (subagent scenarios) the top-level session — the one whose header names no
+    /// parent — is the recorded primary fixture.
+    /// </summary>
     public static string? HarvestSessionLog(string home, string profile = "headless")
     {
         var root = Path.Combine(home, "profiles", profile, "sessions");
         if (!Directory.Exists(root)) return null;
+        string? fallback = null;
         foreach (var file in Directory.EnumerateFiles(root, "session.jsonl", SearchOption.AllDirectories))
         {
-            return File.ReadAllText(file);
+            var first = File.ReadLines(file).FirstOrDefault();
+            if (first is null) continue;
+            if (!first.Contains("\"parentSession\"", StringComparison.Ordinal)) return File.ReadAllText(file);
+            fallback ??= File.ReadAllText(file);
         }
-        return null;
+        return fallback;
     }
 
     private static void CopyDirectory(string source, string target)

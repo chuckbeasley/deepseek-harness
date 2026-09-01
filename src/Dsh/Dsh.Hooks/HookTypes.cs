@@ -76,9 +76,9 @@ public sealed record HookInvokedEvent : Dsh.Session.SessionEvent
 
     public required HookDialect Dialect { get; init; }
 
-    public string? Matcher { get; init; }
-
     public required string HandlerId { get; init; }
+
+    public string? Matcher { get; init; }
 
     public override string Type => EventTypeName;
 }

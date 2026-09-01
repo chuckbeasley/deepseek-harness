@@ -201,6 +201,7 @@ public sealed class SessionPersistenceService : Service
             root.TryGetProperty("cwd", out var cwd) && cwd.ValueKind == JsonValueKind.String ? cwd.GetString()! : "",
             root.TryGetProperty("delegationDepth", out var depth) && depth.ValueKind == JsonValueKind.Number ? depth.GetInt32() : 0,
             root.TryGetProperty("parentSession", out var parent) && parent.ValueKind == JsonValueKind.String ? parent.GetString() : null,
+            root.TryGetProperty("origin", out var origin) && origin.ValueKind == JsonValueKind.String ? origin.GetString() : null,
             root.TryGetProperty("seedLength", out var seed) && seed.ValueKind == JsonValueKind.Number ? seed.GetInt32() : null);
     }
 

@@ -12,7 +12,7 @@ public sealed class InProcessSubagentProvider : Service, ISubagentService
     private readonly object _gate = new();
     private readonly List<LocalHandle> _live = new();
     private readonly Dictionary<string, ISubagentProvider> _providers = new(StringComparer.Ordinal);
-    private readonly Func<SubagentRequest, CancellationToken, Task<string>> _runner;
+    private readonly Func<SubagentRequest, CancellationToken, Task<SubagentResult>> _runner;
     private int _counter;
 
     /// <summary>
@@ -20,8 +20,8 @@ public sealed class InProcessSubagentProvider : Service, ISubagentService
     /// the provider named <c>subagent</c>.
     /// </summary>
     /// <param name="ctx">the context that owns the service.</param>
-    /// <param name="runner">the in-process task body; returns the final text (throws to fail the delegation).</param>
-    public InProcessSubagentProvider(Context ctx, Func<SubagentRequest, CancellationToken, Task<string>>? runner = null)
+    /// <param name="runner">the in-process task body; returns the settled delegation result (a non-completed stop reason fails the delegation).</param>
+    public InProcessSubagentProvider(Context ctx, Func<SubagentRequest, CancellationToken, Task<SubagentResult>>? runner = null)
         : base(ctx, "subagent")
     {
         _runner = runner ?? DefaultRunner;
@@ -118,7 +118,7 @@ public sealed class InProcessSubagentProvider : Service, ISubagentService
         await base.StopAsync();
     }
 
-    private static Task<string> DefaultRunner(SubagentRequest request, CancellationToken ct)
+    private static Task<SubagentResult> DefaultRunner(SubagentRequest request, CancellationToken ct)
         => throw new InvalidOperationException("subagent: no runner is mounted — supply one to InProcessSubagentProvider");
 
     /// <summary>One live delegation: state, cancellation, and the settlement promise.</summary>
@@ -126,11 +126,11 @@ public sealed class InProcessSubagentProvider : Service, ISubagentService
     {
         private readonly CancellationTokenSource _cts = new();
         private readonly TaskCompletionSource<SubagentResult> _done = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly Func<SubagentRequest, CancellationToken, Task<string>> _runner;
+        private readonly Func<SubagentRequest, CancellationToken, Task<SubagentResult>> _runner;
         private int _status = (int)SubagentStatus.Running;
         private int _settled;
 
-        public LocalHandle(SubagentId id, SubagentRequest request, Func<SubagentRequest, CancellationToken, Task<string>> runner)
+        public LocalHandle(SubagentId id, SubagentRequest request, Func<SubagentRequest, CancellationToken, Task<SubagentResult>> runner)
         {
             Id = id;
             Request = request;
@@ -161,9 +161,11 @@ public sealed class InProcessSubagentProvider : Service, ISubagentService
         {
             try
             {
-                var text = await _runner(Request, _cts.Token);
-                Volatile.Write(ref _status, (int)SubagentStatus.Completed);
-                _done.TrySetResult(new SubagentResult(text));
+                var result = await _runner(Request, _cts.Token);
+                Volatile.Write(ref _status, result.StopReason == SubagentStopReason.Completed
+                    ? (int)SubagentStatus.Completed
+                    : (int)SubagentStatus.Failed);
+                _done.TrySetResult(result);
             }
             catch (OperationCanceledException)
             {

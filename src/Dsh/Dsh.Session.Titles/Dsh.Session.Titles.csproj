@@ -11,6 +11,9 @@
     <!-- Dsh.Session pulls Cordis.Core (Service/Context) and Dsh.Llm transitively for dotnet build;
          the direct-csc build script adds the explicit -r edges. -->
     <ProjectReference Include="..\Dsh.Session\Dsh.Session.csproj" />
+    <!-- The fallback flush trigger: the agent/request waterfall fires after the pre-step batch
+         commits and before the request header, the recorded session/title position. -->
+    <ProjectReference Include="..\Dsh.AgentLoop\Dsh.AgentLoop.csproj" />
   </ItemGroup>
 
 </Project>

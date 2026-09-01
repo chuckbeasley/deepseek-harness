@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
+using Dsh.Tools;
 
 namespace Dsh.Interaction;
 
@@ -84,7 +85,7 @@ public sealed record UserQuestionRequest(
     CancellationToken? CancellationToken = null);
 
 /// <summary>Stable error taxonomy for user-questions failures (port of the TS <c>UserQuestionError</c>).</summary>
-public sealed class UserQuestionError : Exception
+public sealed class UserQuestionError : Exception, IToolErrorInfo
 {
     /// <summary>Create the coded failure.</summary>
     public UserQuestionError(string message, string code)
@@ -93,6 +94,9 @@ public sealed class UserQuestionError : Exception
         Code = code;
     }
 
-    /// <summary>Stable machine code (<c>ASK_ABORTED</c>, <c>EMPTY_QUESTIONS</c>, <c>UNAVAILABLE</c>).</summary>
+    /// <summary>Stable machine code (<c>ASK_ABORTED</c>, <c>EMPTY_QUESTIONS</c>, <c>UNAVAILABLE</c>, <c>DELEGATED_CALLER</c>).</summary>
     public string Code { get; }
+
+    /// <summary>The stable error name surfaced on tool results (the TS error <c>name</c>).</summary>
+    public string Name => "UserQuestionError";
 }

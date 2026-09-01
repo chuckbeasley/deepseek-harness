@@ -54,7 +54,7 @@ public sealed class AgentLoop : Service
     public AgentHandle Create(SessionId id, AgentOptions? options = null, string source = "startup")
     {
         var runtime = LoopRuntime.Resolve(Ctx);
-        var session = runtime.Sessions.Create(id, options?.Cwd, options?.DelegationDepth ?? 0, options?.ParentSessionId);
+        var session = runtime.Sessions.Create(id, options?.Cwd, options?.DelegationDepth ?? 0, options?.ParentSessionId, options?.Origin);
         return Publish(runtime, id, options, session, source);
     }
 

@@ -324,7 +324,72 @@ public static class SpineRegistry
             var disposers = tools.Select(ctx.Tools().Register).ToArray();
             return new SpineDisposables(disposers.Append((IDisposable)service).ToArray());
         }));
-        catalog.Register("subagent", new SpinePlugin("subagent", (ctx, _) => new Dsh.Subagent.InProcessSubagentProvider(ctx)));
+        catalog.Register("subagent", new SpinePlugin("subagent", (ctx, _) =>
+        {
+            var loop = ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
+                ?? throw new InvalidOperationException("subagent requires the \"agentLoop\" row");
+            // The in-process driver runs each delegation as a real child agent: a fresh child
+            // session under the parent's ancestry, one loop turn, and the child's final text as
+            // the delegation result. The recorded child scripts bind to the child session through
+            // the replay provider's first-call ordering.
+            return new Dsh.Subagent.InProcessSubagentProvider(ctx, async (request, ct) =>
+            {
+                // The delegation-depth ceiling (the TS subagent default): a deeper call refuses
+                // before any child session exists, with the recorded refusal wording.
+                const int maxDelegationDepth = 2;
+                var depth = (request.ParentDelegationDepth ?? 0) + 1;
+                if (depth > maxDelegationDepth)
+                {
+                    throw new InvalidOperationException($"subagent depth {depth} exceeds maxDepth {maxDelegationDepth}");
+                }
+                var sessionId = new Dsh.Session.SessionId(Guid.NewGuid().ToString("D"));
+                var options = new Dsh.Agent.AgentOptions
+                {
+                    Provider = request.Provider,
+                    Model = request.Model,
+                    Cwd = Environment.CurrentDirectory,
+                    DelegationDepth = (request.ParentDelegationDepth ?? 0) + 1,
+                    ParentSessionId = request.ParentSessionId,
+                    Origin = "subagent",
+                };
+                var handle = loop.Create(sessionId, options, source: "subagent");
+                try
+                {
+                    var driver = loop.GetLoop(sessionId)
+                        ?? throw new InvalidOperationException("subagent: the child loop was not published");
+                    var message = new Dsh.Llm.UserMessage
+                    {
+                        Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("D")),
+                        Content = new Dsh.Llm.ContentBlock[] { new Dsh.Llm.TextBlock(request.Task) },
+                        Source = new Dsh.Llm.UserSource(),
+                    };
+                    driver.Send(message, Dsh.Agent.InboxTarget.NextTurn, wakeup: true);
+                    await driver.WhenIdleAsync().ConfigureAwait(false);
+                    ct.ThrowIfCancellationRequested();
+                    var session = handle.Agent.Session;
+                    var text = string.Concat(session.Events
+                        .OfType<Dsh.Session.AssistantMessageEvent>()
+                        .SelectMany(evt => evt.Message.Content.OfType<Dsh.Llm.TextBlock>())
+                        .Select(block => block.Text));
+                    var reason = session.Events.OfType<Dsh.Session.TurnEndEvent>().LastOrDefault()?.Reason;
+                    return new Dsh.Subagent.SubagentResult(
+                        text,
+                        Diagnostic: reason is Dsh.Session.ErrorReason error ? error.Failure.Message : null,
+                        StopReason: reason switch
+                        {
+                            Dsh.Session.MaxTokensReason => Dsh.Subagent.SubagentStopReason.MaxTokens,
+                            Dsh.Session.ErrorReason => Dsh.Subagent.SubagentStopReason.Error,
+                            Dsh.Session.AbortedReason => Dsh.Subagent.SubagentStopReason.Aborted,
+                            Dsh.Session.BlockedReason => Dsh.Subagent.SubagentStopReason.Refusal,
+                            _ => Dsh.Subagent.SubagentStopReason.Completed,
+                        });
+                }
+                finally
+                {
+                    handle.Dispose();
+                }
+            });
+        }));
         catalog.Register("sdkSubagent", new SpinePlugin("sdkSubagent", (ctx, config) =>
         {
             var service = ctx.Get<Dsh.Subagent.ISubagentService>("subagent")
@@ -603,7 +668,8 @@ public static class SpineRegistry
         catalog.Register("hooksClaudeCode", new SpinePlugin("hooksClaudeCode", (ctx, config) =>
         {
             var path = ConfigString(config, "configPath")
-                ?? throw new InvalidOperationException("hooksClaudeCode requires a \"configPath\" pointing at a hooks.json");
+                ?? Environment.GetEnvironmentVariable("DSH_HOOKS_CC_CONFIG");
+            if (path is null) return null; // no hooks configured: the row is a no-op
             return new Dsh.Hooks.ClaudeCodeBridge(ctx, new Dsh.Hooks.ClaudeCodeBridgeConfig(
                 Path.GetFullPath(path),
                 ConfigString(config, "pluginRoot"),
@@ -614,7 +680,8 @@ public static class SpineRegistry
         catalog.Register("hooksCodex", new SpinePlugin("hooksCodex", (ctx, config) =>
         {
             var path = ConfigString(config, "configPath")
-                ?? throw new InvalidOperationException("hooksCodex requires a \"configPath\" pointing at a hooks.json");
+                ?? Environment.GetEnvironmentVariable("DSH_HOOKS_CODEX_CONFIG");
+            if (path is null) return null; // no hooks configured: the row is a no-op
             return new Dsh.Hooks.CodexBridge(ctx, new Dsh.Hooks.CodexBridgeConfig(
                 Path.GetFullPath(path),
                 ConfigString(config, "model"),

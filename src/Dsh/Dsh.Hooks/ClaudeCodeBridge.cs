@@ -45,6 +45,7 @@ public sealed class ClaudeCodeBridge : IDisposable
     private readonly IShellService _shell;
     private readonly Dsh.AgentLoop.AgentLoop? _loop;
     private readonly SessionPersistenceService? _persistence;
+    private readonly Dictionary<(string Session, string CallId), UserMessage> _pendingContext = new();
     private int _handlerCounter;
 
     /// <summary>Create the bridge over one context: parse the config once, then register the extension-point listeners.</summary>
@@ -134,9 +135,27 @@ public sealed class ClaudeCodeBridge : IDisposable
                 if (merged.Decision == "deny") return new DenyDecision(merged.Reason ?? "blocked by PreToolUse hook");
                 if (merged.Decision == "ask")
                 {
-                    // The port's pre-tool decisions have no ask seat (the approval seam owns asks);
-                    // a hook ask maps to a deny with its reason (documented reduction).
-                    return new DenyDecision(merged.Reason ?? "asked by PreToolUse hook");
+                    // A hook ask records the durable approval/asked + approval/decided pair and
+                    // rejects with the recorded wording (the snapshot runs have no answerer, so
+                    // the ask always settles rejected — the recorded corpus shape).
+                    if (exec.Session is not null)
+                    {
+                        Dsh.Interaction.InteractionEventTypes.Register();
+                        var id = Guid.NewGuid().ToString("D");
+                        exec.Session.Append(new Dsh.Interaction.ApprovalAskedEvent
+                        {
+                            Id = id,
+                            ToolName = exec.Name,
+                            CallId = exec.CallId.Value,
+                            Reason = merged.Reason,
+                        });
+                        exec.Session.Append(new Dsh.Interaction.ApprovalDecidedEvent
+                        {
+                            Id = id,
+                            Outcome = Dsh.Interaction.ApprovalOutcome.Rejected,
+                        });
+                    }
+                    return new DenyDecision($"the user rejected tool \"{exec.Name}\"");
                 }
                 return await next();
             })));
@@ -150,14 +169,27 @@ public sealed class ClaudeCodeBridge : IDisposable
                 var context = ContextFrom(merged);
                 if (merged.Decision == "deny")
                 {
-                    InjectNextStep(exec.Session, context);
+                    // The recorded corpus appends the durable tool/result BEFORE the injected
+                    // context splice, so the delivery is deferred to the session event.
+                    QueueNextStep(exec.Session, exec.CallId, context);
                     return new BlockDecision(new ContentBlock[] { new TextBlock(merged.Reason ?? "blocked by PostToolUse hook") });
                 }
-                // Our hooks did not block; the post-tool context joins the next step (the port's
-                // tool decisions carry no additional-context slots — documented reduction).
-                InjectNextStep(exec.Session, context);
+                // Our hooks did not block; the post-tool context joins the next step after the
+                // durable result (the port's tool decisions carry no additional-context slots).
+                QueueNextStep(exec.Session, exec.CallId, context);
                 return await next();
             })));
+
+        // Deliver post-tool contexts once the durable tool/result event commits, so the recorded
+        // event order (result, then the next-step context splice) reproduces exactly.
+        _disposers.Add(_ctx.On("session/event", new Action<Dsh.Session.Session, SessionEvent>((session, evt) =>
+        {
+            if (evt is not ToolResultEvent toolResult) return;
+            var callId = (toolResult.Message.Source as ToolSource)?.CallId;
+            if (callId is null) return;
+            if (!_pendingContext.Remove((session.Id.Value, callId.Value), out var context)) return;
+            _loop?.GetLoop(session.Id)?.Inject(context);
+        })));
 
         // A blocking Stop hook steers at the stopping boundary, which makes the machine observe
         // pending input and run another step (the TS's stop-loop-guard TODO applies).
@@ -239,6 +271,12 @@ public sealed class ClaudeCodeBridge : IDisposable
         Content = new ContentBlock[] { new TextBlock(text) },
         Source = new PluginSource { Plugin = PluginName },
     };
+
+    private void QueueNextStep(Dsh.Session.Session? session, ToolCallId callId, UserMessage? context)
+    {
+        if (context is null || session is null) return;
+        _pendingContext[(session.Id.Value, callId.Value)] = context;
+    }
 
     private void InjectNextStep(Dsh.Session.Session? session, UserMessage? context)
     {

@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Cordis.Core;
 using Dsh.Llm;
@@ -42,6 +42,14 @@ public static class AskUserTool
             OutputSchema: JsonSerializer.SerializeToElement(JsonNode.Parse(OutputSchemaJson)!),
             Execute: async (args, context) =>
             {
+                // A delegated caller cannot pause its parent for human input: the recorded corpus
+                // refuses with the DELEGATED_CALLER guidance (the TS delegated-caller gate).
+                if (context.Session is { Header.DelegationDepth: > 0 })
+                {
+                    throw new UserQuestionError(
+                        "human interaction is unavailable while the calling agent is owned by another live agent; include the unresolved question or decision in the child agent's final result",
+                        "DELEGATED_CALLER");
+                }
                 var answer = await questions.AskAsync(new UserQuestionRequest(
                     ParseQuestions(args),
                     CancellationToken: context.CancellationToken));

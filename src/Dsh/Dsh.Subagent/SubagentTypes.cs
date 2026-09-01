@@ -30,8 +30,18 @@ public enum SubagentStopReason
     Refusal,
 }
 
-/// <summary>A caller's delegation request: the task text and an optional display label.</summary>
-public sealed record SubagentRequest(string Task, string? Label = null);
+/// <summary>
+/// A caller's delegation request: the task text, an optional display label, and the parent
+/// session facts the in-process driver needs to spawn the child loop (its session ancestry,
+/// the delegation depth, and the provider route the recorded children replay under).
+/// </summary>
+public sealed record SubagentRequest(
+    string Task,
+    string? Label = null,
+    string? ParentSessionId = null,
+    int? ParentDelegationDepth = null,
+    string? Provider = null,
+    string? Model = null);
 
 /// <summary>
 /// The settled result of one delegation. <see cref="IsError"/> derives from

@@ -76,6 +76,7 @@ public static class JsonlFormat
             writer.WriteNumber("createdAt", header.CreatedAtMs);
             writer.WriteString("cwd", header.Cwd);
             if (header.ParentSessionId is not null) writer.WriteString("parentSession", header.ParentSessionId);
+            if (header.Origin is not null) writer.WriteString("origin", header.Origin);
             if (header.SeedLength is not null) writer.WriteNumber("seedLength", header.SeedLength.Value);
             writer.WriteNumber("delegationDepth", header.DelegationDepth);
             writer.WriteEndObject();
@@ -124,6 +125,7 @@ public static class JsonlFormat
             root.TryGetProperty("cwd", out var cwd) && cwd.ValueKind == JsonValueKind.String ? cwd.GetString()! : "",
             root.TryGetProperty("delegationDepth", out var depth) && depth.ValueKind == JsonValueKind.Number ? depth.GetInt32() : 0,
             root.TryGetProperty("parentSession", out var parent) && parent.ValueKind == JsonValueKind.String ? parent.GetString() : null,
+            root.TryGetProperty("origin", out var origin) && origin.ValueKind == JsonValueKind.String ? origin.GetString() : null,
             root.TryGetProperty("seedLength", out var seed) && seed.ValueKind == JsonValueKind.Number ? seed.GetInt32() : null);
     }
 }

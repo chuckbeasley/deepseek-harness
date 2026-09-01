@@ -78,7 +78,11 @@ public static class SessionEventTypes
             // Property names are the effective (camelCase) JSON names under the naming policy.
             for (var index = typeInfo.Properties.Count - 1; index >= 0; index--)
             {
-                if (typeInfo.Properties[index].Name is "id" or "seq" or "timeMs" or "type" or "surfaceOp" or "sourceEventSeqs")
+                var property = typeInfo.Properties[index];
+                // "id" is removed only for the base envelope declaration: a plugin event that
+                // declares its own payload "id" (e.g. approval/asked) keeps it in the data.
+                if (property.Name is "seq" or "timeMs" or "type" or "surfaceOp" or "sourceEventSeqs"
+                    || (property.Name == "id" && property.DeclaringType == typeof(SessionEvent)))
                 {
                     typeInfo.Properties.RemoveAt(index);
                 }

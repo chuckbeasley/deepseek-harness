@@ -64,16 +64,13 @@ public sealed class HeadlessRun : ILoaderPlugin
                     // structured error line. Reconstructing from the durable log after the turn
                     // yields the same bytes as the recorded fixture.
                     Console.Error.Write(StderrFromSession(session));
-                    var last = session.Events.OfType<Dsh.Session.AssistantMessageEvent>().LastOrDefault();
-                    var textBlocks = last?.Message.Content.OfType<Dsh.Llm.TextBlock>().ToArray() ?? Array.Empty<Dsh.Llm.TextBlock>();
-                    if (textBlocks.Length == 0)
-                    {
-                        Console.Out.Write("\n");
-                    }
-                    else
-                    {
-                        foreach (var block in textBlocks) Console.Out.Write(block.Text + "\n");
-                    }
+                    // The stdout projection (the TS headless bin): every assistant text block
+                    // across all steps concatenates into one line, so a Stop-hook continuation's
+                    // earlier reply still appears.
+                    var text = string.Concat(session.Events.OfType<Dsh.Session.AssistantMessageEvent>()
+                        .SelectMany(evt => evt.Message.Content.OfType<Dsh.Llm.TextBlock>())
+                        .Select(block => block.Text));
+                    Console.Out.Write(text.Length == 0 ? "\n" : text + "\n");
                     // The TS bin exits 0 only for a completed turn.
                     var code = session.Events.OfType<Dsh.Session.TurnEndEvent>().LastOrDefault()?.Reason is Dsh.Session.CompletedReason ? 0 : 1;
                     Exit(ctx, code);

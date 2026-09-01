@@ -27,16 +27,17 @@ public sealed class SessionStore : Service
     /// <param name="cwd">the session's workspace directory (defaults to the process cwd).</param>
     /// <param name="delegationDepth">the subagent delegation depth (0 for a top-level session).</param>
     /// <param name="parentSessionId">the parent session id for a subagent child.</param>
+    /// <param name="origin">the child-session origin (e.g. "subagent"); absent for a top-level session.</param>
     /// <returns>the live session, already entered and announced.</returns>
     /// <exception cref="InvalidOperationException">when a session with <paramref name="id"/> already exists.</exception>
-    public Session Create(SessionId? id = null, string? cwd = null, int delegationDepth = 0, string? parentSessionId = null)
+    public Session Create(SessionId? id = null, string? cwd = null, int delegationDepth = 0, string? parentSessionId = null, string? origin = null)
     {
         var sessionId = id ?? new SessionId($"session-{++_counter}");
         if (_store.ContainsKey(sessionId))
         {
             throw new InvalidOperationException($"session \"{sessionId}\" already exists");
         }
-        var session = new Session(sessionId, this, cwd ?? Environment.CurrentDirectory, delegationDepth, parentSessionId);
+        var session = new Session(sessionId, this, cwd ?? Environment.CurrentDirectory, delegationDepth, parentSessionId, origin);
         Ctx.Effect(() =>
         {
             _store[sessionId] = session;

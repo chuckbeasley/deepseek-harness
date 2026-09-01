@@ -100,7 +100,9 @@ public static class ToolCallScheduler
         {
             Turn = turn, Step = step,
             Message = ToolResultMessage.Create(call.Id, result.Content, result.IsError),
-            Error = result is ToolExecutionFailure failure
+            // A failure with neither a stable name nor code (e.g. a post-execute block) records no
+            // error identity, exactly like the recorded fixtures.
+            Error = result is ToolExecutionFailure { Error: { Name: not null } or { Code: not null } } failure
                 ? new ToolErrorInfo(failure.Error.Name ?? "Error", failure.Error.Code ?? "UNKNOWN")
                 : null,
             Meta = result is ToolExecutionSuccess success ? success.Meta : null,
