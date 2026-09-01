@@ -2,12 +2,10 @@ namespace Dsh.Cli;
 
 /// <summary>
 /// <c>dsh plugin --profile &lt;name&gt; &lt;args...&gt;</c> — profile plugin management as manifest
-/// editing (documented deviation from the TS, which forwards the arguments to pnpm in the profile
-/// directory and reconciles <c>dsh.profile.bundles</c> against the installed state). The .NET port
-/// has no npm/pnpm story until NuGet packaging arrives in Phase 8, so the honest equivalent is
-/// editing the <c>dsh.profile.bundles</c> list in <c>profile.json</c> directly: <c>add
-/// &lt;bundle&gt;</c>, <c>remove &lt;bundle&gt;</c>, <c>list</c>. The profile is initialized on
-/// first use, exactly like the TS init.
+/// editing: the port has no package-manager story until NuGet packaging arrives in Phase 8, so the
+/// honest equivalent is editing the <c>dsh.profile.bundles</c> list in <c>profile.json</c>
+/// directly: <c>add &lt;bundle&gt;</c>, <c>remove &lt;bundle&gt;</c>, <c>list</c>. The profile is
+/// initialized on first use.
 /// </summary>
 public static class Plugin
 {
@@ -39,7 +37,7 @@ public static class Plugin
             default:
                 Console.Error.WriteLine(
                     $"dsh: unknown plugin verb \"{verb}\": the .NET port manages profile bundles directly "
-                    + "(add <bundle>, remove <bundle>, list); pnpm forwarding is not available");
+                    + "(add <bundle>, remove <bundle>, list)");
                 return 1;
         }
     }

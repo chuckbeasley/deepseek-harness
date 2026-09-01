@@ -948,11 +948,12 @@ public static class CorpusTests
             case "editing-cordis-skill":
                 var skillDir = Path.Combine(cwd, ".dsh", "skills", "editing-cordis-compositions");
                 Directory.CreateDirectory(skillDir);
-                // The recorded skill content is the shipped preset's real skill document; copy it
-                // verbatim so the loader renders the recorded bytes.
+                // The recorded skill content is the shipped preset's real skill document; the port
+                // carries the fixture under its own tree so the corpus has no dependency on the
+                // TS packages/ tree.
                 var realSkill = Path.Combine(
-                    SnapshotDriver.RepoRoot(), "packages", "preset", "agent-presets", "presets",
-                    "cordis", "skills", "editing-cordis-compositions", "SKILL.md");
+                    SnapshotDriver.RepoRoot(), "tests", "Dsh.Snapshot.Tests", "fixtures",
+                    "editing-cordis-compositions", "SKILL.md");
                 if (File.Exists(realSkill))
                 {
                     File.Copy(realSkill, Path.Combine(skillDir, "SKILL.md"));

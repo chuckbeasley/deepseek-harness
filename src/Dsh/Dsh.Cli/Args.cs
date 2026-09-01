@@ -264,7 +264,7 @@ public static class Args
         }
         if (profile is null) return Error("error: required option '--profile <name>' not specified");
         if (profile.Length == 0) return Error("error: --profile needs a name");
-        if (args.Count == 0) return Error("error: plugin needs pnpm arguments to forward (e.g. add <package>)");
+        if (args.Count == 0) return Error("error: plugin needs an action (add <bundle>, remove <bundle>, list)");
         return ParseResult.Ok(new DshInvocation.PluginInvocation(profile, args));
     }
 
@@ -307,10 +307,10 @@ public static class Args
     {
         Console.Out.WriteLine("Usage: dsh plugin [options] [args...]");
         Console.Out.WriteLine();
-        Console.Out.WriteLine("manage a profile's plugins by forwarding the remaining arguments to pnpm in the profile directory");
+        Console.Out.WriteLine("manage a profile's plugin bundles by editing its profile.json manifest");
         Console.Out.WriteLine();
         Console.Out.WriteLine("Arguments:");
-        Console.Out.WriteLine("  args  pnpm arguments, forwarded verbatim (add <pkg>, remove <pkg>, why <pkg>, ...)");
+        Console.Out.WriteLine("  args  the action and its bundle argument (add <bundle>, remove <bundle>, list)");
         Console.Out.WriteLine();
         Console.Out.WriteLine("Options:");
         Console.Out.WriteLine("  --profile <name>  the profile whose plugins to manage (initialized on first use)");

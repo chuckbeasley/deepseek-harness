@@ -104,7 +104,7 @@ public static class ArgsTests
         using var second = new ConsoleCapture();
         result = Args.ParseDshArgs(new[] { "plugin", "--profile", "tui" }, "9.9.9");
         Assert.Equal(1, result.ExitCode, "plugin without arguments exits 1");
-        Assert.Equal("error: plugin needs pnpm arguments to forward (e.g. add <package>)", second.Error.ToString().TrimEnd(), "the exact error string");
+        Assert.Equal("error: plugin needs an action (add <bundle>, remove <bundle>, list)", second.Error.ToString().TrimEnd(), "the exact error string");
     }
 
     public static void Plugin_ResolvesAnInvocation()
