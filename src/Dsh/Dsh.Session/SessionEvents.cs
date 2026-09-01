@@ -4,14 +4,82 @@ using Dsh.Llm;
 
 namespace Dsh.Session;
 
-/// <summary>How a session event entered the ordered surface. Only message-producing events carry one.</summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum SurfaceOp
+/// <summary>
+/// How a session event entered the ordered surface. Only message-producing events carry one:
+/// <c>append</c> adds to the tail (the normal path for user/assistant/tool messages), while a
+/// <c>replace</c> shadows an inclusive current-surface seq range with the event's own message
+/// (the compaction checkpoint). Serialized as the bare string <c>"append"</c> or as
+/// <c>{"op":"replace","start":N,"end":N}</c> (the TS surface-op spelling).
+/// </summary>
+[JsonConverter(typeof(SurfaceOpConverter))]
+public abstract record SurfaceOp
 {
-    /// <summary>Added to the tail — the normal path for user/assistant/tool messages.</summary>
-    [JsonStringEnumMemberName("append")]
-    Append,
+    /// <summary>The tail-append operation.</summary>
+    public static SurfaceOpAppend Append { get; } = SurfaceOpAppend.Instance;
+
+    /// <summary>Shadow the inclusive current-surface seq range [start, end].</summary>
+    public static SurfaceOpReplace Replace(long start, long end) => new(start, end);
 }
+
+/// <summary>JSON conversion for the TS surface-op spelling (string or op object).</summary>
+public sealed class SurfaceOpConverter : JsonConverter<SurfaceOp>
+{
+    /// <inheritdoc />
+    public override SurfaceOp Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            if (reader.GetString() == "append") return SurfaceOpAppend.Instance;
+            throw new JsonException($"unknown surfaceOp {reader.GetString()}");
+        }
+        if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            throw new JsonException("surfaceOp must be a string or an op object");
+        }
+        using var document = JsonDocument.ParseValue(ref reader);
+        var root = document.RootElement;
+        if (root.TryGetProperty("op", out var op) && op.GetString() == "replace"
+            && root.TryGetProperty("start", out var start) && start.ValueKind == JsonValueKind.Number
+            && root.TryGetProperty("end", out var end) && end.ValueKind == JsonValueKind.Number)
+        {
+            return new SurfaceOpReplace(start.GetInt64(), end.GetInt64());
+        }
+        throw new JsonException("surfaceOp object must carry {\"op\":\"replace\",\"start\":N,\"end\":N}");
+    }
+
+    /// <inheritdoc />
+    public override void Write(Utf8JsonWriter writer, SurfaceOp value, JsonSerializerOptions options)
+    {
+        switch (value)
+        {
+            case SurfaceOpAppend:
+                writer.WriteStringValue("append");
+                break;
+            case SurfaceOpReplace replace:
+                writer.WriteStartObject();
+                writer.WriteString("op", "replace");
+                writer.WriteNumber("start", replace.Start);
+                writer.WriteNumber("end", replace.End);
+                writer.WriteEndObject();
+                break;
+            default:
+                throw new JsonException($"unknown surfaceOp {value.GetType().Name}");
+        }
+    }
+}
+
+/// <summary>Added to the tail — the normal path for user/assistant/tool messages.</summary>
+public sealed record SurfaceOpAppend : SurfaceOp
+{
+    internal static readonly SurfaceOpAppend Instance = new();
+
+    private SurfaceOpAppend()
+    {
+    }
+}
+
+/// <summary>Replace one inclusive current-surface seq range with the event's own message.</summary>
+public sealed record SurfaceOpReplace(long Start, long End) : SurfaceOp;
 
 /// <summary>Why a turn ended (merge-extensible in TS; the spike declares the known variants).</summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]

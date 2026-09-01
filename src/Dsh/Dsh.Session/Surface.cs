@@ -36,4 +36,42 @@ public static class Surface
         ToolResultEvent tool => tool.Message,
         _ => null,
     };
+
+    /// <summary>
+    /// One live surface node: the event seq and its derived message. A replace-op checkpoint
+    /// event's node carries the checkpoint event's own seq.
+    /// </summary>
+    public readonly record struct SurfaceNode(long Seq, Message Message);
+
+    /// <summary>
+    /// Fold the log into the current surface, applying replace ops in log order: a
+    /// user/message with <see cref="SurfaceOpReplace"/> shadows the inclusive current-surface
+    /// seq range [Start, End] and inserts its own message at the first shadowed position (the
+    /// port of the TS surface fold). A replace naming a range absent from the current surface is
+    /// log corruption and fails loud.
+    /// </summary>
+    public static List<SurfaceNode> Fold(IEnumerable<SessionEvent> events)
+    {
+        ArgumentNullException.ThrowIfNull(events);
+        var nodes = new List<SurfaceNode>();
+        foreach (var evt in events)
+        {
+            if (evt is UserMessageEvent user && user.SurfaceOp is SurfaceOpReplace replace)
+            {
+                var startIdx = nodes.FindIndex(node => node.Seq == replace.Start);
+                var endIdx = nodes.FindIndex(node => node.Seq == replace.End);
+                if (startIdx < 0 || endIdx < 0 || startIdx > endIdx)
+                {
+                    throw new InvalidOperationException(
+                        $"surface fold: replace at seq {evt.Seq} has invalid current range {replace.Start}-{replace.End}");
+                }
+                nodes.RemoveRange(startIdx, endIdx - startIdx + 1);
+                nodes.Insert(startIdx, new SurfaceNode(evt.Seq, user.Message));
+                continue;
+            }
+            var message = DeriveEventMessage(evt);
+            if (message is not null) nodes.Add(new SurfaceNode(evt.Seq, message));
+        }
+        return nodes;
+    }
 }

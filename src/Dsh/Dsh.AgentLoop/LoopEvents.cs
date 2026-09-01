@@ -54,12 +54,13 @@ public sealed record EnterDecision(IReadOnlyList<UserMessage> Messages, PromptAs
 public sealed record RequestProposal(Dsh.Agent.Agent Agent, long Turn, long Step, LlmCallConfig SeedConfig);
 
 /// <summary>Proposal delivered to <see cref="LoopEvents.RequestError"/> listeners.</summary>
-public sealed record RequestErrorProposal(Dsh.Agent.Agent Agent, long Turn, long Step, string Provider, LlmFailure Failure);
+public sealed record RequestErrorProposal(
+    Dsh.Agent.Agent Agent, long Turn, long Step, string Provider, LlmFailure Failure, CancellationToken CancellationToken);
 
 /// <summary>The decision a request-error waterfall listener returns.</summary>
 public abstract record RequestErrorAction
 {
-    /// <summary>"retry" or "stop".</summary>
+    /// <summary>"retry", "compaction", or "stop".</summary>
     public abstract string Kind { get; }
 }
 
@@ -69,6 +70,14 @@ public sealed record RetryDecision : RequestErrorAction
     public static readonly RetryDecision Instance = new();
 
     public override string Kind => "retry";
+}
+
+/// <summary>Recover from a request failure by compacting the session, then retry as a new request series.</summary>
+public sealed record CompactionDecision : RequestErrorAction
+{
+    public static readonly CompactionDecision Instance = new();
+
+    public override string Kind => "compaction";
 }
 
 /// <summary>Do not retry; the loop surfaces the failure as the turn's error reason.</summary>

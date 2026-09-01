@@ -117,17 +117,10 @@ public sealed class Session
 
     /// <summary>
     /// Derive the LLM message history by folding the log through the surface projection
-    /// (user/message -> verbatim; assistant/message -> null when empty; tool/result -> message).
+    /// (user/message -> verbatim; assistant/message -> null when empty; tool/result -> message;
+    /// a replace-op checkpoint shadows its range in place).
     /// </summary>
     public IReadOnlyList<Message> DeriveMessages()
-    {
-        var messages = new List<Message>();
-        foreach (var evt in _log)
-        {
-            var message = Surface.DeriveEventMessage(evt);
-            if (message is not null) messages.Add(message);
-        }
-        return messages;
-    }
+        => Surface.Fold(_log).Select(node => node.Message).ToArray();
 }
 

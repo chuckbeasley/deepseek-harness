@@ -291,7 +291,18 @@ public static class SpineRegistry
             var maxBytes = ConfigInt(config, "maxBytes") ?? 10 * 1024 * 1024;
             return new Dsh.Attachment.LocalAttachmentProvider(ctx, new Dsh.Attachment.AttachmentProviderConfig(root, maxBytes));
         }));
-        catalog.Register("compaction", new SpinePlugin("compaction", (ctx, _) => new Dsh.Compaction.BasicCompactionProvider(ctx)));
+        catalog.Register("compaction", new SpinePlugin("compaction", (ctx, config) =>
+            new Dsh.Compaction.BasicCompactionProvider(
+                ctx,
+                maxTokens: ConfigInt(config, "maxTokens")
+                    ?? EnvInt("DSH_SNAPSHOT_COMPACTION_MAX_TOKENS")
+                    ?? (int)Dsh.Compaction.CompactionPolicyDefaults.MaxTokens,
+                maxOverflowRetries: ConfigInt(config, "maxOverflowRetries")
+                    ?? EnvInt("DSH_SNAPSHOT_COMPACTION_MAX_OVERFLOW_RETRIES")
+                    ?? Dsh.Compaction.BasicCompactionProvider.DefaultMaxOverflowRetries,
+                auto: ConfigBool(config, "auto")
+                    ?? EnvBool("DSH_SNAPSHOT_COMPACTION_AUTO")
+                    ?? true)));
         catalog.Register("context", new SpinePlugin("context", (ctx, _) => new Dsh.Context.LocalContextProvider(ctx)));
         catalog.Register("sessionQuery", new SpinePlugin("sessionQuery", (ctx, _) => new Dsh.SessionQuery.LogSessionQueryProvider(ctx)));
         catalog.Register("preset", new SpinePlugin("preset", (ctx, config) =>
@@ -834,6 +845,12 @@ public static class SpineRegistry
         => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is long integer
             ? (int)integer
             : null;
+
+    private static int? EnvInt(string name)
+        => int.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : null;
+
+    private static bool? EnvBool(string name)
+        => bool.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : null;
 
     private static IReadOnlyList<string> ConfigStrings(object? config, string key)
         => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is List<object?> list

@@ -35,6 +35,9 @@ public sealed record PluginSource : MessageSource
     /// <summary>Optional short summary of the contribution (e.g. the repeat-reminder "tool × count").</summary>
     public string? Summary { get; init; }
 
+    /// <summary>The owning compaction transaction identity, for compact-checkpoint sources (plugin "compact").</summary>
+    public string? CompactionId { get; init; }
+
     /// <summary>Optional named contributions that formed a snapshot message.</summary>
     public IReadOnlyList<NamedSection>? Sections { get; init; }
 

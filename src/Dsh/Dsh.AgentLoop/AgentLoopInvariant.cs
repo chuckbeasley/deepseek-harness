@@ -18,7 +18,10 @@ public static class AgentLoopInvariant
         return ctx.On("llm/stream",
             new Func<GenerateOptions, Func<IAsyncEnumerable<StreamChunk>>, IAsyncEnumerable<StreamChunk>>((options, next) =>
             {
-                if (options.SessionId is null) return next();
+                // Auxiliary calls (e.g. the compaction summarizer) ride the same session binding
+                // but are not loop-assembled requests (the TS marks loop requests by object
+                // identity; the purpose field is this port's marker).
+                if (options.SessionId is null || options.Purpose is not null) return next();
                 var sessions = ctx.Get<SessionStore>("sessions")
                     ?? throw new InvalidOperationException("agent-loop invariant: the \"sessions\" store is not mounted");
                 var session = sessions.Get(new SessionId(options.SessionId))

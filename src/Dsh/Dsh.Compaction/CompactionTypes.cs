@@ -1,3 +1,4 @@
+using Dsh.Llm;
 using Dsh.Session;
 
 namespace Dsh.Compaction;
@@ -165,9 +166,45 @@ public sealed record CompactionResult(
     long ShadowedTokenCount);
 
 /// <summary>
+/// The replayed conversation surface the summarizer condenses (port of the TS
+/// SummarizationInput): the last routed request's system prompt, tools, and leading messages,
+/// plus the generation cap and session binding for the auxiliary call.
+/// </summary>
+public sealed record SummarizationInput(
+    /// <summary>The summarization provider route.</summary>
+    string Provider,
+    /// <summary>The summarization model id.</summary>
+    string Model,
+    /// <summary>The conversation's own system prompt, reused for prefix-cache alignment.</summary>
+    string? System,
+    /// <summary>The conversation's tool schemas, reused for prefix-cache alignment.</summary>
+    IReadOnlyList<ToolSchema>? Tools,
+    /// <summary>The shadowed region, in surface order, that precedes the compaction instruction.</summary>
+    IReadOnlyList<Message> Messages,
+    /// <summary>The owning session id (binds the auxiliary call to the session's replay script).</summary>
+    string SessionId,
+    /// <summary>The generation cap the summarize call sends.</summary>
+    int MaxTokens);
+
+/// <summary>Safe summary content plus the exact auxiliary call envelope recorded with it (port of SummaryResult).</summary>
+public sealed record SummaryResult(
+    /// <summary>The safe text-only checkpoint blocks.</summary>
+    IReadOnlyList<ContentBlock> Summary,
+    /// <summary>The complete provider output before the text-only summary projection.</summary>
+    IReadOnlyList<ContentBlock> RawOutput,
+    /// <summary>Provider-reported usage for this summarization request.</summary>
+    TokenUsage? Usage,
+    /// <summary>The provider route that wrote the summary.</summary>
+    string Provider,
+    /// <summary>The model that wrote the summary.</summary>
+    string Model,
+    /// <summary>The generation cap the summarize call sent.</summary>
+    int MaxTokens);
+
+/// <summary>
 /// Surface projection helpers. The C# session has no separate surface object; the surface is the
 /// derived message stream, so the node list is the seqs of events that derive a message, in log
-/// order.
+/// order (replace-op checkpoints take the position of the range they shadow).
 /// </summary>
 public static class SessionSurface
 {
@@ -175,12 +212,7 @@ public static class SessionSurface
     public static IReadOnlyList<long> Nodes(Dsh.Session.Session session)
     {
         ArgumentNullException.ThrowIfNull(session);
-        var nodes = new List<long>();
-        foreach (var evt in session.Events)
-        {
-            if (Dsh.Session.Surface.DeriveEventMessage(evt) is not null) nodes.Add(evt.Seq);
-        }
-        return nodes;
+        return Surface.Fold(session.Events).Select(node => node.Seq).ToArray();
     }
 
     /// <summary>Index of a seq in the current surface, or -1 when absent.</summary>

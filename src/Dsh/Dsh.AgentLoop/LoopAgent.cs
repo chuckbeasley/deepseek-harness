@@ -310,12 +310,19 @@ public sealed class LoopAgent
             };
             if (streamFailure is not null)
             {
-                var proposal = new RequestErrorProposal(_agent, turn, step, request.Provider, streamFailure);
+                var proposal = new RequestErrorProposal(_agent, turn, step, request.Provider, streamFailure, ct);
                 var action = await _agent.Owner.Waterfall<Task<RequestErrorAction?>>(
                     LoopEvents.RequestError,
                     new object?[] { proposal },
                     () => Task.FromResult<RequestErrorAction?>(null));
                 ct.ThrowIfCancellationRequested();
+                if (action is CompactionDecision)
+                {
+                    // A compaction listener reduced the surface; the retried request starts a
+                    // new recorded request series (the fixture's "series" header reason).
+                    startsRequestSeries = true;
+                    continue;
+                }
                 if (action is not RetryDecision)
                 {
                     throw new LlmError(streamFailure.Message, streamFailure.Code, streamFailure.Status);

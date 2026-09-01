@@ -580,6 +580,8 @@ public static class CorpusTests
         var spillCap = SpillCapEnv(scenariosDir, scenario.Name, scenario.Composition, compositionOwners);
         if (spillCap is not null) env["DSH_SNAPSHOT_SPILL_MAX_BYTES"] = spillCap;
         env["DSH_SNAPSHOT_SPILL_ROOT"] = SpillRoot(scenario.Name);
+        var compactionMaxTokens = CompactionMaxTokensEnv(scenariosDir, scenario.Name, scenario.Composition, compositionOwners);
+        if (compactionMaxTokens is not null) env["DSH_SNAPSHOT_COMPACTION_MAX_TOKENS"] = compactionMaxTokens;
         var hooks = HookConfigEnv(Path.Combine(scenariosDir, scenario.Name));
         if (hooks is not null)
         {
@@ -664,6 +666,24 @@ public static class CorpusTests
         foreach (var line in File.ReadAllLines(patch))
         {
             var match = Regex.Match(line, @"^\s+maxInlineBytes:\s*(\d+)");
+            if (match.Success) return match.Groups[1].Value;
+        }
+        return null;
+    }
+
+    /// <summary>The compaction-basic summarization cap the scenario's (or its composition's)
+    /// cordis.snapshot.yml declares (the overflow summary call's maxTokens must reproduce).</summary>
+    private static string? CompactionMaxTokensEnv(string scenariosDir, string scenarioName, string composition, IReadOnlyDictionary<string, string> compositionOwners)
+    {
+        var patch = SnapshotPatchPath(scenariosDir, scenarioName, composition, compositionOwners);
+        if (patch is null) return null;
+        var inBlock = false;
+        foreach (var line in File.ReadAllLines(patch))
+        {
+            if (Regex.IsMatch(line, @"^-\s+id:\s*compaction-basic\s*$")) inBlock = true;
+            else if (line.StartsWith("- ", StringComparison.Ordinal) && !line.StartsWith("- insert:", StringComparison.Ordinal)) inBlock = false;
+            if (!inBlock) continue;
+            var match = Regex.Match(line, @"^\s+maxTokens:\s*(\d+)");
             if (match.Success) return match.Groups[1].Value;
         }
         return null;

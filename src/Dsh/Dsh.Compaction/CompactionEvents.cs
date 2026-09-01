@@ -1,3 +1,4 @@
+using Dsh.Llm;
 using Dsh.Session;
 
 namespace Dsh.Compaction;
@@ -23,6 +24,9 @@ public sealed record CompactionStartEvent : SessionEvent
     public override string Type => EventTypeName;
 }
 
+/// <summary>One inclusive shadowed surface-node seq span, serialized as the TS <c>{start, end}</c> pair.</summary>
+public sealed record ShadowedRange(long Start, long End);
+
 /// <summary>Completed summary, its inputs, and its shadowed range — log-only.</summary>
 public sealed record CompactionSummaryEvent : SessionEvent
 {
@@ -32,14 +36,17 @@ public sealed record CompactionSummaryEvent : SessionEvent
     /// <summary>The owning transaction identity.</summary>
     public required string CompactionId { get; init; }
 
-    /// <summary>The checkpoint text written to the surface.</summary>
-    public required string Summary { get; init; }
+    /// <summary>The safe text-only checkpoint blocks written to the surface.</summary>
+    public required IReadOnlyList<ContentBlock> Summary { get; init; }
 
-    /// <summary>First shadowed surface-node seq.</summary>
-    public required long RangeStart { get; init; }
+    /// <summary>The complete provider output before the text-only summary projection.</summary>
+    public IReadOnlyList<ContentBlock>? RawOutput { get; init; }
 
-    /// <summary>Last shadowed surface-node seq.</summary>
-    public required long RangeEnd { get; init; }
+    /// <summary>Whether the summary is exactly one local <c>llm/stream</c> call (replay-servable).</summary>
+    public bool LlmStreamCall { get; init; }
+
+    /// <summary>The inclusive shadowed surface-node seq span.</summary>
+    public required ShadowedRange ShadowedRange { get; init; }
 
     /// <summary>The seqs of all shadowed surface nodes, in surface order.</summary>
     public required IReadOnlyList<long> ShadowedSeqs { get; init; }
@@ -55,6 +62,9 @@ public sealed record CompactionSummaryEvent : SessionEvent
 
     /// <summary>The generation cap the summarize call sent.</summary>
     public long? MaxTokens { get; init; }
+
+    /// <summary>Provider-reported usage for the summarization request.</summary>
+    public TokenUsage? Usage { get; init; }
 
     public override string Type => EventTypeName;
 }

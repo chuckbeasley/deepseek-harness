@@ -5,10 +5,10 @@ public static class Program
 {
     private static readonly (string Name, Action Run)[] Suites =
     {
-        ("budgeted trim keeps the turn boundaries intact", CompactionTests.BudgetedTrim_KeepsTurnBoundaries),
+        ("budgeted trim shadows everything above the retained tail", CompactionTests.BudgetedTrim_ShadowsEverythingAboveTheRetainedTail),
         ("tool-pairing keeps a call and its result together", CompactionTests.ToolPairing_KeepsCallAndResultTogether),
         ("identical sessions produce deterministic output", CompactionTests.DeterministicOutput_ForIdenticalSessions),
-        ("empty or single-turn logs compact nothing", CompactionTests.NoCompactableRange_ForEmptyOrSingleTurnLogs),
+        ("empty or fully retained logs compact nothing", CompactionTests.NoCompactableRange_ForEmptyOrFullyRetainedLogs),
         ("budget validation fails loud", CompactionTests.BudgetValidation_FailsLoud),
         ("an unmatched compaction/start holds the busy lock", CompactionTests.BusyLock_RejectsConcurrentCompaction),
         ("the compaction events round-trip the JSONL", CompactionTests.CompactionEvents_RoundTripTheJsonl),

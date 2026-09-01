@@ -33,7 +33,22 @@ public static class SessionLogFormat
             }
             if (SurfaceOpOf(evt) is { } surface)
             {
-                writer.WriteString("surfaceOp", SurfaceOpName(surface));
+                switch (surface)
+                {
+                    case SurfaceOpAppend:
+                        writer.WriteString("surfaceOp", "append");
+                        break;
+                    case SurfaceOpReplace replace:
+                        writer.WritePropertyName("surfaceOp");
+                        writer.WriteStartObject();
+                        writer.WriteString("op", "replace");
+                        writer.WriteNumber("start", replace.Start);
+                        writer.WriteNumber("end", replace.End);
+                        writer.WriteEndObject();
+                        break;
+                    default:
+                        throw new InvalidOperationException($"unknown surfaceOp {surface.GetType().Name}");
+                }
             }
             writer.WriteEndObject();
         }
@@ -115,12 +130,6 @@ public static class SessionLogFormat
         }
     }
 
-    private static string SurfaceOpName(SurfaceOp surface) => surface switch
-    {
-        SurfaceOp.Append => "append",
-        _ => throw new InvalidOperationException($"unknown surfaceOp {surface}"),
-    };
-
     /// <summary>
     /// Parse one storage line back into its event: the envelope fields are restored onto the
     /// deserialized payload (seq = the seq = log-length contract is preserved for resume).
@@ -174,7 +183,7 @@ public static class SessionLogFormat
                 writer.WritePropertyName("sourceEventSeqs");
                 JsonSerializer.Serialize(writer, decoded, SessionEventTypes.CreateSerializerOptions());
             }
-            if (root.TryGetProperty("surfaceOp", out var surface) && surface.ValueKind == JsonValueKind.String)
+            if (root.TryGetProperty("surfaceOp", out var surface) && surface.ValueKind is JsonValueKind.String or JsonValueKind.Object)
             {
                 writer.WritePropertyName("surfaceOp");
                 surface.WriteTo(writer);

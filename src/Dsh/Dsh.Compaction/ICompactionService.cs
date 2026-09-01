@@ -3,12 +3,13 @@ namespace Dsh.Compaction;
 /// <summary>
 /// Compaction Service Definition (ctx.compaction): providers decide when to compact and replace a
 /// history range with one summary checkpoint. Port of <c>@deepseek-ai/dsh-compaction</c>'s
-/// CompactionEngine reduced to the region transaction: automatic step-boundary and overflow
-/// listeners, the LLM summarizer, the tool-result pruner, and the manual idle-session
-/// compactNow/runMaintenance path are deferred and named but not ported. The explicit
-/// resolve(request): spec step is the port's budget model — <see cref="Resolve"/> validates the
-/// request and produces the concrete token budgets plus the selected region; <see cref="Compact"/>
-/// resolves and runs the durable transaction.
+/// CompactionEngine reduced to the region transaction: the pre-step pressure listener, the
+/// tool-result pruner, and the manual idle-session compactNow/runMaintenance path are deferred
+/// and named but not ported. The explicit resolve(request): spec step is the port's budget model
+/// — <see cref="Resolve"/> validates the request and produces the concrete token budgets plus the
+/// selected region; <see cref="Compact"/> resolves and runs the durable transaction; the basic
+/// provider additionally exposes the overflow recovery path (see
+/// <see cref="BasicCompactionProvider.CompactOverflowAsync"/>).
 /// </summary>
 public interface ICompactionService
 {
