@@ -303,12 +303,5 @@ public static class WebToolsTests
         Assert.True(Assert.IsType<TextBlock>(result.Content[0]).Text.Contains("search backend exploded", StringComparison.Ordinal));
     }
 
-    public static void HtmlToText_StripsMarkupAndDecodesEntities()
-    {
-        Assert.Equal("Hi there", WebTools.HtmlToText("<p>Hi <b>there</b></p>"));
-        Assert.Equal("ok", WebTools.HtmlToText("<script>bad()</script><style>h1{}</style><p>ok</p>"));
-        Assert.Equal("a & b", WebTools.HtmlToText("a &amp; b"));
-        Assert.Equal("line one\nline two", WebTools.HtmlToText("<p>line one</p><p>line two</p>"));
     }
-}
 

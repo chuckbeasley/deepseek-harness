@@ -9,6 +9,7 @@ namespace Dsh.Llm;
 [JsonDerivedType(typeof(ModelSource), "model")]
 [JsonDerivedType(typeof(ToolSource), "tool")]
 [JsonDerivedType(typeof(SkillCatalogSource), "skill-catalog")]
+[JsonDerivedType(typeof(AgentInstructionsSource), "agent-instructions")]
 public abstract record MessageSource
 {
     /// <summary>Who produced this message (read-only discriminant).</summary>
@@ -85,6 +86,31 @@ public sealed record ToolSource : MessageSource
 
     [JsonIgnore]
     public override string Kind => "tool";
+}
+
+/// <summary>One instruction-file change recorded on a workspace-instructions message.</summary>
+public sealed record InstructionChange(string Action, string Scope, string Path, string Digest);
+
+/// <summary>
+/// The workspace-instructions message source (kind "agent-instructions"): the baseline identity,
+/// the baseline flag, and the file changes the message reflects.
+/// </summary>
+public sealed record AgentInstructionsSource : MessageSource
+{
+    /// <summary>Optional form of the contribution (e.g. "instructions").</summary>
+    public string? Form { get; init; }
+
+    /// <summary>Whether the message carries the baseline instruction set.</summary>
+    public bool Baseline { get; init; }
+
+    /// <summary>The serialized baseline identity JSON (the recorded string form).</summary>
+    public string? BaselineIdentity { get; init; }
+
+    /// <summary>The instruction-file changes the message reflects.</summary>
+    public IReadOnlyList<InstructionChange>? Changes { get; init; }
+
+    [JsonIgnore]
+    public override string Kind => "agent-instructions";
 }
 
 /// <summary>

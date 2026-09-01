@@ -63,7 +63,26 @@ public static class WebTools
             Parameters: JsonSerializer.SerializeToElement(JsonNode.Parse(WebFetchParametersJson)!),
             OutputSchema: JsonSerializer.SerializeToElement(JsonNode.Parse(WebFetchOutputJson)!),
             Execute: (args, context) => ExecuteFetchAsync(web, args, context.CancellationToken),
-            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderFetchOutput(value, maxOutputChars)) });
+            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderFetchOutput(value, maxOutputChars)) },
+            MetaOf: value => JsonSerializer.SerializeToElement(new JsonObject
+            {
+                ["url"] = value.GetProperty("url").GetString() ?? string.Empty,
+                ["statusCode"] = value.GetProperty("statusCode").GetInt32(),
+                ["truncated"] = RenderFetchOutput(value, maxOutputChars).Length > 0 && EffectiveTruncated(value, maxOutputChars),
+            }));
+    }
+
+    /// <summary>Whether the rendered output reflects any truncation (the effective flag the meta carries).</summary>
+    private static bool EffectiveTruncated(JsonElement value, int maxOutputChars)
+    {
+        var providerTruncated = value.GetProperty("truncated").GetBoolean();
+        if (providerTruncated) return true;
+        var bodyKind = value.GetProperty("body").GetProperty("kind").GetString() ?? string.Empty;
+        var content = value.GetProperty("body").GetProperty("content").GetString() ?? string.Empty;
+        if (content.Length > maxOutputChars) return true;
+        var header = "Fetched " + (value.GetProperty("url").GetString() ?? string.Empty) + " (HTTP " + value.GetProperty("statusCode").GetInt32() + ")\n\n" + ExternalWebContentNotice + "\n\n";
+        var rendered = RenderBody(bodyKind, content, maxOutputChars);
+        return header.Length + rendered.Text.Length > maxOutputChars;
     }
 
     /// <summary>
@@ -87,7 +106,7 @@ public static class WebTools
             Description: description,
             Parameters: JsonSerializer.SerializeToElement(JsonNode.Parse(parametersJson)!),
             OutputSchema: JsonSerializer.SerializeToElement(JsonNode.Parse(WebSearchOutputJson)!),
-            Execute: (args, context) => ExecuteSearchAsync(web, args, maxResults, maxQueries, context.CancellationToken),
+            Execute: (args, context) => ExecuteSearchAsync(web, args, maxResults, maxQueries, context),
             Render: (_, value) => new ContentBlock[] { new TextBlock(FormatSearchOutput(value)) });
     }
 
@@ -155,96 +174,22 @@ public static class WebTools
         return prefix[..(maxOutputChars - TruncationFooter.Length)] + TruncationFooter;
     }
 
+    private static readonly TurndownConverter HtmlConverter = new();
+
     private static (string Text, bool SourceTruncated) RenderBody(string bodyKind, string content, int maxInputChars)
     {
         var sliced = content.Length <= maxInputChars ? content : content[..maxInputChars];
         var sourceTruncated = sliced.Length != content.Length;
-        var text = bodyKind == "html" ? HtmlToText(sliced) : sliced;
+        var text = bodyKind == "html" ? HtmlConverter.Convert(sliced) : sliced;
         return (text, sourceTruncated);
-    }
-
-    /// <summary>
-    /// Linear HTML-to-text conversion: drops script/style blocks and comments, turns block and
-    /// line-break tags into newlines, strips remaining tags, and decodes common entities. Port of
-    /// the turndown conversion minus the DOM: it never recurses, so no conversion-depth guard is
-    /// needed.
-    /// </summary>
-    public static string HtmlToText(string html)
-    {
-        var text = html;
-        text = System.Text.RegularExpressions.Regex.Replace(
-            text, @"<script\b[^>]*>.*?</script\s*>", string.Empty,
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline);
-        text = System.Text.RegularExpressions.Regex.Replace(
-            text, @"<style\b[^>]*>.*?</style\s*>", string.Empty,
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline);
-        text = System.Text.RegularExpressions.Regex.Replace(
-            text, @"<!--.*?-->", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline);
-        text = System.Text.RegularExpressions.Regex.Replace(
-            text, @"<br\s*/?>", "\n", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        text = System.Text.RegularExpressions.Regex.Replace(
-            text, @"</(p|div|li|h[1-6]|tr|table|ul|ol|pre|blockquote)>", "\n",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        text = System.Text.RegularExpressions.Regex.Replace(text, @"<[^>]+>", string.Empty);
-        text = DecodeEntities(text);
-
-        var lines = text.Split('\n').Select(line => line.Trim()).ToList();
-        var collapsed = new List<string>();
-        var blank = false;
-        foreach (var line in lines)
-        {
-            if (line.Length == 0)
-            {
-                if (!blank && collapsed.Count > 0) collapsed.Add(string.Empty);
-                blank = true;
-            }
-            else
-            {
-                collapsed.Add(line);
-                blank = false;
-            }
-        }
-        while (collapsed.Count > 0 && collapsed[^1].Length == 0) collapsed.RemoveAt(collapsed.Count - 1);
-        return string.Join("\n", collapsed);
-    }
-
-    private static string DecodeEntities(string text)
-    {
-        return System.Text.RegularExpressions.Regex.Replace(
-            text, @"&(#x[0-9a-fA-F]+|#[0-9]+|amp|lt|gt|quot|apos|nbsp);",
-            match => DecodeEntity(match.Groups[1].Value));
-    }
-
-    private static string DecodeEntity(string name)
-    {
-        try
-        {
-            return name switch
-            {
-                "amp" => "&",
-                "lt" => "<",
-                "gt" => ">",
-                "quot" => "\"",
-                "apos" => "'",
-                "nbsp" => "\u00A0",
-                _ when name.StartsWith("#x", StringComparison.OrdinalIgnoreCase) => char.ConvertFromUtf32(Convert.ToInt32(name[2..], 16)),
-                _ when name.StartsWith("#", StringComparison.Ordinal) => char.ConvertFromUtf32(Convert.ToInt32(name[1..], 10)),
-                _ => "&" + name + ";",
-            };
-        }
-        catch (Exception)
-        {
-            // An unrepresentable or malformed numeric reference keeps its literal spelling.
-            return "&" + name + ";";
-        }
     }
 
     // --- web_search execution and rendering ---
 
-    private static async Task<JsonElement> ExecuteSearchAsync(IWebService web, JsonElement args, int maxResults, int maxQueries, CancellationToken cancellationToken)
+    private static async Task<JsonElement> ExecuteSearchAsync(IWebService web, JsonElement args, int maxResults, int maxQueries, ToolRunContext context)
     {
         var queries = ParseSearchArgs(args, maxQueries);
-        var result = await RunSearchQueriesAsync(web, queries, maxResults, cancellationToken).ConfigureAwait(false);
+        var result = await RunSearchQueriesAsync(web, queries, maxResults, context.Session, context.CancellationToken).ConfigureAwait(false);
         var value = new JsonObject
         {
             ["sources"] = new JsonArray(result.Sources.Select(ProjectSource).ToArray()),
@@ -283,11 +228,11 @@ public static class WebTools
     /// search to settle before rethrowing the first failure.
     /// </summary>
     private static async Task<WebSeam.SearchResult> RunSearchQueriesAsync(
-        IWebService web, IReadOnlyList<string> queries, int maxResults, CancellationToken cancellationToken)
+        IWebService web, IReadOnlyList<string> queries, int maxResults, Dsh.Session.Session? session, CancellationToken cancellationToken)
     {
         if (queries.Count == 1)
         {
-            return await web.SearchAsync(new WebSeam.SearchRequest(queries[0], maxResults), cancellationToken).ConfigureAwait(false);
+            return await web.SearchAsync(new WebSeam.SearchRequest(queries[0], maxResults, session), cancellationToken).ConfigureAwait(false);
         }
 
         using var controller = new CancellationTokenSource();
@@ -297,7 +242,7 @@ public static class WebTools
         var tasks = new List<Task>(queries.Count);
         for (var index = 0; index < queries.Count; index++)
         {
-            tasks.Add(RunOneSearchAsync(web, queries[index], index, maxResults, linked.Token, results, controller, firstFailure));
+            tasks.Add(RunOneSearchAsync(web, queries[index], index, maxResults, session, linked.Token, results, controller, firstFailure));
         }
         await Task.WhenAll(tasks).ConfigureAwait(false);
         if (firstFailure.Value is not null) throw firstFailure.Value;
@@ -310,12 +255,12 @@ public static class WebTools
     }
 
     private static async Task RunOneSearchAsync(
-        IWebService web, string query, int index, int maxResults, CancellationToken linkedToken,
+        IWebService web, string query, int index, int maxResults, Dsh.Session.Session? session, CancellationToken linkedToken,
         WebSeam.SearchResult[] results, CancellationTokenSource controller, FirstFailureBox firstFailure)
     {
         try
         {
-            results[index] = await web.SearchAsync(new WebSeam.SearchRequest(query, maxResults), linkedToken).ConfigureAwait(false);
+            results[index] = await web.SearchAsync(new WebSeam.SearchRequest(query, maxResults, session), linkedToken).ConfigureAwait(false);
         }
         catch (Exception error)
         {

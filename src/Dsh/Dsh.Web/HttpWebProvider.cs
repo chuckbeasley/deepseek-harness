@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json.Nodes;
 
@@ -104,6 +105,26 @@ public sealed class HttpWebProvider : WebSeam.IFetchProvider
 
     /// <summary>No credentials to check — an anonymous public fetcher is always usable.</summary>
     public bool Available() => true;
+
+    /// <summary>
+    /// Create the provider with an address pin: the named host resolves to the loopback port (the
+    /// recorded fixture authority), everything else uses the platform handler. Used by the corpus
+    /// web-fetch fixture so the recorded public.test URL reaches the embedded server.
+    /// </summary>
+    public static HttpWebProvider WithAddressPin(string host, int port, HttpFetchLimits? limits = null)
+    {
+        var handler = new SocketsHttpHandler
+        {
+            ConnectCallback = async (context, ct) =>
+            {
+                var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+                var pinned = string.Equals(context.DnsEndPoint.Host, host, StringComparison.OrdinalIgnoreCase);
+                await socket.ConnectAsync(pinned ? "127.0.0.1" : context.DnsEndPoint.Host, pinned ? port : context.DnsEndPoint.Port, ct).ConfigureAwait(false);
+                return (Stream)new NetworkStream(socket, ownsSocket: true);
+            },
+        };
+        return new HttpWebProvider(limits, handler);
+    }
 
     /// <inheritdoc />
     /// <exception cref="WebError"><c>WEB_ABORTED</c> when already cancelled; <c>WEB_FETCH_TIMEOUT</c>,

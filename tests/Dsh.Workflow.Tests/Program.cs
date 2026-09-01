@@ -28,6 +28,8 @@ public static class Program
         ("ralph: malformed reports fail loud", RalphToolTests.ValidateReport_RejectsMalformedReports),
         ("ralph: structured_output renders the recorded line", RalphToolTests.StructuredOutputTool_RendersTheRecordedText),
         ("ralph: the terminal envelope matches the recording", RalphToolTests.RenderResult_MatchesTheRecordedEnvelope),
+        ("workflow: the agent label truncates the prompt", WorkflowToolTests.DefaultLabel_TruncatesThePromptFirstLineAt47),
+        ("workflow: the pretty JSON matches the recording", WorkflowToolTests.PrettyJson_MatchesTheRecordedSpelling),
     };
 
     public static int Main()

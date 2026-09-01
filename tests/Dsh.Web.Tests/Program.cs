@@ -70,7 +70,11 @@ public static class Program
         Run("WebTools: web_search empty queries fails loud", WebToolsTests.SearchTool_EmptyQueries_FailsLoud);
         Run("WebTools: web_search too many queries fails loud", WebToolsTests.SearchTool_TooManyQueries_FailsLoud);
         Run("WebTools: web_search provider failure fails the call", WebToolsTests.SearchTool_ProviderFailure_FailsTheCall);
-        Run("WebTools: HtmlToText strips markup and decodes entities", WebToolsTests.HtmlToText_StripsMarkupAndDecodesEntities);
+        Run("Turndown: the recorded fixture page converts byte-exact", TurndownTests.Convert_MatchesTheRecordedFixturePage);
+        Run("Turndown: whitespace collapses across blocks", TurndownTests.Convert_CollapsesWhitespaceAcrossBlocks);
+        Run("Turndown: non-visible content is removed", TurndownTests.Convert_RemovesNonVisibleContent);
+        Run("Turndown: markdown syntax is escaped", TurndownTests.Convert_EscapesMarkdownSyntax);
+        Run("Turndown: emphasis and links render inline", TurndownTests.Convert_EmphasisAndLinks);
 
         Console.WriteLine();
         Console.WriteLine($"{_passed} passed, {_failed} failed");

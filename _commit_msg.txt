@@ -1,0 +1,12 @@
+feat(dsh): web fetch/search, workflow tool, workspace instructions (Phase 7)
+
+The HTML-to-markdown converter becomes a faithful turndown 7 port
+(verified byte-exact against the real turndown+gfm oracle), web_fetch
+renders through it with the persisted fetch meta against the embedded
+loopback fixture server (address-pinned public.test), the DeepSeek search
+provider ports with the recorded web/deepseek-search-llm-request event and
+the endpoint-guidance error, the workflow tool interprets the recorded
+script subset natively with the tool-workflow record events, and the
+workspace-instructions message lands with the agent-instructions source.
+Node is not used in the ported version. Corpus: 54 passed, 10 drifted, 9
+skipped, 0 errored of 73; 53/53 test projects green.

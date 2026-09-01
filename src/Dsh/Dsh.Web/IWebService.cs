@@ -9,7 +9,7 @@ namespace Dsh.Web;
 public static class WebSeam
 {
     /// <summary>What one search-capable backend is asked to search. Each request carries one query.</summary>
-    public sealed record SearchRequest(string Query, int? MaxResults = null);
+    public sealed record SearchRequest(string Query, int? MaxResults = null, Dsh.Session.Session? Session = null);
 
     /// <summary>One citeable source; a source always has a URL, the other fields are provider-optional.</summary>
     public sealed record SearchSource(string Url, string? Title = null, string? Snippet = null, string? PublishedAt = null);
@@ -83,7 +83,7 @@ public static class WebSeam
 /// failure; the local fetch provider additionally distinguishes invalid or blocked URLs, redirects,
 /// size and timeout limits, and unsupported content types.
 /// </summary>
-public sealed class WebError : Exception
+public sealed class WebError : Exception, Dsh.Tools.IToolErrorInfo
 {
     /// <summary>Create the error; <paramref name="code"/> is the stable machine code.</summary>
     public WebError(string message, string code)
@@ -98,6 +98,9 @@ public sealed class WebError : Exception
     {
         Code = code;
     }
+
+    /// <inheritdoc />
+    public string Name => "WebError";
 
     /// <summary>Stable machine-routable code; consumers must tolerate provider-specific codes.</summary>
     public string Code { get; }

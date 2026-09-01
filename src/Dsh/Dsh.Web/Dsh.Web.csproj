@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Dsh.Llm\Dsh.Llm.csproj" />
+    <ProjectReference Include="..\Dsh.Session\Dsh.Session.csproj" />
     <ProjectReference Include="..\Dsh.Tools\Dsh.Tools.csproj" />
   </ItemGroup>
 

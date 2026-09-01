@@ -235,6 +235,13 @@ public static class SnapshotNormalizer
                             {
                                 Claim(idText, "workflow", always: false);
                             }
+                            else if (pair.Key == "childId")
+                            {
+                                // A workflow agent's childId names a session (its header id); the
+                                // child log may not be part of this normalization, so the session
+                                // token is claimed from the reference itself.
+                                Claim(idText, "session", always: false);
+                            }
                             else if (IdKeyRegex.IsMatch(pair.Key))
                             {
                                 Claim(idText, "id", always: false);

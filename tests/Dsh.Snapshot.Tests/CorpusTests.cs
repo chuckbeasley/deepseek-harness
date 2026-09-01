@@ -292,6 +292,8 @@ public static class CorpusTests
                 && name != "message_feedback" && name != "terminal_open" && name != "terminal_read" && name != "terminal_send"
                 && name != "terminal_signal" && name != "terminal_close" && name != "terminal_list"
                 && name != "ralph" && name != "structured_output" && name != "lsp"
+                && name != "web_fetch" && name != "web_search"
+                && name != "workflow"
                 && name != "list_agents" && name != "send_message" && name != "subagent" && name != "ask_user_question"
                 && name != "skill" && name != "read_image")
             {
@@ -585,6 +587,11 @@ public static class CorpusTests
         if (compactionMaxTokens is not null) env["DSH_SNAPSHOT_COMPACTION_MAX_TOKENS"] = compactionMaxTokens;
         var lspConfig = LspConfigEnv(scenariosDir, scenario.Name, scenario.Composition, compositionOwners);
         if (lspConfig is not null) env["DSH_SNAPSHOT_LSP_CONFIG"] = lspConfig;
+        var webEnv = WebSnapshotEnv(scenariosDir, scenario.Name, scenario.Composition, compositionOwners);
+        if (webEnv is not null)
+        {
+            foreach (var pair in webEnv) env[pair.Key] = pair.Value;
+        }
         var hooks = HookConfigEnv(Path.Combine(scenariosDir, scenario.Name));
         if (hooks is not null)
         {
@@ -762,6 +769,46 @@ public static class CorpusTests
             ["maxLocations"] = maxLocations,
         };
         return JsonSerializer.Serialize(config);
+    }
+
+    /// <summary>The web snapshot channels: DSH_SNAPSHOT_WEB_FETCH when the scenario mounts the
+    /// recorded web-fetch fixture server, and the web-search-deepseek base URL/api key plus the
+    /// recorded error-fixture flag when the scenario configures the search provider. Node is not
+    /// used in the ported version; the embedded C# fixture servers answer the recorded authorities.
+    /// </summary>
+    private static IReadOnlyDictionary<string, string>? WebSnapshotEnv(string scenariosDir, string scenarioName, string composition, IReadOnlyDictionary<string, string> compositionOwners)
+    {
+        var patch = SnapshotPatchPath(scenariosDir, scenarioName, composition, compositionOwners);
+        if (patch is null) return null;
+        var env = new Dictionary<string, string>(StringComparer.Ordinal);
+        var lines = File.ReadAllLines(patch);
+        var fetchFixture = lines.Any(line => line.Contains("web-fetch-fixture-server", StringComparison.Ordinal));
+        if (fetchFixture) env["DSH_SNAPSHOT_WEB_FETCH"] = "1";
+        var inSearchBlock = false;
+        foreach (var line in lines)
+        {
+            if (Regex.IsMatch(line, @"^\s*-\s+id:\s*web-search-deepseek\s*$")) { inSearchBlock = true; continue; }
+            if (inSearchBlock && Regex.IsMatch(line, @"^\s*-\s+id:")) { inSearchBlock = false; continue; }
+            if (!inSearchBlock) continue;
+            var baseUrl = Regex.Match(line, @"^\s+baseURL:\s*(\S+)\s*$");
+            if (baseUrl.Success)
+            {
+                env["DSH_SNAPSHOT_WEB_SEARCH_BASE_URL"] = baseUrl.Groups[1].Value.Trim('\'', '"');
+                continue;
+            }
+            var apiKey = Regex.Match(line, @"^\s+apiKey:\s*(\S+)\s*$");
+            if (apiKey.Success)
+            {
+                env["DSH_SNAPSHOT_WEB_SEARCH_API_KEY"] = apiKey.Groups[1].Value.Trim('\'', '"');
+                continue;
+            }
+        }
+        if (env.ContainsKey("DSH_SNAPSHOT_WEB_SEARCH_BASE_URL"))
+        {
+            // The recorded error fixture answers the recorded authority.
+            env["DSH_SNAPSHOT_WEB_SEARCH_FIXTURE"] = "1";
+        }
+        return env.Count > 0 ? env : null;
     }
 
     /// <summary>The replay provider's per-model capability metadata declared in the scenario's

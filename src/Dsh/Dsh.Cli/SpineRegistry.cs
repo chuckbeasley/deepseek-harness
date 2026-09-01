@@ -210,11 +210,42 @@ public static class SpineRegistry
         }));
         catalog.Register("web", new SpinePlugin("web", (ctx, _) =>
         {
+            Dsh.Web.WebEventTypes.Register();
             var web = new Dsh.Web.WebRuntime(ctx);
-            var fetchRegistration = web.RegisterFetchProvider(new Dsh.Web.HttpWebProvider());
-            var fetchTool = ctx.Tools().Register(Dsh.Web.WebTools.WebFetchDefinition(web));
-            var searchTool = ctx.Tools().Register(Dsh.Web.WebTools.WebSearchDefinition(web));
-            return new SpineDisposables(searchTool, fetchTool, fetchRegistration, web);
+            var disposers = new List<IDisposable> { web };
+            // The corpus web-fetch fixture: the embedded loopback server answers the recorded
+            // public.test authority through an address-pinned handler (node is not used in the
+            // ported version); the default anonymous provider serves every other run.
+            if (Environment.GetEnvironmentVariable("DSH_SNAPSHOT_WEB_FETCH") == "1")
+            {
+                var server = new Dsh.Web.FixtureWebFetchServer();
+                disposers.Add(new CallbackDisposable(() => server.DisposeAsync().AsTask().GetAwaiter().GetResult()));
+                disposers.Add(web.RegisterFetchProvider(Dsh.Web.HttpWebProvider.WithAddressPin("public.test", 43117)));
+            }
+            else
+            {
+                disposers.Add(web.RegisterFetchProvider(new Dsh.Web.HttpWebProvider()));
+            }
+            disposers.Add(ctx.Tools().Register(Dsh.Web.WebTools.WebFetchDefinition(web)));
+            // The DeepSeek search provider mounts when a base URL is configured (the corpus
+            // channel is DSH_SNAPSHOT_WEB_SEARCH_BASE_URL; the recorded error fixture serves the
+            // Messages endpoint on the recorded authority).
+            var searchBase = Environment.GetEnvironmentVariable("DSH_SNAPSHOT_WEB_SEARCH_BASE_URL")
+                ?? Environment.GetEnvironmentVariable("DEEPSEEK_SEARCH_BASE_URL");
+            if (searchBase is not null)
+            {
+                if (Environment.GetEnvironmentVariable("DSH_SNAPSHOT_WEB_SEARCH_FIXTURE") == "1")
+                {
+                    var searchServer = new Dsh.Web.FixtureWebSearchServer();
+                    disposers.Add(new CallbackDisposable(() => searchServer.DisposeAsync().AsTask().GetAwaiter().GetResult()));
+                }
+                var apiKey = Environment.GetEnvironmentVariable("DSH_SNAPSHOT_WEB_SEARCH_API_KEY")
+                    ?? Environment.GetEnvironmentVariable("DEEPSEEK_SEARCH_API_KEY")
+                    ?? string.Empty;
+                disposers.Add(web.RegisterSearchProvider(new Dsh.Web.DeepSeekSearchProvider(apiKey, searchBase)));
+            }
+            disposers.Add(ctx.Tools().Register(Dsh.Web.WebTools.WebSearchDefinition(web)));
+            return new SpineDisposables(disposers.ToArray());
         }));
         catalog.Register("credentials", new SpinePlugin("credentials", (ctx, _) => new Dsh.Credentials.LocalCredentialsProvider(ctx)));
         catalog.Register("settings", new SpinePlugin("settings", (ctx, config) =>
@@ -319,6 +350,26 @@ public static class SpineRegistry
             ctx.Set("preset", provider);
             return null;
         }));
+        catalog.Register("workspaceInstructions", new SpinePlugin("workspaceInstructions", (ctx, _) =>
+            ctx.On("agent/pre-step",
+                new Func<Dsh.AgentLoop.PreStepProposal, Func<Task<Dsh.AgentLoop.PreStepDecision>>, Task<Dsh.AgentLoop.PreStepDecision>>(async (proposal, next) =>
+                {
+                    var downstream = await next();
+                    if (downstream is not Dsh.AgentLoop.EnterDecision enter || enter.Messages.Count == 0) return downstream;
+                    var cwd = Environment.CurrentDirectory;
+                    var candidate = new[] { "AGENTS.md", "CLAUDE.md" }
+                        .Select(name => Path.Combine(cwd, name))
+                        .FirstOrDefault(File.Exists);
+                    if (candidate is null) return downstream;
+                    var message = BuildWorkspaceInstructionsMessage(Path.GetFileName(candidate), File.ReadAllText(candidate), cwd);
+                    // The runtime-context message is the last entered message; the instructions
+                    // land between the claimed batch and it (the recorded order).
+                    var messages = enter.Messages.ToList();
+                    var insertAt = messages.Count - 1;
+                    if (insertAt < 0) insertAt = 0;
+                    messages.Insert(insertAt, message);
+                    return new Dsh.AgentLoop.EnterDecision(messages, enter.Assembly);
+                }))));
         catalog.Register("skill", new SpinePlugin("skill", (ctx, config) =>
         {
             var root = ConfigString(config, "root")
@@ -471,6 +522,15 @@ public static class SpineRegistry
                 Dsh.Workflow.RalphTool.InstallDescriptorListener(ctx),
             });
         }));
+        catalog.Register("workflowTool", new SpinePlugin("workflowTool", (ctx, _) =>
+        {
+            // The script-based workflow tool mounts with the workflow row; this row exists so a
+            // composition can mount the tool without the engine (unused by the base bundle).
+            var loop = ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
+                ?? throw new InvalidOperationException("workflowTool requires the \"agentLoop\" row");
+            Dsh.Workflow.WorkflowEventTypes.Register();
+            return new SpineDisposables(ctx.Tools().Register(Dsh.Workflow.WorkflowTool.Definition(loop)));
+        }));
         catalog.Register("lsp", new SpinePlugin("lsp", (ctx, _) =>
         {
             // The provider mounts only when a server configuration is present (the corpus
@@ -555,8 +615,11 @@ public static class SpineRegistry
         }));
         catalog.Register("workflow", new SpinePlugin("workflow", (ctx, _) =>
         {
+            var loop = ctx.Get<Dsh.AgentLoop.AgentLoop>("agentLoop")
+                ?? throw new InvalidOperationException("workflow requires the \"agentLoop\" row");
             var service = new Dsh.Workflow.WorkerThreadWorkflowProvider(ctx);
-            var registration = ctx.Tools().Register(Dsh.Workflow.WorkflowTools.Definition(ctx));
+            Dsh.Workflow.WorkflowEventTypes.Register();
+            var registration = ctx.Tools().Register(Dsh.Workflow.WorkflowTool.Definition(loop));
             return new SpineDisposables(registration, service);
         }));
         catalog.Register("webhook", new SpinePlugin("webhook", (ctx, _) => new Dsh.Webhook.WebhookRuntime(ctx)));
@@ -905,6 +968,38 @@ public static class SpineRegistry
 
     private static int? EnvInt(string name)
         => int.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : null;
+
+    /// <summary>
+    /// The workspace-instructions reminder: a system-reminder user message carrying the root
+    /// AGENTS.md/CLAUDE.md content, the baseline identity, and the file changes (the recorded
+    /// agent-instructions source shape).
+    /// </summary>
+    private static Dsh.Llm.UserMessage BuildWorkspaceInstructionsMessage(string fileName, string content, string cwd)
+    {
+        var digest = Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(content))).ToLowerInvariant();
+        var baselineIdentity = "{\"projectRoot\":\"\",\"projectRootMarkers\":[\".git\"],\"maxBytes\":65536,\"maxSourceBytes\":1048576,"
+            + "\"instructionFileCandidates\":[\"AGENTS.md\",\"CLAUDE.md\"],\"localInstructionFileCandidates\":[\"AGENTS.local.md\",\"CLAUDE.local.md\"]}";
+        var text = "<system-reminder>\n"
+            + "The following workspace instructions may be relevant to your work. Use them as guidance when applicable. "
+            + "More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\n\n"
+            + $"Instructions from: {fileName}\n\n{content.TrimEnd('\n', '\r')}\n\n</system-reminder>";
+        var relative = fileName;
+        return new Dsh.Llm.UserMessage
+        {
+            Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("D")),
+            Content = new Dsh.Llm.ContentBlock[] { new Dsh.Llm.TextBlock(text) },
+            Source = new Dsh.Llm.AgentInstructionsSource
+            {
+                Form = "instructions",
+                Baseline = true,
+                BaselineIdentity = baselineIdentity,
+                Changes = new[]
+                {
+                    new Dsh.Llm.InstructionChange("set", ".\u0000" + relative, relative, digest),
+                },
+            },
+        };
+    }
 
     private static bool? EnvBool(string name)
         => bool.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : null;

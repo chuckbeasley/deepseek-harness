@@ -116,6 +116,9 @@
     - id: skill
       name: skill
 
+    - id: workspaceInstructions
+      name: workspaceInstructions
+
     - id: terminal
       name: terminal
 

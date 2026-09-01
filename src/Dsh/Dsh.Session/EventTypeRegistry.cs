@@ -79,10 +79,13 @@ public static class SessionEventTypes
             for (var index = typeInfo.Properties.Count - 1; index >= 0; index--)
             {
                 var property = typeInfo.Properties[index];
-                // "id" is removed only for the base envelope declaration: a plugin event that
-                // declares its own payload "id" (e.g. approval/asked) keeps it in the data.
-                if (property.Name is "seq" or "timeMs" or "type" or "surfaceOp" or "sourceEventSeqs"
-                    || (property.Name == "id" && property.DeclaringType == typeof(SessionEvent)))
+                // "type" and "timeMs" are envelope-only names (every event overrides the abstract
+                // Type, so the declaring type cannot gate them). "seq" and "id" are removed only
+                // for their base declaration: a plugin event that declares its own payload "id"
+                // (e.g. approval/asked) or "seq" (e.g. the tool-workflow agent records) keeps it.
+                var baseEnvelope = property.DeclaringType == typeof(SessionEvent)
+                    && property.Name is "seq" or "id";
+                if (baseEnvelope || property.Name is "type" or "timeMs" or "surfaceOp" or "sourceEventSeqs")
                 {
                     typeInfo.Properties.RemoveAt(index);
                 }
