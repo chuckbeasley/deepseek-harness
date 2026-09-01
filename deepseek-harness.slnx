@@ -71,6 +71,7 @@
     <Project Path="src/Dsh/Dsh.Lsp/Dsh.Lsp.csproj" />
     <Project Path="src/Dsh/Dsh.Subagent/Dsh.Subagent.csproj" />
     <Project Path="src/Dsh/Dsh.Tools/Dsh.Tools.csproj" />
+<Project Path="src/Dsh/Dsh.Code/Dsh.Code.csproj" />
     <Project Path="src/Dsh/Dsh.Todo/Dsh.Todo.csproj" />
   </Folder>
   <Folder Name="/tests/">
@@ -92,6 +93,7 @@
     <Project Path="tests/Dsh.Skill.Tests/Dsh.Skill.Tests.csproj" />
     <Project Path="tests/Dsh.Subprocess.Tests/Dsh.Subprocess.Tests.csproj" />
     <Project Path="tests/Dsh.Cli.Tests/Dsh.Cli.Tests.csproj" />
+<Project Path="tests/Dsh.Code.Tests/Dsh.Code.Tests.csproj" />
     <Project Path="tests/Dsh.Credentials.Tests/Dsh.Credentials.Tests.csproj" />
     <Project Path="tests/Dsh.Llm.DeepSeek.Tests/Dsh.Llm.DeepSeek.Tests.csproj" />
     <Project Path="tests/Dsh.Session.Persistence.Tests/Dsh.Session.Persistence.Tests.csproj" />

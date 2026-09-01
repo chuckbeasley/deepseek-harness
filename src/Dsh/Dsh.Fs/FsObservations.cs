@@ -39,4 +39,10 @@ public sealed class FsObservations
     /// <summary>The last observation for one session/target, or <c>null</c> when the target was never observed.</summary>
     public FsObserved? Get(string? sessionId, string targetKey)
         => sessionId is null ? null : _bySession.GetValueOrDefault(sessionId)?.GetValueOrDefault(targetKey);
+
+    /// <summary>The observed target keys for one session, in first-observation order.</summary>
+    public IReadOnlyList<string> Targets(string? sessionId)
+        => sessionId is null || !_bySession.TryGetValue(sessionId, out var byTarget)
+            ? Array.Empty<string>()
+            : byTarget.Keys.ToArray();
 }

@@ -180,6 +180,7 @@ public static class SpineRegistry
             }
             var service = new Dsh.Fs.LocalFileSystemProvider(ctx, new Dsh.Fs.FsProviderConfig(root, diffBasis ?? 10 * 1024 * 1024));
             var observations = new Dsh.Fs.FsObservations();
+            ctx.Set("fsObservations", observations);
             var read = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Read(service, observations: observations));
             var write = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Write(service, observations));
             var edit = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Edit(service, observations));
@@ -207,6 +208,11 @@ public static class SpineRegistry
             var service = new Dsh.Plan.SessionPlanService(ctx);
             var registration = ctx.Tools().Register(Dsh.Plan.PlanTools.Definition());
             return new SpineDisposables(registration, service);
+        }));
+        catalog.Register("runCode", new SpinePlugin("runCode", (ctx, _) =>
+        {
+            Dsh.Code.CodeEventTypes.Register();
+            return new SpineDisposables(ctx.Tools().Register(Dsh.Code.RunCodeTool.Definition(ctx.Tools())));
         }));
         catalog.Register("web", new SpinePlugin("web", (ctx, _) =>
         {
@@ -351,25 +357,71 @@ public static class SpineRegistry
             return null;
         }));
         catalog.Register("workspaceInstructions", new SpinePlugin("workspaceInstructions", (ctx, _) =>
-            ctx.On("agent/pre-step",
+        {
+            // The baseline message carries the root instruction files; a step's fs observations
+            // queue a refresh that the next pre-step drains: newly discovered instruction files
+            // under observed directories are prepended into the next-step inbox, removed again as
+            // canceled, and folded into the entered batch (the recorded agent-instructions flow).
+            var observations = ctx.Get<Dsh.Fs.FsObservations>("fsObservations");
+            var messaged = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+            var refreshQueued = new HashSet<string>(StringComparer.Ordinal);
+            var disposers = new List<IDisposable>();
+            if (observations is not null)
+            {
+                disposers.Add(ctx.On("session/event",
+                    new Action<Dsh.Session.Session, Dsh.Session.SessionEvent>((session, evt) =>
+                    {
+                        if (evt is Dsh.Session.StepEndEvent) refreshQueued.Add(session.Id.Value);
+                    })));
+            }
+            disposers.Add(ctx.On("agent/pre-step",
                 new Func<Dsh.AgentLoop.PreStepProposal, Func<Task<Dsh.AgentLoop.PreStepDecision>>, Task<Dsh.AgentLoop.PreStepDecision>>(async (proposal, next) =>
                 {
                     var downstream = await next();
-                    if (downstream is not Dsh.AgentLoop.EnterDecision enter || enter.Messages.Count == 0) return downstream;
+                    if (downstream is not Dsh.AgentLoop.EnterDecision enter) return downstream;
+                    var session = proposal.Agent.Session;
                     var cwd = Environment.CurrentDirectory;
+                    if (!messaged.TryGetValue(session.Id.Value, out var known))
+                    {
+                        known = new HashSet<string>(StringComparer.Ordinal);
+                        messaged[session.Id.Value] = known;
+                    }
+                    // The refresh (queued at the prior step/end) discovers instruction files under
+                    // the step's observed directories and delivers them as an additional message.
+                    if (observations is not null && refreshQueued.Remove(session.Id.Value))
+                    {
+                        var desired = RefreshMessage(session, observations, cwd, known);
+                        if (desired is not null)
+                        {
+                            proposal.Agent.Inbox.Prepend(Dsh.Agent.InboxTarget.NextStep, desired);
+                            foreach (var pending in proposal.Agent.Inbox.NextStep.ToArray())
+                            {
+                                proposal.Agent.Inbox.Remove(pending.Id);
+                            }
+                            var refreshed = enter.Messages.ToList();
+                            var insertAt = refreshed.Count - 1;
+                            if (insertAt < 0) insertAt = 0;
+                            refreshed.Insert(insertAt, desired);
+                            return new Dsh.AgentLoop.EnterDecision(refreshed, enter.Assembly);
+                        }
+                    }
+                    // The baseline message carries the root instruction files.
                     var candidate = new[] { "AGENTS.md", "CLAUDE.md" }
                         .Select(name => Path.Combine(cwd, name))
                         .FirstOrDefault(File.Exists);
-                    if (candidate is null) return downstream;
+                    if (candidate is null || known.Contains(Path.GetFileName(candidate))) return downstream;
                     var message = BuildWorkspaceInstructionsMessage(Path.GetFileName(candidate), File.ReadAllText(candidate), cwd);
+                    known.Add(Path.GetFileName(candidate));
                     // The runtime-context message is the last entered message; the instructions
                     // land between the claimed batch and it (the recorded order).
                     var messages = enter.Messages.ToList();
-                    var insertAt = messages.Count - 1;
-                    if (insertAt < 0) insertAt = 0;
-                    messages.Insert(insertAt, message);
+                    var baselineInsertAt = messages.Count - 1;
+                    if (baselineInsertAt < 0) baselineInsertAt = 0;
+                    messages.Insert(baselineInsertAt, message);
                     return new Dsh.AgentLoop.EnterDecision(messages, enter.Assembly);
-                }))));
+                })));
+            return new SpineDisposables(disposers.ToArray());
+        }));
         catalog.Register("skill", new SpinePlugin("skill", (ctx, config) =>
         {
             var root = ConfigString(config, "root")
@@ -968,6 +1020,53 @@ public static class SpineRegistry
 
     private static int? EnvInt(string name)
         => int.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : null;
+
+    /// <summary>
+    /// The refresh message for newly discovered instruction files under a step's observed
+    /// directories (the recorded "Additional instructions from:" form). Returns null when no new
+    /// file is found; the first new file per refresh is delivered.
+    /// </summary>
+    private static Dsh.Llm.UserMessage? RefreshMessage(
+        Dsh.Session.Session session, Dsh.Fs.FsObservations observations, string cwd, HashSet<string> known)
+    {
+        var candidates = new[] { "AGENTS.md", "CLAUDE.md", "AGENTS.local.md", "CLAUDE.local.md" };
+        var scanned = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var target in observations.Targets(session.Id.Value))
+        {
+            var directory = Path.GetDirectoryName(target);
+            if (string.IsNullOrEmpty(directory) || !scanned.Add(directory)) continue;
+            foreach (var name in candidates)
+            {
+                var path = Path.Combine(directory, name);
+                if (!File.Exists(path) || known.Contains(path)) continue;
+                var relative = Path.GetRelativePath(cwd, path).Replace('\\', '/');
+                if (relative.StartsWith("..", StringComparison.Ordinal)) continue;
+                var relativeDir = Path.GetDirectoryName(relative)?.Replace('\\', '/') ?? string.Empty;
+                var content = File.ReadAllText(path);
+                var digest = Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(content))).ToLowerInvariant();
+                known.Add(path);
+                var text = "<system-reminder>\n"
+                    + $"Additional instructions from: {relative}\n\n"
+                    + $"These instructions apply to work under `{relativeDir}`. Use them as guidance when relevant; "
+                    + "more specific instructions take precedence. They do not override system, developer, or direct user instructions.\n\n"
+                    + $"{content.TrimEnd('\n', '\r')}\n\n</system-reminder>";
+                return new Dsh.Llm.UserMessage
+                {
+                    Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("D")),
+                    Content = new Dsh.Llm.ContentBlock[] { new Dsh.Llm.TextBlock(text) },
+                    Source = new Dsh.Llm.AgentInstructionsSource
+                    {
+                        Form = "instructions",
+                        Changes = new[]
+                        {
+                            new Dsh.Llm.InstructionChange("set", relativeDir + "\u0000" + name, relative, digest),
+                        },
+                    },
+                };
+            }
+        }
+        return null;
+    }
 
     /// <summary>
     /// The workspace-instructions reminder: a system-reminder user message carrying the root

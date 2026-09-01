@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Dsh.Code.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Code\Dsh.Code.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Session\Dsh.Session.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Tools\Dsh.Tools.csproj" />
+    <ProjectReference Include="..\..\src\Dsh\Dsh.Llm\Dsh.Llm.csproj" />
+  </ItemGroup>
+
+</Project>

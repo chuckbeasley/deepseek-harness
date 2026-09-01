@@ -35,6 +35,9 @@
       config:
         allowParallelInProgress: true
 
+    - id: runCode
+      name: runCode
+
     - id: subprocess
       name: subprocess
 

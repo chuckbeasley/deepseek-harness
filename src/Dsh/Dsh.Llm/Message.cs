@@ -100,8 +100,8 @@ public sealed record AgentInstructionsSource : MessageSource
     /// <summary>Optional form of the contribution (e.g. "instructions").</summary>
     public string? Form { get; init; }
 
-    /// <summary>Whether the message carries the baseline instruction set.</summary>
-    public bool Baseline { get; init; }
+    /// <summary>Whether the message carries the baseline instruction set; absent for refresh deltas.</summary>
+    public bool? Baseline { get; init; }
 
     /// <summary>The serialized baseline identity JSON (the recorded string form).</summary>
     public string? BaselineIdentity { get; init; }

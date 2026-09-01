@@ -293,7 +293,7 @@ public static class CorpusTests
                 && name != "terminal_signal" && name != "terminal_close" && name != "terminal_list"
                 && name != "ralph" && name != "structured_output" && name != "lsp"
                 && name != "web_fetch" && name != "web_search"
-                && name != "workflow"
+                && name != "workflow" && name != "run_code"
                 && name != "list_agents" && name != "send_message" && name != "subagent" && name != "ask_user_question"
                 && name != "skill" && name != "read_image")
             {
