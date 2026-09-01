@@ -10,8 +10,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
     <!-- The process connection spawns through the Dsh.Subprocess seam types (SubprocessSpawnSpec,
-         ProcessTree); the pipe-mode surface itself is the Dsh.Lsp §9.2 fallback. -->
+         ProcessTree); the pipe-mode surface itself is the Dsh.Lsp 9.2 fallback. -->
     <ProjectReference Include="..\Dsh.Subprocess\Dsh.Subprocess.csproj" />
+    <ProjectReference Include="..\Dsh.Llm\Dsh.Llm.csproj" />
+    <ProjectReference Include="..\Dsh.Tools\Dsh.Tools.csproj" />
   </ItemGroup>
 
   <ItemGroup>

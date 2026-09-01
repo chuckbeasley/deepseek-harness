@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Cordis.Core;
 using Cordis.Plugin.Loader;
 using Dsh.Web.App;
@@ -470,6 +471,50 @@ public static class SpineRegistry
                 Dsh.Workflow.RalphTool.InstallDescriptorListener(ctx),
             });
         }));
+        catalog.Register("lsp", new SpinePlugin("lsp", (ctx, _) =>
+        {
+            // The provider mounts only when a server configuration is present (the corpus
+            // channel is DSH_SNAPSHOT_LSP_CONFIG; shipped profiles without one register nothing).
+            var configJson = Environment.GetEnvironmentVariable("DSH_SNAPSHOT_LSP_CONFIG");
+            if (string.IsNullOrWhiteSpace(configJson)) return null;
+            var config = ParseLspConfig(configJson);
+            var service = new Dsh.Lsp.LspService(ctx);
+            IDisposable tool;
+            IDisposable providerDisposal;
+            if (config.Kind == "fixture")
+            {
+                // The recorded corpus runs an embedded fixture server (node is not used in the
+                // ported version): no process is spawned.
+                var provider = new Dsh.Lsp.FixtureLspProvider(
+                    new Dsh.Lsp.LspProviderId(config.ProviderId), config.ExtensionToLanguage);
+                var registration = service.RegisterProvider(provider);
+                tool = ctx.Tools().Register(Dsh.Lsp.ToolLsp.Definition(service, config.MaxLocations));
+                providerDisposal = new CallbackDisposable(registration);
+                return new SpineDisposables(new IDisposable[] { tool, providerDisposal, service });
+            }
+            var cwd = Environment.CurrentDirectory;
+            var spec = new Dsh.Lsp.LspInstanceSpec(
+                config.Command, config.Args, cwd,
+                Env: new Dictionary<string, string>(),
+                MaxMessageBytes: 4 * 1024 * 1024,
+                MaxStderrBytes: 64 * 1024,
+                KillGraceMs: 1000,
+                Configuration: null,
+                WorkspaceUri: new Uri(cwd + Path.DirectorySeparatorChar).AbsoluteUri,
+                InitializationOptions: null,
+                ShutdownTimeoutMs: 1000);
+            var stdioProvider = new Dsh.Lsp.StdioLspProvider(new Dsh.Lsp.LspProviderId(config.ProviderId), spec, config.ExtensionToLanguage);
+            var stdioRegistration = service.RegisterProvider(stdioProvider);
+            tool = ctx.Tools().Register(Dsh.Lsp.ToolLsp.Definition(service, config.MaxLocations));
+            providerDisposal = new CallbackDisposable(stdioRegistration);
+            return new SpineDisposables(new IDisposable[]
+            {
+                tool,
+                providerDisposal,
+                new CallbackDisposable(() => stdioProvider.DisposeAsync().AsTask().GetAwaiter().GetResult()),
+                service,
+            });
+        }));
         catalog.Register("sdkSubagent", new SpinePlugin("sdkSubagent", (ctx, config) =>
         {
             var service = ctx.Get<Dsh.Subagent.ISubagentService>("subagent")
@@ -863,6 +908,49 @@ public static class SpineRegistry
 
     private static bool? EnvBool(string name)
         => bool.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : null;
+
+    /// <summary>The corpus LSP server configuration parsed from DSH_SNAPSHOT_LSP_CONFIG.</summary>
+    private sealed record LspServerConfig(
+        string ProviderId, string Kind, string Command, IReadOnlyList<string> Args,
+        IReadOnlyDictionary<string, string> ExtensionToLanguage, int MaxLocations);
+
+    private static LspServerConfig ParseLspConfig(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            var command = root.TryGetProperty("command", out var commandValue) && commandValue.ValueKind == JsonValueKind.String
+                ? commandValue.GetString() ?? string.Empty
+                : string.Empty;
+            var args = root.TryGetProperty("args", out var argsValue) && argsValue.ValueKind == JsonValueKind.Array
+                ? argsValue.EnumerateArray().Select(item => item.GetString() ?? string.Empty).ToArray()
+                : Array.Empty<string>();
+            var extensions = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (root.TryGetProperty("extensionToLanguage", out var map) && map.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var pair in map.EnumerateObject()) extensions[pair.Name] = pair.Value.GetString() ?? string.Empty;
+            }
+            var maxLocations = root.TryGetProperty("maxLocations", out var max) && max.ValueKind == JsonValueKind.Number
+                ? max.GetInt32()
+                : Dsh.Lsp.LspRender.DefaultMaxLocations;
+            var providerId = root.TryGetProperty("providerId", out var id) && id.ValueKind == JsonValueKind.String
+                ? id.GetString() ?? "lsp"
+                : "lsp";
+            var kind = root.TryGetProperty("kind", out var kindValue) && kindValue.ValueKind == JsonValueKind.String
+                ? kindValue.GetString() ?? "stdio"
+                : "stdio";
+            if (kind == "stdio" && command.Length == 0)
+            {
+                throw new InvalidOperationException("DSH_SNAPSHOT_LSP_CONFIG: command must be a non-empty string");
+            }
+            return new LspServerConfig(providerId, kind, command, args, extensions, maxLocations);
+        }
+        catch (Exception error) when (error is not InvalidOperationException)
+        {
+            throw new InvalidOperationException($"DSH_SNAPSHOT_LSP_CONFIG is not valid server configuration: {error.Message}");
+        }
+    }
 
     private static IReadOnlyList<string> ConfigStrings(object? config, string key)
         => config is Dictionary<string, object?> map && map.TryGetValue(key, out var value) && value is List<object?> list

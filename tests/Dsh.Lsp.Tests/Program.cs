@@ -5,6 +5,8 @@ public static class Program
 {
     private static readonly (string Name, Func<Task> Run)[] Suites = new (string, Func<Task>)[]
     {
+        // Probe: the recorded corpus path through the embedded fixture server (no node).
+        ("probe: fixture provider reproduces the recorded render", NodeServerProbe.FixtureProvider_ReproducesTheRecordedRender),
         // Transport over in-memory duplexes (existing).
         ("transport round-trips a framed message", LspTests.Transport_RoundTripsAFramedMessage),
         ("client request gets its response", LspTests.Client_RequestGetsItsResponse),
@@ -101,6 +103,8 @@ public static class Program
         ("formatHover keeps the truncation marker inside the cap", ToolRenderTests.FormatHover_TruncationMarkerInsideCap),
         ("renderUri renders workspace-relative, absolute, and verbatim URIs", ToolRenderTests.RenderUri_WorkspaceRelative_Inside_And_Absolute_Outside_And_Verbatim_NonFile),
         ("presentLspCall carries the operation and cursor in the title", ToolRenderTests.PresentLspCall_TitleCarriesOperationAndCursor),
+        ("the mounted lsp tool queries and renders the recording", ToolLspTests.ToolLsp_QueriesThroughTheService_AndRendersTheRecording),
+        ("the service routes by the final extension", ToolLspTests.LspService_RoutesByFinalExtension),
     };
 
     public static int Main()

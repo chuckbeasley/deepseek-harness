@@ -291,7 +291,7 @@ public static class CorpusTests
                 && name != "job_list" && name != "job_output" && name != "job_kill" && name != "workflow"
                 && name != "message_feedback" && name != "terminal_open" && name != "terminal_read" && name != "terminal_send"
                 && name != "terminal_signal" && name != "terminal_close" && name != "terminal_list"
-                && name != "ralph" && name != "structured_output"
+                && name != "ralph" && name != "structured_output" && name != "lsp"
                 && name != "list_agents" && name != "send_message" && name != "subagent" && name != "ask_user_question"
                 && name != "skill" && name != "read_image")
             {
@@ -583,6 +583,8 @@ public static class CorpusTests
         env["DSH_SNAPSHOT_SPILL_ROOT"] = SpillRoot(scenario.Name);
         var compactionMaxTokens = CompactionMaxTokensEnv(scenariosDir, scenario.Name, scenario.Composition, compositionOwners);
         if (compactionMaxTokens is not null) env["DSH_SNAPSHOT_COMPACTION_MAX_TOKENS"] = compactionMaxTokens;
+        var lspConfig = LspConfigEnv(scenariosDir, scenario.Name, scenario.Composition, compositionOwners);
+        if (lspConfig is not null) env["DSH_SNAPSHOT_LSP_CONFIG"] = lspConfig;
         var hooks = HookConfigEnv(Path.Combine(scenariosDir, scenario.Name));
         if (hooks is not null)
         {
@@ -688,6 +690,78 @@ public static class CorpusTests
             if (match.Success) return match.Groups[1].Value;
         }
         return null;
+    }
+
+    /// <summary>The scenario's (or its composition's) lsp-stdio server configuration plus the
+    /// tool-lsp location cap, as the DSH_SNAPSHOT_LSP_CONFIG env JSON; null when the scenario
+    /// declares no lsp-stdio block. The recorded <c>process.execPath</c> command maps to the
+    /// host's <c>node</c>.
+    /// </summary>
+    private static string? LspConfigEnv(string scenariosDir, string scenarioName, string composition, IReadOnlyDictionary<string, string> compositionOwners)
+    {
+        var patch = SnapshotPatchPath(scenariosDir, scenarioName, composition, compositionOwners);
+        if (patch is null) return null;
+        var lines = File.ReadAllLines(patch);
+        var inStdio = false;
+        var inServer = false;
+        string? command = null;
+        var args = new List<string>();
+        var extensions = new Dictionary<string, string>(StringComparer.Ordinal);
+        var maxLocations = 100;
+        foreach (var line in lines)
+        {
+            if (Regex.IsMatch(line, @"^\s*-\s+id:\s*lsp-stdio\s*$")) { inStdio = true; continue; }
+            if (inStdio && Regex.IsMatch(line, @"^\s*-\s+id:\s*tool-lsp\s*$"))
+            {
+                inStdio = false;
+                continue;
+            }
+            if (!inStdio)
+            {
+                var toolCap = Regex.Match(line, @"^\s+maxLocations:\s*(\d+)");
+                if (toolCap.Success) maxLocations = int.Parse(toolCap.Groups[1].Value);
+                continue;
+            }
+            if (Regex.IsMatch(line, @"^\s+servers:\s*$")) { inServer = false; continue; }
+            if (inServer)
+            {
+                if (command is null && Regex.IsMatch(line, @"^\s+command:\s*"))
+                {
+                    command = Regex.IsMatch(line, @"process\.execPath") ? "node" : Regex.Replace(line, @"^\s+command:\s*", "").Trim();
+                    continue;
+                }
+                var inlineArgs = Regex.Match(line, @"^\s+args:\s*\[(.*)\]\s*$");
+                if (inlineArgs.Success)
+                {
+                    foreach (var item in inlineArgs.Groups[1].Value.Split(','))
+                    {
+                        var cleaned = item.Trim().Trim('\'', '"');
+                        if (cleaned.Length > 0) args.Add(cleaned);
+                    }
+                    continue;
+                }
+                var arg = Regex.Match(line, @"^\s+-\s*'([^']+)'");
+                if (arg.Success) { args.Add(arg.Groups[1].Value); continue; }
+                var ext = Regex.Match(line, @"^\s+'(\.[^']+)':\s*([A-Za-z0-9_.-]+)\s*$");
+                if (ext.Success) { extensions[ext.Groups[1].Value] = ext.Groups[2].Value; continue; }
+                continue;
+            }
+            if (Regex.IsMatch(line, @"^\s+[A-Za-z0-9_.-]+:\s*$") && !line.Contains("extensionToLanguage")) inServer = true;
+        }
+        if (command is null) return null;
+        // The recorded lsp-server.mjs fixture runs as the embedded C# server (node is not used in
+        // the ported version): the runner maps the fixture config to kind "fixture".
+        var kind = args.Any(arg => arg.Contains("lsp-server.mjs", StringComparison.Ordinal)) ? "fixture" : "stdio";
+        var config = new Dictionary<string, object?>
+        {
+            ["providerId"] = "fixture",
+            ["kind"] = kind,
+            ["command"] = command,
+            ["args"] = args,
+            ["extensionToLanguage"] = extensions,
+            ["maxLocations"] = maxLocations,
+        };
+        return JsonSerializer.Serialize(config);
     }
 
     /// <summary>The replay provider's per-model capability metadata declared in the scenario's

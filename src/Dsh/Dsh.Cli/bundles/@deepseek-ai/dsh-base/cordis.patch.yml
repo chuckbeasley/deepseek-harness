@@ -130,6 +130,9 @@
     - id: ralph
       name: ralph
 
+    - id: lsp
+      name: lsp
+
     - id: jobs
       name: jobs
 

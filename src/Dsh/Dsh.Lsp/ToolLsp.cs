@@ -1,3 +1,8 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Dsh.Llm;
+using Dsh.Tools;
+
 namespace Dsh.Lsp;
 
 /// <summary>The raw, schema-typed <c>lsp</c> tool arguments (one-based model coordinates).</summary>
@@ -13,13 +18,17 @@ public sealed record LspCallView(string Card, string Kind, string Title, IReadOn
 public sealed record LspCallLocation(string Path, int Line);
 
 /// <summary>
-/// The model-facing <c>lsp</c> tool (port of <c>tool-lsp</c>, Wave 3 subset): argument parsing and pure
-/// rendering only — tool registration against the harness tools runtime arrives with the plugin wiring.
+/// The model-facing <c>lsp</c> tool (port of tool-lsp): argument parsing, the seam query, and the
+/// pure location/hover rendering. The tool result carries no persisted meta (the recorded corpus
+/// shape).
 /// </summary>
 public static class ToolLsp
 {
-    /// <summary>The four operations the tool exposes, in schema-enum order.</summary>
-    public static readonly string[] Operations = { "goToDefinition", "findReferences", "goToImplementation", "hover" };
+    private const string ParametersSchema =
+        "{\"operation\":{\"type\":\"string\",\"required\":true,\"enum\":[\"goToDefinition\",\"findReferences\",\"goToImplementation\",\"hover\"]},"
+        + "\"file_path\":{\"type\":\"string\",\"required\":true},"
+        + "\"line\":{\"type\":\"number\",\"required\":true},"
+        + "\"character\":{\"type\":\"number\",\"required\":true}}";
 
     /// <summary>
     /// Validate and convert model arguments: <c>operation</c> must be one of the four; <c>line</c> and
@@ -35,5 +44,51 @@ public static class ToolLsp
         if (args.Character < 1) throw new ArgumentException("character must be a positive integer (one-based)");
         // The model counts from 1; the seam (and protocol) count from 0.
         return new LspToolInput(operation, args.FilePath, new LspPosition(args.Line - 1, args.Character - 1));
+    }
+
+    /// <summary>Build the tool over the mounted LSP service.</summary>
+    /// <param name="service">the routing service (ctx.lsp).</param>
+    /// <param name="maxLocations">the cap before the omission marker is appended.</param>
+    /// <param name="maxResultChars">the complete rendered-text cap.</param>
+    public static ToolDefinition Definition(ILspService service, int maxLocations = LspRender.DefaultMaxLocations, int maxResultChars = LspRender.DefaultMaxResultChars)
+    {
+        ArgumentNullException.ThrowIfNull(service);
+        return new ToolDefinition(
+            Name: "lsp",
+            Description: "Query a language server for navigation and documentation at a file position (one-based line and character).",
+            Parameters: JsonSerializer.SerializeToElement(JsonNode.Parse(ParametersSchema)!),
+            OutputSchema: JsonSerializer.SerializeToElement(JsonNode.Parse("{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"kind\":{\"type\":\"string\",\"required\":true},\"text\":{\"type\":\"string\",\"required\":true}}}")!),
+            Execute: (args, context) => ExecuteAsync(service, args, context, maxLocations, maxResultChars),
+            Render: (_, value) => new ContentBlock[] { new TextBlock(value.GetProperty("text").GetString() ?? string.Empty) },
+            PersistMeta: false);
+    }
+
+    private static async Task<JsonElement> ExecuteAsync(
+        ILspService service, JsonElement args, ToolRunContext context, int maxLocations, int maxResultChars)
+    {
+        if (args.ValueKind != JsonValueKind.Object)
+        {
+            throw new ArgumentException("lsp: invalid arguments");
+        }
+        var parsed = new LspToolArgs(
+            args.TryGetProperty("operation", out var operation) ? operation.GetString() ?? string.Empty : string.Empty,
+            args.TryGetProperty("file_path", out var filePath) ? filePath.GetString() ?? string.Empty : string.Empty,
+            args.TryGetProperty("line", out var line) ? line.GetInt32() : 0,
+            args.TryGetProperty("character", out var character) ? character.GetInt32() : 0);
+        var input = ToolLsp.ParseLspArgs(parsed);
+        var result = await service.QueryAsync(new LspQueryRequest(
+            input.Operation, input.FilePath, input.Position, WorkspaceRoot: Environment.CurrentDirectory), context.CancellationToken)
+            .ConfigureAwait(false);
+        var text = result switch
+        {
+            LspLocationsResult locations => LspRender.FormatLocations(locations.Locations, locations.ResolvedWorkspaceUri, maxLocations, maxResultChars),
+            LspHoverResult hover => LspRender.FormatHover(hover.Hover, maxResultChars),
+            _ => throw new InvalidOperationException($"lsp: unknown result kind {result.Kind}"),
+        };
+        return JsonSerializer.SerializeToElement(new JsonObject
+        {
+            ["kind"] = result.Kind,
+            ["text"] = text,
+        });
     }
 }
