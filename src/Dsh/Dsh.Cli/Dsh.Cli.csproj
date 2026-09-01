@@ -52,6 +52,7 @@
     <ProjectReference Include="..\Dsh.Webhook\Dsh.Webhook.csproj" />
     <ProjectReference Include="..\Dsh.Plan\Dsh.Plan.csproj" />
     <ProjectReference Include="..\Dsh.Shell\Dsh.Shell.csproj" />
+    <ProjectReference Include="..\Dsh.Skill\Dsh.Skill.csproj" />
     <ProjectReference Include="..\Dsh.Subprocess\Dsh.Subprocess.csproj" />
     <ProjectReference Include="..\Dsh.Credentials\Dsh.Credentials.csproj" />
 <ProjectReference Include="..\Dsh.Settings\Dsh.Settings.csproj" />

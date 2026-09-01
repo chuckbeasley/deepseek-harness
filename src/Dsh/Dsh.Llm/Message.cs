@@ -8,6 +8,7 @@ namespace Dsh.Llm;
 [JsonDerivedType(typeof(PluginSource), "plugin")]
 [JsonDerivedType(typeof(ModelSource), "model")]
 [JsonDerivedType(typeof(ToolSource), "tool")]
+[JsonDerivedType(typeof(SkillCatalogSource), "skill-catalog")]
 public abstract record MessageSource
 {
     /// <summary>Who produced this message (read-only discriminant).</summary>
@@ -43,6 +44,22 @@ public sealed record PluginSource : MessageSource
 
 /// <summary>One named contribution to a plugin message (the TS <c>{name, text}</c> section pair).</summary>
 public sealed record NamedSection(string Name, string Text);
+
+/// <summary>One available-skill catalog entry (the TS skill-catalog entry shape).</summary>
+public sealed record SkillCatalogEntry(string Name, string Description);
+
+/// <summary>The skill-catalog reminder injected into each pre-step batch (the TS skill-catalog source).</summary>
+public sealed record SkillCatalogSource : MessageSource
+{
+    /// <summary>Optional form of the contribution (e.g. "catalog" for the availability reminder).</summary>
+    public string? Form { get; init; }
+
+    /// <summary>The available skills with their routing descriptions.</summary>
+    public IReadOnlyList<SkillCatalogEntry>? Entries { get; init; }
+
+    [JsonIgnore]
+    public override string Kind => "skill-catalog";
+}
 
 /// <summary>A model-produced message: provider route and model id.</summary>
 public sealed record ModelSource : MessageSource

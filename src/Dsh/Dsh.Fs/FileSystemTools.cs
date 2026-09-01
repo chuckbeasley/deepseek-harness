@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Dsh.Llm;
+using Dsh.Session;
 using Dsh.Tools;
 
 namespace Dsh.Fs;
@@ -74,6 +75,100 @@ public static class FileSystemTools
 
     /// <summary>Render model for <see cref="FormatReadOutput"/>.</summary>
     public sealed record FsReadRenderModel(int Offset, IReadOnlyList<FsFileTextLine> Lines, int TotalLines, bool TruncatedByBytes);
+
+    /// <summary>Canonical read_image output (port of the TS read-image tool's outcome).</summary>
+    public sealed record FsImageReadResult(
+        [property: JsonPropertyName("path")] string Path,
+        [property: JsonPropertyName("image")] ImageAttachment Image);
+
+    /// <summary>
+    /// Build the read_image ToolDefinition (port of tool-fs read-image minus the attachment
+    /// normalization seams): the extension gate, the calling route's declared image modality,
+    /// the presence/absence observation, and the committed sha256 attachment with its parsed
+    /// dimensions; Render projects the text envelope plus the image block.
+    /// </summary>
+    public static ToolDefinition ReadImage(IFileSystemService fs, Dsh.Attachment.IAttachmentService attachments, Dsh.Llm.LlmRuntime llm)
+    {
+        ArgumentNullException.ThrowIfNull(fs);
+        ArgumentNullException.ThrowIfNull(attachments);
+        ArgumentNullException.ThrowIfNull(llm);
+        return new ToolDefinition(
+            Name: "read_image",
+            Description: "Read a PNG/JPEG/WebP/GIF file and return the image itself.",
+            Parameters: JsonSerializer.SerializeToElement(JsonNode.Parse(ReadImageParametersSchemaJson)!),
+            OutputSchema: JsonSerializer.SerializeToElement(JsonNode.Parse(ReadImageOutputSchemaJson)!),
+            Execute: async (args, context) =>
+            {
+                var filePath = args.TryGetProperty("file_path", out var pathValue) ? pathValue.GetString() ?? string.Empty : string.Empty;
+                if (filePath.Trim().Length == 0)
+                {
+                    throw new ArgumentException("file_path must be a non-empty string");
+                }
+                var extension = Path.GetExtension(filePath).ToLowerInvariant();
+                var mediaType = extension switch
+                {
+                    ".png" => "image/png",
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".webp" => "image/webp",
+                    ".gif" => "image/gif",
+                    _ => null,
+                };
+                if (mediaType is null)
+                {
+                    throw new ArgumentException($"cannot read \"{filePath}\": read_image only accepts PNG/JPEG/WebP/GIF paths");
+                }
+                // The route gate: the exact calling model must declare image input.
+                var (provider, model) = RouteOf(context.Session);
+                if (provider is null || model is null)
+                {
+                    throw new InvalidOperationException($"cannot read \"{filePath}\" as an image: the current model route could not be resolved");
+                }
+                var metadata = llm.ResolveModelMetadata(provider, model);
+                if (metadata?.InputModalities is not { } modalities || !modalities.Contains("image"))
+                {
+                    throw new InvalidOperationException(
+                        $"cannot read \"{filePath}\" as an image: model \"{model}\" does not declare image input; switch to an image-capable model to read images");
+                }
+                var spec = fs.ResolveRead(new FsReadRequest(filePath));
+                var info = await fs.StatAsync(fs.ResolveStat(new FsStatRequest(filePath)), context.CancellationToken).ConfigureAwait(false);
+                if (info is null)
+                {
+                    throw new FsError($"cannot read \"{spec.Target.DisplayPath}\": not found", FsErrorCodes.NotFound);
+                }
+                if (info.Type != FsPathType.File)
+                {
+                    throw new FsError($"cannot read \"{spec.Target.DisplayPath}\": not a regular file", FsErrorCodes.NotRegularFile);
+                }
+                var raw = await fs.ReadBytesAsync(fs.ResolveReadBytes(new FsReadBytesRequest(filePath, ReadImageMaxBytes)), context.CancellationToken).ConfigureAwait(false);
+                var image = attachments.SaveImage(raw, mediaType, Path.GetFileName(spec.Target.DisplayPath));
+                return JsonSerializer.SerializeToElement(new FsImageReadResult(spec.Target.DisplayPath, image));
+            },
+            Render: (_, value) =>
+            {
+                var result = JsonSerializer.Deserialize<FsImageReadResult>(value)!;
+                return new ContentBlock[]
+                {
+                    new TextBlock(FormatImageReadOutput(result.Path, result.Image)),
+                    new ImageBlock(result.Image),
+                };
+            },
+            PersistMeta: false);
+    }
+
+    /// <summary>The current session's last routed provider/model, or nulls.</summary>
+    private static (string? Provider, string? Model) RouteOf(Dsh.Session.Session? session)
+        => session is null
+            ? (null, null)
+            : session.Events.OfType<RequestHeaderEvent>().Select(evt => evt.Header.Config).LastOrDefault() is { } config
+                ? (config.Provider, config.Model)
+                : (null, null);
+
+    /// <summary>Format an image read as the model-facing envelope (port of read-image formatImageReadOutput).</summary>
+    public static string FormatImageReadOutput(string displayPath, ImageAttachment image)
+        => $"<path>{displayPath}</path>\n<type>image</type>\n<content>\n{image.MediaType} image, {image.Width}x{image.Height} px, {image.Bytes} bytes\n</content>";
+
+    /// <summary>Byte cap for one read_image payload (the corpus images are tiny; the cap mirrors the TS per-message bound).</summary>
+    public const int ReadImageMaxBytes = 20 * 1024 * 1024;
 
     /// <summary>
     /// Build the fs_read ToolDefinition. Execute validates the model arguments, resolves and
@@ -456,6 +551,12 @@ public static class FileSystemTools
 
     private const string EditOutputSchemaJson =
         "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"path\":{\"type\":\"string\",\"required\":true},\"before\":{\"type\":\"string\",\"required\":true},\"after\":{\"type\":\"string\",\"required\":true}}}";
+
+    private const string ReadImageParametersSchemaJson =
+        "{\"file_path\":{\"type\":\"string\",\"required\":true,\"description\":\"Path to the image file, resolved by the filesystem backend.\"}}";
+
+    private const string ReadImageOutputSchemaJson =
+        "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"path\":{\"type\":\"string\",\"required\":true},\"image\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":true,\"properties\":{\"attachmentId\":{\"type\":\"string\",\"required\":true},\"mediaType\":{\"type\":\"string\",\"required\":true},\"bytes\":{\"type\":\"integer\",\"required\":true},\"width\":{\"type\":\"integer\",\"required\":true},\"height\":{\"type\":\"integer\",\"required\":true},\"name\":{\"type\":\"string\"}}}}}";
 
     private sealed class WindowAccumulator
     {

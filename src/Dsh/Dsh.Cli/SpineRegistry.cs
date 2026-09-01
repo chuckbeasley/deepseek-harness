@@ -182,7 +182,12 @@ public static class SpineRegistry
             var read = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Read(service, observations: observations));
             var write = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Write(service, observations));
             var edit = ctx.Tools().Register(Dsh.Fs.FileSystemTools.Edit(service, observations));
-            return new SpineDisposables(edit, write, read, service);
+            var disposers = new List<IDisposable> { edit, write, read, service };
+            if (ctx.Get<Dsh.Attachment.IAttachmentService>("attachment") is { } attachments)
+            {
+                disposers.Add(ctx.Tools().Register(Dsh.Fs.FileSystemTools.ReadImage(service, attachments, ctx.Llm())));
+            }
+            return new SpineDisposables(disposers.ToArray());
         }));
         catalog.Register("shell", new SpinePlugin("shell", (ctx, config) =>
         {
@@ -301,6 +306,58 @@ public static class SpineRegistry
             var provider = new Dsh.Preset.FilePresetProvider(root, trust: trust);
             ctx.Set("preset", provider);
             return null;
+        }));
+        catalog.Register("skill", new SpinePlugin("skill", (ctx, config) =>
+        {
+            var root = ConfigString(config, "root")
+                ?? Path.Combine(Environment.CurrentDirectory, ".dsh", "skills");
+            var registry = new Dsh.Skill.SkillRegistry(ctx);
+            var provider = new Dsh.Skill.FileSystemSkillProvider(root);
+            var providerRegistration = registry.RegisterProvider(provider);
+            var tool = ctx.Tools().Register(Dsh.Skill.SkillTools.Definition(registry));
+            var disposers = new List<IDisposable> { tool, providerRegistration, registry };
+            if (Directory.Exists(root))
+            {
+                // The skill-catalog reminder: the first pre-step batch of each session carries the
+                // model-invocable skills as one appended user message (the recorded corpus shape —
+                // once per session, not per step).
+                var catalogInjected = new HashSet<string>(StringComparer.Ordinal);
+                disposers.Add(ctx.On("agent/pre-step",
+                    new Func<Dsh.AgentLoop.PreStepProposal, Func<Task<Dsh.AgentLoop.PreStepDecision>>, Task<Dsh.AgentLoop.PreStepDecision>>(async (proposal, next) =>
+                    {
+                        var downstream = await next();
+                        if (downstream is not Dsh.AgentLoop.EnterDecision enter) return downstream;
+                        if (!catalogInjected.Add(proposal.Agent.Id.Value)) return downstream;
+                        var summaries = await registry.ListAsync(new Dsh.Skill.SkillLookupOptions(Cwd: Environment.CurrentDirectory)).ConfigureAwait(false);
+                        var entries = summaries
+                            .Where(summary => summary.Invocation.ModelInvocable)
+                            .OrderBy(summary => summary.Name, StringComparer.Ordinal)
+                            .Select(summary => new Dsh.Llm.SkillCatalogEntry(summary.Name, summary.Description))
+                            .ToArray();
+                        if (entries.Length == 0) return downstream;
+                        var lines = new List<string>
+                        {
+                            "<system-reminder>",
+                            "A skill is a reusable set of task-specific instructions. The following skills are available in this session:",
+                            "",
+                            "<available_skills>",
+                        };
+                        lines.AddRange(entries.Select(entry => $"- `{entry.Name}`: {entry.Description}"));
+                        lines.Add("</available_skills>");
+                        lines.Add("");
+                        lines.Add("If the user names a skill, or the task clearly matches a skill's description, call the `skill` tool with the exact skill name before taking task actions. Load all applicable skills, then follow their full instructions. This catalog contains summaries only; do not infer or follow a skill's instructions until it has been loaded.");
+                        lines.Add("A user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.");
+                        lines.Add("</system-reminder>");
+                        var catalog = new Dsh.Llm.UserMessage
+                        {
+                            Id = new Dsh.Llm.MessageId(Guid.NewGuid().ToString("D")),
+                            Content = new Dsh.Llm.ContentBlock[] { new Dsh.Llm.TextBlock(string.Join("\n", lines)) },
+                            Source = new Dsh.Llm.SkillCatalogSource { Form = "catalog", Entries = entries },
+                        };
+                        return new Dsh.AgentLoop.EnterDecision(enter.Messages.Append(catalog).ToArray(), enter.Assembly);
+                    })));
+            }
+            return new SpineDisposables(disposers.ToArray());
         }));
         catalog.Register("guard", new SpinePlugin("guard", (ctx, _) =>
             new SpineDisposables(new Dsh.Guard.ToolTimeoutPolicy(ctx), new Dsh.Guard.RepeatToolReminderGuard(ctx))));
@@ -687,6 +744,54 @@ public static class SpineRegistry
                 ConfigString(config, "model"),
                 ConfigInt(config, "defaultTimeoutMs") ?? Dsh.Hooks.HookRunner.DefaultHookTimeoutMs,
                 ConfigInt(config, "stderrSummaryMaxChars") ?? Dsh.Hooks.HookLog.DefaultStderrSummaryMaxChars));
+        }));
+        catalog.Register("llmRetry", new SpinePlugin("llmRetry", (ctx, config) =>
+        {
+            // Provider-routed request retry (port of dsh-llm-retry): the recorded corpus used the
+            // deterministic snapshot policy (2 retries, 1ms delays, no jitter) over the standard
+            // transient codes; the loop's request-error waterfall then retries the step.
+            var retryableCodes = new[] { "EMPTY_RESPONSE", "RATE_LIMIT", "SERVER", "TIMEOUT", "TRANSPORT" };
+            var maxRetries = ConfigInt(config, "maxRetries") ?? 2;
+            var delayMs = ConfigInt(config, "delayMs") ?? 1;
+            var policyKey = System.Text.Json.JsonSerializer.Serialize(new object?[]
+            {
+                "normal", maxRetries, retryableCodes, delayMs, delayMs, 0,
+            });
+            Dsh.AgentLoop.LlmRetryEventTypes.Register();
+            return ctx.On("agent/request-error",
+                new Func<Dsh.AgentLoop.RequestErrorProposal, Func<Task<Dsh.AgentLoop.RequestErrorAction?>>, Task<Dsh.AgentLoop.RequestErrorAction?>>(async (proposal, next) =>
+                {
+                    if (!retryableCodes.Contains(proposal.Failure.Code)) return await next();
+                    var session = proposal.Agent.Session;
+                    var previous = session.Events.OfType<Dsh.AgentLoop.LlmRetryEvent>()
+                        .Where(evt => evt.Provider == proposal.Provider && evt.PolicyKey == policyKey)
+                        .ToArray();
+                    if (previous.Length >= maxRetries) return await next();
+                    var retry = previous.Length + 1;
+                    var retryId = previous.Length > 0 ? previous[^1].RetryId : Guid.NewGuid().ToString("D");
+                    session.Append(new Dsh.AgentLoop.LlmRetryEvent
+                    {
+                        RetryId = retryId,
+                        Turn = proposal.Turn,
+                        Step = proposal.Step,
+                        Provider = proposal.Provider,
+                        Mode = "normal",
+                        PolicyKey = policyKey,
+                        Retry = retry,
+                        MaxRetries = maxRetries,
+                        DelayMs = delayMs,
+                        Failure = proposal.Failure,
+                    });
+                    await Task.Delay(delayMs, proposal.Agent.CancellationToken).ConfigureAwait(false);
+                    session.Append(new Dsh.AgentLoop.LlmRetryStartedEvent
+                    {
+                        RetryId = retryId,
+                        Turn = proposal.Turn,
+                        Step = proposal.Step,
+                        Retry = retry,
+                    });
+                    return Dsh.AgentLoop.RetryDecision.Instance;
+                }));
         }));
         catalog.Register("headless", new SpinePlugin("headless", (ctx, config) =>
         {

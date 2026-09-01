@@ -82,7 +82,8 @@ public static class SkillTools
             JsonDocument.Parse(ParametersJson).RootElement.Clone(),
             JsonDocument.Parse(OutputSchemaJson).RootElement.Clone(),
             (args, exec) => ExecuteAsync(skills, args, exec.CancellationToken),
-            (_, value) => new ContentBlock[] { new TextBlock(RenderSkillContent(ParseResult(value))) });
+            (_, value) => new ContentBlock[] { new TextBlock(RenderSkillContent(ParseResult(value))) },
+            PersistMeta: false);
     }
 
     /// <summary>

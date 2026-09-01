@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Cordis.Core;
 
 namespace Dsh.Attachment;
@@ -146,6 +147,38 @@ public sealed class LocalAttachmentProvider : Service, IAttachmentService
             }
         }
         return _registered.Remove(id);
+    }
+
+    /// <inheritdoc />
+    public Dsh.Llm.ImageAttachment SaveImage(byte[] data, string mediaType, string name)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        if (data.Length > _maxBytes)
+        {
+            throw new AttachmentError(
+                $"cannot save image: {data.Length} bytes exceeds the {_maxBytes}-byte limit", AttachmentErrorCodes.TooLarge);
+        }
+        var facts = ImageFactsParser.Parse(data, mediaType);
+        // Content-addressed id: the recorded corpus references sha256: ids, and identical bytes
+        // always land on the same object (idempotent concurrent saves cannot conflict).
+        var hash = Convert.ToHexString(SHA256.HashData(data)).ToLowerInvariant();
+        var objectPath = Path.Combine(_root, hash);
+        if (!File.Exists(objectPath))
+        {
+            var temp = Path.Combine(_root, $".{hash}.{Guid.NewGuid():N}.tmp");
+            try
+            {
+                File.WriteAllBytes(temp, data);
+                File.Move(temp, objectPath, overwrite: false);
+            }
+            catch (Exception error)
+            {
+                TryDeleteQuietly(temp);
+                throw new AttachmentError($"cannot save image: {error.Message}", AttachmentErrorCodes.WriteFailed, error);
+            }
+        }
+        var display = SanitizeName(name) ?? $"sha256:{hash}";
+        return new Dsh.Llm.ImageAttachment($"sha256:{hash}", facts.MediaType, data.Length, facts.Width, facts.Height, display);
     }
 
     /// <summary>The object file path for one attachment id.</summary>

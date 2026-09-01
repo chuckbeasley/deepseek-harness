@@ -25,7 +25,8 @@ public sealed record LlmModelMetadata(
     long? ContextWindow = null,
     int? DefaultMaxTokens = null,
     string? DefaultReasoningEffort = null,
-    IReadOnlyList<string>? ReasoningEfforts = null);
+    IReadOnlyList<string>? ReasoningEfforts = null,
+    IReadOnlyList<string>? InputModalities = null);
 
 /// <summary>Optional adapter capability: exact-model capability lookup for request resolution.</summary>
 public interface IAdapterModelMetadata

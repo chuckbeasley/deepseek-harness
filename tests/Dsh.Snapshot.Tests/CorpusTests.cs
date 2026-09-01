@@ -290,7 +290,8 @@ public static class CorpusTests
                 && name != "goal_write" && name != "plan_write" && name != "web_fetch" && name != "web_search"
                 && name != "job_list" && name != "job_output" && name != "job_kill" && name != "workflow"
                 && name != "message_feedback" && name != "terminal_open" && name != "terminal_read" && name != "terminal_send"
-                && name != "list_agents" && name != "send_message" && name != "subagent" && name != "ask_user_question")
+                && name != "list_agents" && name != "send_message" && name != "subagent" && name != "ask_user_question"
+                && name != "skill" && name != "read_image")
             {
                 return name;
             }
@@ -699,6 +700,13 @@ public static class CorpusTests
             {
                 blocks[current]["reasoningEfforts"] = string.Join(",", efforts.Groups[1].Value
                     .Split(',').Select(item => item.Trim().Trim('\'')).Where(item => item.Length > 0));
+                continue;
+            }
+            var modalities = Regex.Match(line, @"^\s+inputModalities:\s*\[([^\]]*)\]");
+            if (modalities.Success)
+            {
+                blocks[current]["inputModalities"] = string.Join(",", modalities.Groups[1].Value
+                    .Split(',').Select(item => item.Trim().Trim('\'')).Where(item => item.Length > 0));
             }
         }
         if (!blocks.TryGetValue(model, out var fields) || fields.Count == 0) return null;
@@ -719,6 +727,11 @@ public static class CorpusTests
         {
             meta["reasoningEfforts"] = new System.Text.Json.Nodes.JsonArray(
                 effortList.Split(',').Select(item => (System.Text.Json.Nodes.JsonNode?)System.Text.Json.Nodes.JsonValue.Create(item)).ToArray());
+        }
+        if (fields.TryGetValue("inputModalities", out var modalityList))
+        {
+            meta["inputModalities"] = new System.Text.Json.Nodes.JsonArray(
+                modalityList.Split(',').Select(item => (System.Text.Json.Nodes.JsonNode?)System.Text.Json.Nodes.JsonValue.Create(item.Trim())).ToArray());
         }
         var root = new System.Text.Json.Nodes.JsonObject { [model] = meta };
         return root.ToJsonString();
@@ -767,7 +780,19 @@ public static class CorpusTests
             case "editing-cordis-skill":
                 var skillDir = Path.Combine(cwd, ".dsh", "skills", "editing-cordis-compositions");
                 Directory.CreateDirectory(skillDir);
-                File.WriteAllText(Path.Combine(skillDir, "SKILL.md"), "# editing-cordis-compositions\n");
+                // The recorded skill content is the shipped preset's real skill document; copy it
+                // verbatim so the loader renders the recorded bytes.
+                var realSkill = Path.Combine(
+                    SnapshotDriver.RepoRoot(), "packages", "preset", "agent-presets", "presets",
+                    "cordis", "skills", "editing-cordis-compositions", "SKILL.md");
+                if (File.Exists(realSkill))
+                {
+                    File.Copy(realSkill, Path.Combine(skillDir, "SKILL.md"));
+                }
+                else
+                {
+                    File.WriteAllText(Path.Combine(skillDir, "SKILL.md"), "# editing-cordis-compositions\n");
+                }
                 return;
             default:
                 throw new InvalidOperationException($"unknown workspace setup {setup}");

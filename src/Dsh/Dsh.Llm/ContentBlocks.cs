@@ -8,10 +8,27 @@ namespace Dsh.Llm;
 [JsonDerivedType(typeof(ReasoningBlock), "reasoning")]
 [JsonDerivedType(typeof(ToolCallBlock), "tool-call")]
 [JsonDerivedType(typeof(ToolResultBlock), "tool-result")]
+[JsonDerivedType(typeof(ImageBlock), "image")]
 public abstract record ContentBlock
 {
     /// <summary>The block <c>type</c> tag vocabulary (read-only; not part of the payload).</summary>
     public abstract string BlockType { get; }
+}
+
+/// <summary>One committed image attachment a model-facing result carries (the TS <c>ImageAttachmentRef</c> wire shape).</summary>
+public sealed record ImageAttachment(
+    [property: JsonPropertyName("attachmentId")] string AttachmentId,
+    [property: JsonPropertyName("mediaType")] string MediaType,
+    [property: JsonPropertyName("bytes")] long Bytes,
+    [property: JsonPropertyName("width")] int Width,
+    [property: JsonPropertyName("height")] int Height,
+    [property: JsonPropertyName("name")] string? Name = null);
+
+/// <summary>An image block referencing a durably committed attachment.</summary>
+public sealed record ImageBlock(ImageAttachment Attachment) : ContentBlock
+{
+    [JsonIgnore]
+    public override string BlockType => "image";
 }
 
 /// <summary>Plain text visible to the end user.</summary>

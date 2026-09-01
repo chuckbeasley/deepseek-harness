@@ -25,6 +25,17 @@ public interface IAttachmentService
     IReadOnlyList<AttachmentRef> List();
 
     /// <summary>
+    /// Persist one image under its content-addressed sha256 id and parse its dimensions (port of
+    /// the TS saveImage). The bytes must match <paramref name="mediaType"/> or the ingest refuses
+    /// with IMAGE_TYPE_MISMATCH.
+    /// </summary>
+    /// <param name="data">the image bytes (PNG/JPEG/WebP/GIF).</param>
+    /// <param name="mediaType">the declared media type the bytes must match.</param>
+    /// <param name="name">the caller-suggested display name (sanitized).</param>
+    /// <returns>the durable image reference with its parsed dimensions.</returns>
+    Dsh.Llm.ImageAttachment SaveImage(byte[] data, string mediaType, string name);
+
+    /// <summary>
     /// Read one attachment's stored bytes and verify they still match the recorded reference. A
     /// missing object rejects with ATTACHMENT_NOT_FOUND; a length mismatch with
     /// ATTACHMENT_CORRUPT.

@@ -38,6 +38,9 @@
     - id: subprocess
       name: subprocess
 
+    - id: attachment
+      name: attachment
+
     - id: fs
       name: fs
 
@@ -86,9 +89,6 @@
     - id: spill
       name: spill
 
-    - id: attachment
-      name: attachment
-
     - id: compaction
       name: compaction
 
@@ -104,11 +104,17 @@
     - id: guard
       name: guard
 
+    - id: llmRetry
+      name: llmRetry
+
     - id: userQuestions
       name: userQuestions
 
     - id: toolAskUser
       name: toolAskUser
+
+    - id: skill
+      name: skill
 
     - id: terminal
       name: terminal

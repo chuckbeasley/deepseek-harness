@@ -11,6 +11,7 @@
     <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
     <ProjectReference Include="..\Dsh.Llm\Dsh.Llm.csproj" />
     <ProjectReference Include="..\Dsh.Tools\Dsh.Tools.csproj" />
+    <ProjectReference Include="..\Dsh.Attachment\Dsh.Attachment.csproj" />
   </ItemGroup>
 
 </Project>
