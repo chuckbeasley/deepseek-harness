@@ -145,6 +145,12 @@
     - id: jobs
       name: jobs
 
+    - id: subagentDiagnostic
+      name: subagentDiagnostic
+
+    - id: subagentAcp
+      name: subagentAcp
+
     - id: workflow
       name: workflow
 

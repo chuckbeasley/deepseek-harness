@@ -25,6 +25,9 @@ public static class Program
         ("job_list projects owned jobs", JobToolsTests.JobList_ListsOwnedJobs),
         ("job_output fails loud on an unknown job", JobToolsTests.JobOutput_UnknownJob_FailsLoud),
         ("job_output fails loud on an empty job id", JobToolsTests.JobOutput_EmptyJobId_FailsLoud),
+        ("notice summary bounds to the context cap", JobNoticeTests.Bound_TruncatesPastTheSummaryCap),
+        ("notice delivery lands an unreported completion in the next-step inbox", JobNoticeTests.Install_DeliversAnUnreportedCompletionIntoTheNextStepInbox),
+        ("notice delivery skips a job the wait already reported", JobNoticeTests.Install_SkipsAJobTheWaitAlreadyReported),
     };
 
     public static int Main()

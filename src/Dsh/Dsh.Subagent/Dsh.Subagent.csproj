@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Cordis\Cordis.Core\Cordis.Core.csproj" />
+    <ProjectReference Include="..\Dsh.Jobs\Dsh.Jobs.csproj" />
     <ProjectReference Include="..\Dsh.Llm\Dsh.Llm.csproj" />
     <ProjectReference Include="..\Dsh.Tools\Dsh.Tools.csproj" />
   </ItemGroup>

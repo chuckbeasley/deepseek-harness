@@ -292,7 +292,8 @@ public static class CorpusTests
                 && name != "list_agents" && name != "send_message" && name != "subagent" && name != "ask_user_question"
                 && name != "skill" && name != "read_image"
                 && name != "cordis_define" && name != "cordis_run" && name != "cordis_stop" && name != "cordis_undefine"
-                && name != "cordis_inspect_self" && name != "cordis_inspect_list" && name != "cordis_inspect_query")
+                && name != "cordis_inspect_self" && name != "cordis_inspect_list" && name != "cordis_inspect_query"
+                && name != "subagent_acp" && name != "subagent_codex")
             {
                 return name;
             }
@@ -535,7 +536,7 @@ public static class CorpusTests
                 var entry = Regex.Match(line, @"^\s+([A-Za-z0-9_]+):\s*(.+)$");
                 if (entry.Success)
                 {
-                    environment[entry.Groups[1].Value] = entry.Groups[2].Value.Trim().Trim('"');
+                    environment[entry.Groups[1].Value] = entry.Groups[2].Value.Trim().Trim('\'', '"');
                     continue;
                 }
                 inEnvironment = false;
@@ -594,6 +595,33 @@ public static class CorpusTests
         {
             foreach (var pair in hooks) env[pair.Key] = pair.Value;
         }
+        var subagent = SubagentSnapshotEnv(scenariosDir, scenario.Name, scenario.Composition, compositionOwners);
+        if (subagent is not null)
+        {
+            foreach (var pair in subagent) env[pair.Key] = pair.Value;
+        }
+    }
+
+    /// <summary>
+    /// The subagent fixture channels: the recorded product-diagnostic and ACP-mock scenarios
+    /// mount deterministic C# fixture providers (node is not used in the ported version) through
+    /// the env channels the spine subagent rows read.
+    /// </summary>
+    private static IReadOnlyDictionary<string, string>? SubagentSnapshotEnv(string scenariosDir, string scenarioName, string composition, IReadOnlyDictionary<string, string> compositionOwners)
+    {
+        var patch = SnapshotPatchPath(scenariosDir, scenarioName, composition, compositionOwners);
+        if (patch is null) return null;
+        var text = File.ReadAllText(patch);
+        var env = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (text.Contains("subagent-result-diagnostic", StringComparison.Ordinal))
+        {
+            env["DSH_SNAPSHOT_SUBAGENT_DIAGNOSTIC"] = "1";
+        }
+        if (text.Contains("subagent-acp-diagnostic", StringComparison.Ordinal))
+        {
+            env["DSH_SNAPSHOT_SUBAGENT_ACP"] = "1";
+        }
+        return env.Count > 0 ? env : null;
     }
 
     /// <summary>The recorded child-session logs the replay provider binds (session.1.jsonl, …), path-separator joined.</summary>

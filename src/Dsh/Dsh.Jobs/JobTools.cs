@@ -84,7 +84,8 @@ public static class JobTools
                 var read = jobs.Read(id, context.Session?.Id.Value);
                 return JsonSerializer.SerializeToElement(new { text = read.Text, job = PublicJob(read.Snapshot) });
             },
-            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderJobOutput(value)) });
+            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderJobOutput(value)) },
+            PersistMeta: false);
     }
 
     /// <summary>The <c>job_list</c> ToolDefinition over the mounted jobs service.</summary>
@@ -103,7 +104,8 @@ public static class JobTools
                 var snapshots = jobs.List(context.Session?.Id.Value).Select(PublicJob).ToArray();
                 return Task.FromResult(JsonSerializer.SerializeToElement(snapshots));
             },
-            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderJobList(value)) });
+            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderJobList(value)) },
+            PersistMeta: false);
     }
 
     /// <summary>The <c>job_kill</c> ToolDefinition over the mounted jobs service.</summary>
@@ -132,7 +134,8 @@ public static class JobTools
                     job = snapshot,
                 }));
             },
-            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderJobKill(value)) });
+            Render: (_, value) => new ContentBlock[] { new TextBlock(RenderJobKill(value)) },
+            PersistMeta: false);
     }
 
     /// <summary>Validate the non-empty constraint that the parameter schema cannot express.</summary>

@@ -25,6 +25,11 @@ public static class Program
         ("registry rejects duplicate and unknown providers", () => { SdkProviderTests.Registry_RejectsDuplicateAndUnknownProviders(); return Task.CompletedTask; }),
         ("sdk config validation fails loud", () => { SdkProviderTests.ConfigValidation_FailsLoud(); return Task.CompletedTask; }),
         ("sdk dispose is idempotent after settlement", () => { SdkProviderTests.DisposeAsync_IsIdempotent_AfterSettlement(); return Task.CompletedTask; }),
+        ("diagnostic provider answers the recorded failures", SubagentToolTests.DiagnosticProvider_AnswersTheRecordedFailures),
+        ("foreground codex failure renders the recorded text", SubagentToolTests.Foreground_Failure_RendersTheRecordedCodexText),
+        ("foreground ACP failure renders the recorded text", SubagentToolTests.AcpForeground_Failure_RendersTheRecordedText),
+        ("background run returns the job and settles failed with the detail", SubagentToolTests.Background_ReturnsTheJobAndSettlesFailedWithTheDetail),
+        ("published failure throws the recorded error", () => { SubagentToolTests.PublishedFailure_ThrowsTheRecordedError(); return Task.CompletedTask; }),
     };
 
     public static int Main(string[] args)

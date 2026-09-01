@@ -537,6 +537,13 @@ public static class SpineRegistry
                 var handle = loop.Create(sessionId, options, source: "subagent");
                 try
                 {
+                    if (Environment.GetEnvironmentVariable(Dsh.Subagent.SubagentTool.PublishedFailureEnv) == "1")
+                    {
+                        // The snapshot publish-failure injection: the published handle fails
+                        // before the prompt is delivered, so the child session exists with its
+                        // delegation baseline but its model prompt never runs.
+                        throw new InvalidOperationException("snapshot published run failed");
+                    }
                     var driver = loop.GetLoop(sessionId)
                         ?? throw new InvalidOperationException("subagent: the child loop was not published");
                     var message = new Dsh.Llm.UserMessage
@@ -667,13 +674,43 @@ public static class SpineRegistry
                 ?? throw new InvalidOperationException("subagentTool requires a \"provider\" config naming the registered driver");
             return ctx.Tools().Register(Dsh.Subagent.SubagentTool.Definition(service, providerName, ConfigString(config, "toolName")));
         }));
+        catalog.Register("subagentDiagnostic", new SpinePlugin("subagentDiagnostic", (ctx, _) =>
+        {
+            // The corpus product-diagnostic channel (node is not used in the ported version): the
+            // recorded subagent-result-diagnostic fixture answers through a deterministic provider.
+            if (Environment.GetEnvironmentVariable("DSH_SNAPSHOT_SUBAGENT_DIAGNOSTIC") != "1") return null;
+            var service = ctx.Get<Dsh.Subagent.ISubagentService>("subagent")
+                ?? throw new InvalidOperationException("subagentDiagnostic requires the \"subagent\" row");
+            var provider = new Dsh.Subagent.DiagnosticSnapshotProvider();
+            var jobs = ctx.Get<Dsh.Jobs.IJobsService>("jobs");
+            return new SpineDisposables(
+                ctx.Tools().Register(Dsh.Subagent.SubagentTool.Definition(service, provider.Name, "subagent_codex", jobs)),
+                service.RegisterProvider(provider));
+        }));
+        catalog.Register("subagentAcp", new SpinePlugin("subagentAcp", (ctx, _) =>
+        {
+            // The corpus ACP-mock channel: the recorded mock-acp-server permission-denial path
+            // answers through a deterministic provider (the real out-of-process ACP product
+            // driver is deferred).
+            if (Environment.GetEnvironmentVariable("DSH_SNAPSHOT_SUBAGENT_ACP") != "1") return null;
+            var service = ctx.Get<Dsh.Subagent.ISubagentService>("subagent")
+                ?? throw new InvalidOperationException("subagentAcp requires the \"subagent\" row");
+            var provider = new Dsh.Subagent.AcpSnapshotProvider();
+            var jobs = ctx.Get<Dsh.Jobs.IJobsService>("jobs");
+            return new SpineDisposables(
+                ctx.Tools().Register(Dsh.Subagent.SubagentTool.Definition(service, provider.Name, "subagent_acp", jobs)),
+                service.RegisterProvider(provider));
+        }));
         catalog.Register("jobs", new SpinePlugin("jobs", (ctx, _) =>
         {
             var service = new Dsh.Jobs.LocalJobsProvider(ctx);
+            // The tool-jobs completion notice: an owned job's unreported settlement reaches the
+            // owning agent's next-step inbox (the port delivers by injection only; no idle wake).
+            var notice = Dsh.Jobs.JobNoticeDelivery.Install(ctx, service);
             var output = ctx.Tools().Register(Dsh.Jobs.JobTools.JobOutputDefinition(ctx));
             var list = ctx.Tools().Register(Dsh.Jobs.JobTools.JobListDefinition(ctx));
             var kill = ctx.Tools().Register(Dsh.Jobs.JobTools.JobKillDefinition(ctx));
-            return new SpineDisposables(kill, list, output, service);
+            return new SpineDisposables(kill, list, output, notice, service);
         }));
         catalog.Register("workflow", new SpinePlugin("workflow", (ctx, _) =>
         {
